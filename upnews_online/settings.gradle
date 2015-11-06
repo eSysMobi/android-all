@@ -1,0 +1,2 @@
+include ':app', ':instagram', ':player-armv7a', ':player-armv5', ':player-java', ':player-arm64', ':player-x86', ':upnewsonlinetv'
+include ':yWeatherGetter4a'

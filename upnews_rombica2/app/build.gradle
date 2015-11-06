@@ -1,0 +1,58 @@
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0].processResources.manifestFile
+        resourcePackageName 'mobi.esys.upnews_play'
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.3.1'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.7'
+    }
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+    defaultConfig {
+        applicationId 'mobi.esys.upnews_play'
+        minSdkVersion 11
+        targetSdkVersion 23
+        versionCode 2
+        versionName "1.0"
+    }
+    buildTypes {
+        defaultConfig {
+            applicationId 'mobi.esys.upnews_play'
+            minSdkVersion 11
+            targetSdkVersion 23
+        }
+
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    apt 'org.androidannotations:androidannotations:3.3.2'
+    compile 'org.androidannotations:androidannotations-api:3.3.2'
+    compile 'commons-io:commons-io:2.4'
+}

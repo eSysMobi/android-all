@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/instHashTagEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_horizontal"
+        android:digits="0,1,2,3,4,5,6,7,8,9,_,.,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
+        android:ellipsize="end"
+        android:focusableInTouchMode="true"
+        android:hint="Input Instagram hashtag"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:lines="1"
+        android:maxLines="1"
+        android:scrollHorizontally="false"
+        android:singleLine="true"
+        android:text="#"
+        android:textColor="@android:color/black" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/instagram_logo" />
+
+    <Button
+        android:id="@+id/enterHashTagBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/instHashTagEdit"
+        android:layout_centerHorizontal="true"
+        android:text="OK" />
+
+
+</RelativeLayout>
