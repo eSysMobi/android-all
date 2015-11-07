@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="mobi.esys.upnews_hashtag"
+    android:installLocation="internalOnly">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+
+    <application
+        android:name=".UNHApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape"
+        android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+
+
+        <meta-data
+            android:name="com.bumptech.glide.integration.okhttp.OkHttpGlideModule"
+            android:value="GlideModule" />
+
+        <activity
+            android:name=".SliderActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".TwitterLoginActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".InstaLoginActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape">
+
+        </activity>
+
+        <activity
+            android:name=".InAppBillingActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+        <activity
+            android:name=".TimeExpiredActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+
+        <activity
+            android:name=".MainSliderActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".InstagramHashTagActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+        <activity
+            android:name=".TweeterHashTagActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+
+        <receiver
+            android:name="mobi.esys.recievers.BootUpReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="c4b844cc94ec6cbfcc07c4a337ad37857a6fb89d" />
+
+
+    </application>
+
+</manifest>
