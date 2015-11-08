@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\upnewslite_release\sAXRSSReader\unspecified\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="5b2d1e387ef9b66e7eafc7f513a14968fd0e9654">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-65bb8d838a9d8c2fb1485cd1a9671e5ce92513fe.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\jsr305-1.3.9.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\jsr305-1.3.9-be13c26988c3985602b9dc7c0b49a2316b74feee.jar" />
+    </item>
+    <item
+        jar="G:\AndroidSDK\sdk\extras\android\m2repository\com\android\support\support-annotations\22.2.0\support-annotations-22.2.0.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="66b42a1f3eb7676070b7ef7f14b603483aecbee1">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\support-annotations-22.2.0-ce2cebf67186607b2b23a30e0e15ff3c23d97f8a.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-api-client-android-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="a1f19b7322a3434b9a4a8d3adab3c6e253dc43cf">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-api-client-android-1.12.0-beta-26672c34605339626aea5afa702e8f02bdd57ddf.jar" />
+    </item>
+    <item
+        jar="G:\Android Studio\gradle\gradle-2.2\caches\modules-2\files-2.1\com.squareup.picasso\picasso\2.5.2\7446d06ec8d4f7ffcc53f1da37c95f200dcb9387\picasso-2.5.2.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="7446d06ec8d4f7ffcc53f1da37c95f200dcb9387">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\picasso-2.5.2-fde56e23962d609a6d417a2f6c4362f14a76122c.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-basement\8.1.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="d0dda274b703dd9c5bb056867649d22b4171ae7d">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-4b0f0222f0d8ffaf0ce245a6211d00b05b349e00.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-api-services-drive-v2-rev43-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="15d026f474a5f8375b78d9296af7c2e050bd0f31">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-api-services-drive-v2-rev43-1.12.0-beta-ba9127e291131e24ebac9e13201b7fe2e4419b4e.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\jackson-core-asl-1.9.9.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="0b198f9d20dcc5bd2fe211e10f4110639b8243d6">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\jackson-core-asl-1.9.9-8d5786c7043d7b38a5dc7f6faadde0cf105dfa2b.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-http-client-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="4a7581810ad5b2bc76ae135a884a7a8ac5501a25">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-http-client-1.12.0-beta-beae8c546975953b523c5421db0dab10ebd880b5.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-oauth-client-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="3ce6992d21f067c2fa2e0b7c77567c2fe94aee8e">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-oauth-client-1.12.0-beta-dedd4a1b54f9a24434a11bc56ef344f30a6a2030.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-api-client-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="03d81483b55e13f72fdcde787cd3a20ec0f7e1eb">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-api-client-1.12.0-beta-47fded36f3059d0e8e41674d4523bda0ba1cabec.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="1ee588ff2c4daf7b97c1cbf922a6c7f027285c2f">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-4079fe156efbe215558d45c755c85b1629c19b24.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\jackson-core-2.0.5.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="3262ffaa644eaa2a42ebbf2eb490bc023645f6f1">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\jackson-core-2.0.5-e595dfafc254b439ace1a997fd20f99157ad9a92.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-base\8.1.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="82825756edeeb3b56b15e73b2edd56e93da5a444">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-3f8191fb0098cabcc71c353fed435977ca10ea99.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\guava-jdk5-13.0.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="381ae6c8add7c98e9bcddb1e0b898400cd6fc3f7">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\guava-jdk5-13.0-2820c5eece468449c45c88a765c953c28c5b46a7.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-analytics\8.1.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="95758a2905669affbffc5ddd262921d375674fad">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-7fdd33d63bf6bf92105e5fca4d6d2c135c996c1f.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-appindexing\8.1.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="4477ea44f5ec5ad064022a22691732d7638ff197">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-e9c297f2207b13c6662e9d6ebd0f5af6ab52e56a.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-http-client-gson-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="76b9aec3a810b64404a4fda200f0df9fb297c7a7">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-http-client-gson-1.12.0-beta-8ce236ff7f2997e5ded8a026dfc41391eb7140db.jar" />
+    </item>
+    <item
+        jar="G:\Android Studio\gradle\gradle-2.2\caches\modules-2\files-2.1\com.google.code.gson\gson\2.4\695b63d702f505b9b916e02272e3b6381bade7f\gson-2.4.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="0695b63d702f505b9b916e02272e3b6381bade7f">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\gson-2.4-405e8675456dee33b44b8b4d177b122edd917804.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-http-client-jackson-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="f8983a933c71ffb89452e01e4927cd8bc9becf43">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-http-client-jackson-1.12.0-beta-5517ff2a46a9af67b87017bbad7a140410c3d00f.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-http-client-jackson2-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="e74bc210968484f04c30b3d1490d9a183112855d">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-http-client-jackson2-1.12.0-beta-e9375e6a264be60de34f695849194c597a9e9f8a.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-ads\8.1.0\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="997773777cf3904c11d6764fe3b7668538220e49">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\classes-7a0a4ec945741732b9a5b648665e2d7abb38bdec.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\joda-time-2.7.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="5599707a3eaad13e889f691b3af78c8c03842195">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\joda-time-2.7-7bb7a06073882bb6f8bf3779ee18f5635e519e6a.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\libs\google-http-client-android-1.12.0-beta.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="83dc8aa4c4affd3381008cabc6eba78ce30feebd">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\google-http-client-android-1.12.0-beta-d6f769afc55ea8d9e1960c861bc09e6967e0530e.jar" />
+    </item>
+    <item
+        jar="C:\upnewslite_release\app\build\intermediates\exploded-aar\com.android.support\support-v4\22.2.0\jars\libs\internal_impl-22.2.0.jar"
+        jumboMode="false"
+        revision="23.0.1"
+        sha1="57f2ab85c164ff1676ec64dee787981c046fab79">
+        <dex dex="C:\upnewslite_release\app\build\intermediates\pre-dexed\release\internal_impl-22.2.0-e580ede7cb69f848c725ccbe5c5ca623d260925f.jar" />
+    </item>
+
+</items>
