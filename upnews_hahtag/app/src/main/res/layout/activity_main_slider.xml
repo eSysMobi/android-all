@@ -14,7 +14,7 @@
 
 
     <ImageView
-        android:id="@+id/logo"
+        android:id="@+id/logoMainSlider"
         android:layout_width="320px"
         android:layout_height="80px"
         android:layout_alignParentRight="true"
