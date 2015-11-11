@@ -153,7 +153,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
             Log.d("hash tag",prevHashTag);
             Log.d("hash tag",hashTagEdit.getEditableText().toString());
 
-            if(!"".equals(prevHashTag)&&hashTagEdit.getEditableText().toString().equals(prevHashTag)){
+            if(!"".equals(prevHashTag)&&!hashTagEdit.getEditableText().toString().equals(prevHashTag)){
                 clearFolder();
             }
             CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString(), mApp);
