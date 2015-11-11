@@ -85,9 +85,15 @@ public class InAppBillingActivity extends Activity {
 
         };
 
-        bindService(new Intent(
-                        "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
-                billingServiceConn, BIND_AUTO_CREATE);
+        if (BuildConfig.DEBUG) {
+            Log.d("buy", "It's debug version. Not need to buy!");
+            startActivity(new Intent(InAppBillingActivity.this,
+                    InstaLoginActivity.class));
+        } else {
+            bindService(new Intent(
+                            "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+                    billingServiceConn, BIND_AUTO_CREATE);
+        }
     }
 
 

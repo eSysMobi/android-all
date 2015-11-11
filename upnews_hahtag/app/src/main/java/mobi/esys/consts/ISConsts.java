@@ -13,6 +13,8 @@ public final class ISConsts {
         public static final String gd_folder_query = "'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed=false";
         public static final String photo_dir_name = "photo/";
         public static final String music_dir_name = "music/";
+        public static final String dir_changeable_logo_name = "logo/";
+        public static final String changeable_logo_name = "upnews_logo_w2.png";
         public static final String default_color = "<font color='#11A2F0'>";
         public static final String default_divider = default_color.concat("@</font>");
         public static final String default_hashtag = "#news";

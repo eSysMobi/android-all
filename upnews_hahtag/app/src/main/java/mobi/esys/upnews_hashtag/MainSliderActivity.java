@@ -3,16 +3,19 @@ package mobi.esys.upnews_hashtag;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.daimajia.slider.library.Indicators.PagerIndicator;
@@ -41,6 +44,7 @@ import io.fabric.sdk.android.Fabric;
 import mobi.esys.consts.ISConsts;
 import mobi.esys.downloaders.InstagramPhotoDownloader;
 import mobi.esys.filesystem.directories.DirectoryHelper;
+import mobi.esys.filesystem.files.FilesHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
 import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
@@ -57,7 +61,7 @@ public class MainSliderActivity extends Activity {
     private transient UNHApp mApp;
     private transient SharedPreferences preferences;
 
-    private transient boolean isFirst=true;
+    private transient boolean isFirst = true;
 
 
     private transient String[] photoFiles;
@@ -91,6 +95,8 @@ public class MainSliderActivity extends Activity {
     private transient Timer mTimer;
     private transient ChangeAnimationTimerTask changeAnimationTimerTask;
 
+    private transient ImageView logoView;
+    private FilesHelper logoFileHelper;
 
     private transient int musicPosition = 0;
 
@@ -115,6 +121,7 @@ public class MainSliderActivity extends Activity {
 
         relativeLayout = (RelativeLayout) findViewById(R.id.embeded_slider_layout);
         sliderCont = (FrameLayout) findViewById(R.id.sliderCont);
+        logoView = (ImageView) findViewById(R.id.logoMainSlider);
 
         instagram = new Instagram(MainSliderActivity.this,
                 ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
@@ -129,7 +136,6 @@ public class MainSliderActivity extends Activity {
         DirectoryHelper photoDirHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
         photoFiles = photoDirHelper.getDirFileList(TAG);
 
-
         mTimer = new Timer();
         changeAnimationTimerTask = new ChangeAnimationTimerTask();
         mTimer.schedule(changeAnimationTimerTask, 0L, ISConsts.times.anim_duration - 5);
@@ -139,6 +145,12 @@ public class MainSliderActivity extends Activity {
         initTwitter();
         playMP3();
 
+
+        String logoFile = Environment.getExternalStorageDirectory()
+                .getAbsolutePath().concat(ISConsts.globals.dir_name)
+                .concat(ISConsts.globals.dir_changeable_logo_name)
+                .concat(ISConsts.globals.changeable_logo_name);
+        logoFileHelper = new FilesHelper(logoFile, getApplicationContext());
 
     }
 
@@ -343,6 +355,15 @@ public class MainSliderActivity extends Activity {
             mediaPlayer.seekTo(musicPosition);
             mediaPlayer.start();
         }
+        checkLogo();
+    }
+
+    //Check logo.
+    private void checkLogo() {
+        Log.d("TAG1", "Check logo in onResume.");
+        logoFileHelper.createLogoInExternalStorage();
+        Bitmap logoFromFile = logoFileHelper.getLogoFromExternalStorage();
+        logoView.setImageBitmap(logoFromFile);
     }
 
     @Override
@@ -416,8 +437,8 @@ public class MainSliderActivity extends Activity {
                 public void run() {
                     Twitter.getInstance();
                     Twitter.getInstance();
-                    TwitterHelper.startLoadTweets(Twitter.getApiClient(), twHashTag, relativeLayout,getApplicationContext(),isFirst);
-                    isFirst=false;
+                    TwitterHelper.startLoadTweets(Twitter.getApiClient(), twHashTag, relativeLayout, getApplicationContext(), isFirst);
+                    isFirst = false;
                     twitterFeedHandler.postDelayed(this, 900000);
                 }
             };
