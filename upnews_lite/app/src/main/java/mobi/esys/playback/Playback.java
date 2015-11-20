@@ -156,69 +156,73 @@ public class Playback {
         ((FullscreenActivity) mContext).recToMP("playlist_video_play", "Start playing playlist video");
     }
 
+    private void signalCheckNewLogo() {
+        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+        intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NEED_CHECK_LOGO);
+        mApp.sendBroadcast(intentOut);
+    }
+
     private void nextTrack(final String[] files) {
 
         String[] listFiles = {files[0]};
+//        Log.d("log_tag", "Send signal checking logo");
+//        signalCheckNewLogo();
 
-        if (!mContext
-                .getSharedPreferences(UNLConsts.APP_PREF,
-                        Context.MODE_PRIVATE).getString("urls", "").equals("")) {
+        if (!prefs.getString("urls", "").replace("[", "").replace("]", "").equals("")) {
             Log.d("urls string",
-                    mContext.getSharedPreferences(UNLConsts.APP_PREF,
-                            Context.MODE_PRIVATE).getString("urls", "")
+                    prefs.getString("urls", "")
                             .replace("[", "").replace("]", ""));
 
-            ulrs = mContext
-                    .getSharedPreferences(UNLConsts.APP_PREF,
-                            Context.MODE_PRIVATE).getString("urls", "")
+            ulrs = prefs.getString("urls", "")
                     .replace("[", "").replace("]", "").split(",");
 
             if (files.length > 0) {
-
-            }
-
-            listFiles = new String[ulrs.length];
-            for (int i = 0; i < listFiles.length; i++) {
-                if (ulrs[i].startsWith(" ")) {
-                    ulrs[i] = ulrs[i].substring(1, ulrs[i].length());
+                listFiles = new String[ulrs.length];
+                for (int i = 0; i < listFiles.length; i++) {
+                    if (ulrs[i].startsWith(" ")) {
+                        ulrs[i] = ulrs[i].substring(1, ulrs[i].length());
+                    }
+                    listFiles[i] = Environment.getExternalStorageDirectory()
+                            .getAbsolutePath()
+                            + UNLConsts.VIDEO_DIR_NAME
+                            + ulrs[i]
+                            .substring(ulrs[i].lastIndexOf('/') + 1,
+                                    ulrs[i].length()).replace("[", "")
+                            .replace("]", "");
                 }
-                listFiles[i] = Environment.getExternalStorageDirectory()
-                        .getAbsolutePath()
-                        + UNLConsts.VIDEO_DIR_NAME
-                        + ulrs[i]
-                        .substring(ulrs[i].lastIndexOf('/') + 1,
-                                ulrs[i].length()).replace("[", "")
-                        .replace("]", "");
-            }
 
-            Log.d("urls next", Arrays.asList(listFiles).toString());
-            File fs = new File(listFiles[serverIndex]);
-            Log.d("next file", fs.getAbsolutePath());
-            String currDownFile = prefs.getString("currDownFile", "");
-            Log.d("current download", currDownFile);
-            if (fs.exists()) {
-                if (!currDownFile.equals(fs.getAbsolutePath())) {
-                    FileWorks fileWorks = new FileWorks(fs.getAbsolutePath());
+                Log.d("urls next", Arrays.asList(listFiles).toString());
+                File fs = new File(listFiles[serverIndex]);
+                Log.d("next file", fs.getAbsolutePath());
+                String currDownFile = prefs.getString("currDownFile", "");
+                Log.d("current download", currDownFile);
+                if (fs.exists()) {
+                    if (!currDownFile.equals(fs.getAbsolutePath())) {
+                        FileWorks fileWorks = new FileWorks(fs.getAbsolutePath());
 
-                    DirectoryWorks directoryWorks = new DirectoryWorks(
-                            UNLConsts.VIDEO_DIR_NAME);
-                    String[] refreshFiles = directoryWorks.getDirFileList("folder");
-                    Log.d("files", Arrays.asList(refreshFiles).toString());
-                    Log.d("ext", fileWorks.getFileExtension());
-                    if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
-                        if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(
-                                fs.getAbsolutePath())) {
+                        DirectoryWorks directoryWorks = new DirectoryWorks(
+                                UNLConsts.VIDEO_DIR_NAME);
+                        String[] refreshFiles = directoryWorks.getDirFileList("folder");
+                        Log.d("files", Arrays.asList(refreshFiles).toString());
+                        Log.d("ext", fileWorks.getFileExtension());
+                        if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
+                            if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(
+                                    fs.getAbsolutePath())) {
 
-                            if (serverIndex == listFiles.length - 1) {
-                                Log.d("index", String.valueOf(serverIndex));
-                                Log.d("len", String.valueOf(listFiles.length));
-                                playFile(listFiles[serverIndex]);
-                                serverIndex = 0;
+                                if (serverIndex == listFiles.length - 1) {
+                                    Log.d("index", String.valueOf(serverIndex));
+                                    Log.d("len", String.valueOf(listFiles.length));
+                                    playFile(listFiles[serverIndex]);
+                                    serverIndex = 0;
 
+                                } else {
+                                    playFile(listFiles[serverIndex]);
+                                    Log.d("index", String.valueOf(serverIndex));
+                                    serverIndex++;
+                                }
                             } else {
-                                playFile(listFiles[serverIndex]);
-                                Log.d("index", String.valueOf(serverIndex));
                                 serverIndex++;
+                                nextTrack(refreshFiles);
                             }
                         } else {
                             serverIndex++;
@@ -226,16 +230,13 @@ public class Playback {
                         }
                     } else {
                         serverIndex++;
-                        nextTrack(refreshFiles);
+                        nextTrack(files);
                     }
+
                 } else {
                     serverIndex++;
                     nextTrack(files);
                 }
-
-            } else {
-                serverIndex++;
-                nextTrack(files);
             }
         }
 

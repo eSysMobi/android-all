@@ -37,7 +37,7 @@ public class DirectoryWorks {
         if (videoDir.exists()) {
             File[] files = videoDir.listFiles();
             for (File file : files) {
-                if (file.exists()) {
+                if (file.exists() && !file.getName().equals(UNLConsts.GD_LOGO_DIR_NAME)) {
                     filePaths.add(file.getPath());
                 } else {
                     continue;
@@ -74,7 +74,7 @@ public class DirectoryWorks {
 
                     long diff = today.getTimeInMillis() - modDate.getTime();
                     long days = diff / (24 * 60 * 60 * 1000);
-                    if (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14) {
+                    if (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14 && !files[i].getName().equals(UNLConsts.GD_LOGO_DIR_NAME)) {
                         files[i].delete();
                     } else {
                         files[i].delete();
@@ -92,9 +92,9 @@ public class DirectoryWorks {
 
                         long diff = today.getTimeInMillis() - modDate.getTime();
                         long days = diff / (24 * 60 * 60 * 1000);
-                        if ((files[i].exists() && ci != i) || (
+                        if (((files[i].exists() && ci != i) || (
                                 (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14)
-                        )) {
+                        )) && !files[i].getName().equals(UNLConsts.GD_LOGO_DIR_NAME)) {
                             files[i].delete();
                         }
                     }
@@ -115,7 +115,7 @@ public class DirectoryWorks {
         for (int i = 0; i < files.length; i++) {
             FileWorks fileWorks = new FileWorks(files[i]);
             File file = new File(files[i]);
-            if (file.exists()) {
+            if (file.exists() && !file.getName().equals(UNLConsts.GD_LOGO_DIR_NAME)) {
                 dirMD5s.add(fileWorks.getFileMD5());
             }
         }

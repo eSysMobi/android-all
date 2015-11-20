@@ -1,5 +1,7 @@
 package mobi.esys.fileworks;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -106,5 +108,14 @@ public class FileWorks {
 
         }
         return new File(path).renameTo(new File(target));
+    }
+
+    public Bitmap getLogoFromExternalStorage() {
+        Bitmap result = null;
+        if (file.exists()) {
+            result = BitmapFactory.decodeFile(file.getAbsolutePath());
+            Log.d("log_tag", "Logo from file decoded");
+        }
+        return result;
     }
 }

@@ -34,6 +34,7 @@ public class UNLServer {
     private transient List<GDFile> gdFiles;
     private transient static Drive drive;
     private transient GDFile gdRSS;
+    private transient GDFile gdLogo;
     private transient Context context;
     private transient UNLApp mApp;
 
@@ -150,18 +151,23 @@ public class UNLServer {
                                 .getMd5Checksum(), file);
                     }
 
-
+                    if (UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle()) && !file.getExplicitlyTrashed()){
+                        gdLogo = new GDFile(file.getId(),
+                                            file.getTitle(),
+                                            file.getWebContentLink(),
+                                            String.valueOf(file.getFileSize()),
+                                            file.getFileExtension(),
+                                            file.getMd5Checksum(),
+                                            file);
+                    }
                 }
                 request.setPageToken(children.getNextPageToken());
             } catch (IOException e) {
                 System.out.println("An error occurred: " + e);
                 request.setPageToken(null);
             }
-        } while (request.getPageToken() != null
-                && request.getPageToken().length() > 0);
-
+        } while (request.getPageToken() != null && request.getPageToken().length() > 0);
     }
-
 
     public GDFile getGdRSS() {
         try {
@@ -177,10 +183,22 @@ public class UNLServer {
         return rss;
     }
 
+    public GDFile getGdLogo() {
+        try {
+            printFilesInFolder(folderId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        GDFile logo = new GDFile("1", "empty",
+                "empty", String.valueOf(0), "empty", "empty", new File());
+        if (gdLogo != null) {
+            logo = gdLogo;
+        }
+        return logo;
+    }
 
     public List<GDFile> getGdFiles() {
         return gdFiles;
     }
-
 
 }

@@ -42,6 +42,8 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
     private transient boolean mStartVideoOnSuccess;
     private static final String RSS_TITLE = UNLConsts.GD_RSS_FILE_TITLE;
     private static final String RSS_MIME_TYPE = UNLConsts.GD_RSS_FILE_MIME_TYPE;
+    private static final String LOGO_TITLE = UNLConsts.GD_LOGO_FILE_TITLE;
+    private static final String LOGO_MIME_TYPE = UNLConsts.GD_LOGO_FILE_MIME_TYPE;
     private static final String TAG = "CreateDriveFolderTask";
     private transient Drive drive;
     private transient UNLApp mApp;
@@ -98,15 +100,16 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     Log.d(TAG, unlFolder.getId());
                     editor.putString("folderId", unlFolder.getId());
 
-
+                    //Create rss.txt in Google Drive
+                    //Prepare and create file
                     File file = new File();
                     file.setTitle(RSS_TITLE);
                     file.setDescription("file to configure rss reader");
                     file.setMimeType(RSS_MIME_TYPE);
                     file.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
-
+                    //repare and create temp file
                     java.io.File tmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
-                    Log.d(TAG, tmpFile.getAbsolutePath());
+                    Log.d(TAG, tmpFile.getAbsolutePath());  //Path to temp file
                     InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.rss);
                     StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
                     FileContent fileContent = new FileContent(RSS_MIME_TYPE, tmpFile);
@@ -118,14 +121,34 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         tmpFile.delete();
                     }
 
+                    //Copy logo file in Google Drive
+                    //Prepare and create file
+                    File logoFile = new File();
+                    logoFile.setTitle(LOGO_TITLE);
+                    logoFile.setDescription("logo file");
+                    logoFile.setMimeType(LOGO_MIME_TYPE);
+                    logoFile.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
+                    //Prepare and create temp file
+                    java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+                    Log.d(TAG, logoTmpFile.getAbsolutePath());  //Path to temp file
+                    InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
+                    StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);
+                    FileContent logoFileContent = new FileContent(LOGO_MIME_TYPE, logoTmpFile);
+                    logoFile = drive.files().insert(logoFile, logoFileContent).execute();
+
+                    Log.d("CreateDriveFolderTask", logoFile.getId());
+
+                    if (logoTmpFile.exists()) {
+                        logoTmpFile.delete();
+                    }
+
                 } else {
                     String folderID = files.getItems()
                             .get(fileName
                                     .indexOf(UNLConsts.GD_VIDEO_DIR_NAME))
                             .getId();
                     List<String> fileNames = new ArrayList<String>();
-                    Log.d(TAG,
-                            folderID);
+                    Log.d(TAG, folderID);
                     editor.putString(
                             "folderId",
                             files.getItems()
@@ -137,7 +160,9 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     ChildList children = fileList.execute();
                     for (ChildReference child : children.getItems()) {
                         File file = drive.files().get(child.getId()).execute();
-                        fileNames.add(file.getTitle());
+                        if (!file.getExplicitlyTrashed()) {
+                            fileNames.add(file.getTitle());
+                        }
                     }
 
                     Log.d(TAG, fileNames.toString());
@@ -162,7 +187,28 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         }
                     }
 
+                    if (!fileNames.contains(LOGO_TITLE)) {
+                        //Copy logo file in Google Drive
+                        //Prepare and create file
+                        File logoFile = new File();
+                        logoFile.setTitle(LOGO_TITLE);
+                        logoFile.setDescription("logo file");
+                        logoFile.setMimeType(LOGO_MIME_TYPE);
+                        logoFile.setParents(Arrays.asList(new ParentReference().setId(folderID)));
+                        //Prepare and create temp file
+                        java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+                        Log.d(TAG, logoTmpFile.getAbsolutePath());  //Path to temp file
+                        InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
+                        StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);
+                        FileContent logoFileContent = new FileContent(LOGO_MIME_TYPE, logoTmpFile);
+                        logoFile = drive.files().insert(logoFile, logoFileContent).execute();
 
+                        Log.d("CreateDriveFolderTask", logoFile.getId());
+
+                        if (logoTmpFile.exists()) {
+                            logoTmpFile.delete();
+                        }
+                    }
                 }
 
                 editor.commit();
