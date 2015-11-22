@@ -58,14 +58,14 @@ public class Playback {
         mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         isDownload = false;
+        Set<String> defaultSet = new HashSet<String>();
+        md5sApp = prefs.getStringSet("md5sApp", defaultSet);
     }
 
 
     public void playFile(String filePath) {
-        preferences = mContext.getSharedPreferences(UNLConsts.APP_PREF,
-                Context.MODE_PRIVATE);
         Set<String> defaultSet = new HashSet<String>();
-        md5sApp = preferences.getStringSet("md5sApp", defaultSet);
+        md5sApp = prefs.getStringSet("md5sApp", defaultSet);  //why here, but not in constructor?
         File file = new File(filePath);
 
         FileWorks fileWorks = new FileWorks(filePath);
@@ -75,7 +75,6 @@ public class Playback {
         } else {
             nextTrack(files);
         }
-
     }
 
     public void playFolder() {
@@ -93,7 +92,8 @@ public class Playback {
             }
         });
         if (files.length > 0) {
-            playFile(files[0]);
+            //playFile(files[0]);
+            nextTrack(files);
             mVideo.setOnCompletionListener(new OnCompletionListener() {
 
                 @Override
@@ -206,35 +206,49 @@ public class Playback {
                         Log.d("files", Arrays.asList(refreshFiles).toString());
                         Log.d("ext", fileWorks.getFileExtension());
                         if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
-                            if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(
-                                    fs.getAbsolutePath())) {
+                            if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(fs.getAbsolutePath())) {
 
                                 if (serverIndex == listFiles.length - 1) {
                                     Log.d("index", String.valueOf(serverIndex));
                                     Log.d("len", String.valueOf(listFiles.length));
                                     playFile(listFiles[serverIndex]);
                                     serverIndex = 0;
-
                                 } else {
                                     playFile(listFiles[serverIndex]);
                                     Log.d("index", String.valueOf(serverIndex));
                                     serverIndex++;
                                 }
                             } else {
-                                serverIndex++;
+                                if (serverIndex == listFiles.length - 1) {
+                                    serverIndex=0;
+                                } else {
+                                    serverIndex++;
+                                }
                                 nextTrack(refreshFiles);
                             }
                         } else {
-                            serverIndex++;
+                            if (serverIndex == listFiles.length - 1) {
+                                serverIndex=0;
+                            } else {
+                                serverIndex++;
+                            }
                             nextTrack(refreshFiles);
                         }
                     } else {
-                        serverIndex++;
+                        if (serverIndex == listFiles.length - 1) {
+                            serverIndex=0;
+                        } else {
+                            serverIndex++;
+                        }
                         nextTrack(files);
                     }
 
                 } else {
-                    serverIndex++;
+                    if (serverIndex == listFiles.length - 1) {
+                        serverIndex=0;
+                    } else {
+                        serverIndex++;
+                    }
                     nextTrack(files);
                 }
             }

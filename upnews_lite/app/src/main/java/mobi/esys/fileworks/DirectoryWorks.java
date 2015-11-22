@@ -37,10 +37,15 @@ public class DirectoryWorks {
         if (videoDir.exists()) {
             File[] files = videoDir.listFiles();
             for (File file : files) {
-                if (file.exists() && !file.getName().equals(UNLConsts.GD_LOGO_DIR_NAME)) {
-                    filePaths.add(file.getPath());
-                } else {
-                    continue;
+                if (file.exists()) {
+                    FileWorks tmpFW = new FileWorks(file.getAbsolutePath());
+                    String ext = tmpFW.getFileExtension();
+                    for (byte i = 0; i < UNLConsts.UNL_ACCEPTED_FILE_EXTS.length; i++) {
+                        if (ext.equals(UNLConsts.UNL_ACCEPTED_FILE_EXTS[i])) {
+                            filePaths.add(file.getPath());
+                            break;
+                        }
+                    }
                 }
             }
             Log.d("files dir works" + mess, filePaths.toString());
