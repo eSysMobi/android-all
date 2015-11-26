@@ -41,7 +41,6 @@ import mobi.esys.upnews_lite.UNLApp;
 public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient Context context;
     private transient SharedPreferences prefs;
-    private transient boolean isDelete;
     private transient List<GDFile> gdFiles;
     private transient static FileOutputStream output;
     private transient Set<String> serverMD5;
@@ -52,6 +51,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient UNLApp mApp;
     private transient UNLServer server;
     private transient String actName;
+    private transient DirectoryWorks directoryWorks;
 
     public DownloadVideoTask(UNLApp app, Context context, String actName) {
         downCount = 0;
@@ -67,40 +67,45 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
 
         if (NetWork.isNetworkAvailable(mApp)) {
-            if (!isDelete) {
-                Log.d("down", "isDownload");
+            if (!UNLApp.getIsDeleting()) {
+                Log.d("unTag_down", "isDownload");
 
                 serverMD5 = server.getMD5FromServer();
                 gdFiles = server.getGdFiles();
-                DirectoryWorks directoryWorks = new DirectoryWorks(
-                        UNLConsts.VIDEO_DIR_NAME);
-                folderMD5 = directoryWorks.getMD5Sums();
-                isDelete = prefs.getBoolean("isDeleting", false);
+                directoryWorks = new DirectoryWorks(
+                        UNLConsts.VIDEO_DIR_NAME +
+                                UNLConsts.GD_STORAGE_DIR_NAME +
+                                "/");
 
-                Set<String> urlSet = new HashSet<>();
-                urlSet.add("");
                 Set<String> urlSetRec = new HashSet<>(Arrays.asList(context
                         .getSharedPreferences(UNLConsts.APP_PREF,
                                 Context.MODE_PRIVATE).getString("urls", "")
                         .replace("[", "").replace("]", "").split(",")));
-                SharedPreferences.Editor editor = context.getSharedPreferences(
-                        UNLConsts.APP_PREF, Context.MODE_PRIVATE).edit();
-                editor.putBoolean("isDownload", true);
-                editor.commit();
+                UNLApp.setIsDownloadTaskRunning(true);
 
-                LinkedHashSet<GDFile> listToSet = new LinkedHashSet<GDFile>(gdFiles);
-
-                listWithoutDuplicates = new ArrayList<>(listToSet);
-
-                Log.d("drive files", String.valueOf(listWithoutDuplicates.size()));
-                Log.d("md5", String.valueOf(serverMD5.size()));
-                String[] urls = urlSetRec.toArray(new String[urlSetRec.size()]);
-                for (int i = 0; i < urls.length; i++) {
-                    if (urls[i].startsWith(" ")) {
-                        urls[i] = urls[i].substring(0, urls[i].length() - 1);
+                //deleting duplicates
+                listWithoutDuplicates = new ArrayList<>(gdFiles);
+                ArrayList<Integer> delEntriesFromList = new ArrayList<>();
+                for (int i = 0; i < listWithoutDuplicates.size(); i++) {
+                    String curMD5 = listWithoutDuplicates.get(i).getGdFileMD5();
+                    for (int j = i + 1; j < listWithoutDuplicates.size(); j++) {
+                        if (curMD5.equals(listWithoutDuplicates.get(j).getGdFileMD5())) {
+                            delEntriesFromList.add(j);
+                        }
                     }
                 }
+                for (int i = delEntriesFromList.size() - 1; i >= 0; i--) {
+                    int removePos = delEntriesFromList.get(i);
+                    listWithoutDuplicates.remove(removePos);
+                }
 
+                Log.d("unTag_drive files", String.valueOf(listWithoutDuplicates.size()));
+                Log.d("unTag_md5", String.valueOf(serverMD5.size()));
+                String[] urls = urlSetRec.toArray(new String[urlSetRec.size()]);
+
+                for (int i = 0; i < urls.length; i++) {
+                    urls[i] = urls[i].trim();
+                }
 
                 Collections.sort(listWithoutDuplicates, new Comparator<GDFile>() {
                     @Override
@@ -109,24 +114,20 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                     }
                 });
 
-                Log.d("files", listWithoutDuplicates.toString());
+                Log.d("unTag_files", listWithoutDuplicates.toString());
 
-
-                while (downCount < listWithoutDuplicates.size()) {
+                while (downCount < listWithoutDuplicates.size() && !isCancelled()) {
                     try {
-                        Log.d("count", String.valueOf(downCount));
+                        Log.d("unTag_count", String.valueOf(downCount));
                         downloadFile(drive, listWithoutDuplicates.get(downCount)
                                 .getGdFileInst());
                     } catch (Exception e) {
-                        Log.d("exc", e.getLocalizedMessage());
+                        Log.d("unTag_exc", e.getLocalizedMessage());
                         downCount++;
                     }
-
-
                 }
-
             } else {
-                Log.d("md5", "all MD5");
+                Log.d("unTag_md5", "all MD5");
                 downCount++;
                 if (downCount == listWithoutDuplicates.size() - 1) {
                     cancel(true);
@@ -141,12 +142,11 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private void downloadFile(Drive service, File file) {
 
         if (file.getFileSize() < Environment.getExternalStorageDirectory().getUsableSpace()) {
-            DirectoryWorks directoryWorks = new DirectoryWorks(
-                    UNLConsts.VIDEO_DIR_NAME);
             folderMD5 = directoryWorks.getMD5Sums();
-            Log.d("down", "start down file");
+            Log.d("unTag_down", "start down file");
             if (folderMD5.containsAll(serverMD5)
                     && folderMD5.size() == serverMD5.size()) {
+                Log.d("unTag_down", "Not need down file, all files already exists");
                 cancel(true);
                 downCount++;
             } else {
@@ -162,15 +162,17 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                             String root_sd = Environment
                                     .getExternalStorageDirectory()
                                     .getAbsolutePath()
-                                    + UNLConsts.VIDEO_DIR_NAME;
+                                    + UNLConsts.VIDEO_DIR_NAME
+                                    + UNLConsts.GD_STORAGE_DIR_NAME
+                                    + "/";
                             String path = file.getTitle().substring(0, file.getTitle().indexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
-                            Log.d("down", path);
+                            Log.d("unTag_down", path);
                             java.io.File downFile = new java.io.File(root_sd, path);
                             SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("currDownFile", downFile.getAbsolutePath());
-                            editor.commit();
+                            editor.putString("unTag_currDownFile", downFile.getAbsolutePath());
+                            editor.apply();
                             FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
-                            Log.d("down", downFile.getAbsolutePath());
+                            Log.d("unTag_down", downFile.getAbsolutePath());
                             if (!downFile.exists()) {
                                 output = new FileOutputStream(downFile);
                                 int bufferSize = 1024;
@@ -183,24 +185,20 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 output.flush();
                                 output.close();
 
-
                                 if (serverMD5.contains(fileWorks.getFileMD5())) {
                                     fileWorks.renameFileExtension(file.getFileExtension());
                                     downCount++;
 
-                                    Log.d("count down complete",
+                                    Log.d("unTag_countDownComplete",
                                             String.valueOf(downCount));
                                     return;
-
-
                                 } else {
                                     downCount++;
                                     return;
                                 }
 
-
                             } else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension()) && !serverMD5.contains(fileWorks.getFileMD5()) && downFile.length() < file.getFileSize()) {
-                                Log.d("down_tag", fileWorks.getFileExtension());
+                                Log.d("unTag_down_tag", fileWorks.getFileExtension());
 
                                 output = new FileOutputStream(downFile, true);
                                 int bufferSize = 1024;
@@ -220,19 +218,14 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                     fileWorks.renameFileExtension(file.getFileExtension());
                                     downCount++;
 
-                                    Log.d("count down complete",
+                                    Log.d("unTag_countDownComplete",
                                             String.valueOf(downCount));
                                     return;
-
-
                                 } else {
                                     downCount++;
                                     return;
                                 }
-
-
                             }
-
                         } catch (IOException e) {
                             downCount++;
                             Log.d("count exc", String.valueOf(downCount));
@@ -243,7 +236,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                         }
                     }
                 } else {
-                    Log.d("already down", String.valueOf(downCount));
+                    Log.d("unTag_already_down", "file already exists, not need down. downCount = " + String.valueOf(downCount));
                     downCount++;
                     return;
                 }
@@ -269,15 +262,12 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             ((FirstVideoActivity) context).recToMP("download_done", "Download ends fine");
         } else {
             ((FullscreenActivity) context).recToMP("download_done", "Download ends fine");
-
         }
 
-        if (!isDelete) {
-            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, context, actName);
+        if (!UNLApp.getIsDeleting()) {
+            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, context, serverMD5, actName);
             brokeFilesTask.execute();
         }
-
-
     }
 
     @Override
@@ -294,11 +284,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     }
 
     private void stopDownload() {
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("isDownload", false);
-        editor.apply();
-
-
+        UNLApp.setIsDownloadTaskRunning(false);
     }
 
     public static void append(java.io.File file, byte[] bytes) throws Exception {

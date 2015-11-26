@@ -25,20 +25,18 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
-
         <activity
             android:name=".FullscreenActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:screenOrientation="landscape" />
+
         <activity
             android:name=".DriveAuthActivity"
             android:screenOrientation="landscape">
             <meta-data
                 android:name="com.google.android.apps.drive.APP_ID"
-                android:value="id=127578844442-skkvtc2kg83cnt1qc304h51fh6ucf799" />
-
+                android:value="id=127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k" />
         </activity>
 
         <activity
@@ -46,11 +44,9 @@
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
         <receiver
             android:name="mobi.esys.recievers.BootUpReceiver"
@@ -59,7 +55,6 @@
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
@@ -68,7 +63,6 @@
             android:name=".FirstVideoActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape" />
-
 
     </application>
 

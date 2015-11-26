@@ -39,7 +39,7 @@ public class FirstVideoActivity extends Activity {
     private transient String uriPath;
     private transient MediaController controller;
     private transient SharedPreferences prefs;
-    private transient boolean isDown;
+//    private transient boolean isDown;
     private transient Set<String> md5sApp;
     private transient RelativeLayout relativeLayout;
     private transient DownloadVideoTask downloadVideoTask;
@@ -65,7 +65,7 @@ public class FirstVideoActivity extends Activity {
         CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FirstVideoActivity.this, false, mApp, false);
         createDriveFolderTask.execute();
 
-        isDown = prefs.getBoolean("isDownload", true);
+//        isDown = prefs.getBoolean("isDownload", true);
         uriPath = "";
         Set<String> defSet = new HashSet<>();
         md5sApp = prefs.getStringSet("md5sApp", defSet);
@@ -100,7 +100,9 @@ public class FirstVideoActivity extends Activity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 DirectoryWorks directoryWorks = new DirectoryWorks(
-                        UNLConsts.VIDEO_DIR_NAME);
+                        UNLConsts.VIDEO_DIR_NAME +
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
                 Set<String> defSet = new HashSet<>();
                 md5sApp = prefs.getStringSet("md5sApp", defSet);
                 if (directoryWorks.getDirFileList("first").length == 0
@@ -285,7 +287,8 @@ public class FirstVideoActivity extends Activity {
     }
 
     public void restartDownload() {
-        if (!isDown) {
+//        if (!isDown) {
+        if(!UNLApp.getIsDownloadTaskRunning()){
             downloadVideoTask.cancel(true);
             downloadVideoTask = new DownloadVideoTask(mApp, FirstVideoActivity.this, "first");
             downloadVideoTask.execute();

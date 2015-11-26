@@ -42,7 +42,9 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
     private transient boolean mStartVideoOnSuccess;
     private static final String RSS_TITLE = UNLConsts.GD_RSS_FILE_TITLE;
     private static final String RSS_MIME_TYPE = UNLConsts.GD_RSS_FILE_MIME_TYPE;
-    private static final String TAG = "CreateDriveFolderTask";
+    private static final String LOGO_TITLE = UNLConsts.GD_LOGO_FILE_TITLE;
+    private static final String LOGO_MIME_TYPE = UNLConsts.GD_LOGO_FILE_MIME_TYPE;
+    private static final String TAG = "unTag_CrDriveFolderTask";
     private transient Drive drive;
     private transient UNLApp mApp;
     private transient ProgressDialog pd;
@@ -85,37 +87,59 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
 
                 for (File file : files.getItems()) {
                     fileName.add(file.getTitle());
-                    Log.d(TAG, file.getTitle() + ":" + file.getId());
+                    Log.d(TAG, "Files in GD" + file.getTitle() + ":" + file.getId());
                 }
 
-                Log.d(TAG, fileName.toString());
+//                Log.d(TAG, fileName.toString());
                 Editor editor = prefs.edit();
                 if (!fileName.contains(UNLConsts.GD_VIDEO_DIR_NAME)) {
                     File body = new File();
                     body.setTitle(UNLConsts.GD_VIDEO_DIR_NAME);
                     body.setMimeType("application/vnd.google-apps.folder");
                     File unlFolder = drive.files().insert(body).execute();
-                    Log.d(TAG, unlFolder.getId());
+                    Log.d(TAG, "ID unlFolder in GD" + unlFolder.getId());
                     editor.putString("folderId", unlFolder.getId());
 
-
+                    //Create rss.txt in Google Drive
+                    //Prepare and create file
                     File file = new File();
                     file.setTitle(RSS_TITLE);
                     file.setDescription("file to configure rss reader");
                     file.setMimeType(RSS_MIME_TYPE);
                     file.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
-
+                    //Prepare and create temp file
                     java.io.File tmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
-                    Log.d(TAG, tmpFile.getAbsolutePath());
+//                    Log.d(TAG, "path to temp rss.txt file" +  tmpFile.getAbsolutePath());  //Path to temp file
                     InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.rss);
                     StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
                     FileContent fileContent = new FileContent(RSS_MIME_TYPE, tmpFile);
                     file = drive.files().insert(file, fileContent).execute();
 
-                    Log.d("CreateDriveFolderTask", file.getId());
+                    Log.d(TAG, "ID rss.txt file" + file.getId());
 
                     if (tmpFile.exists()) {
                         tmpFile.delete();
+                    }
+
+                    //Copy logo file in Google Drive
+                    //Prepare and create file
+                    File logoFile = new File();
+                    logoFile.setTitle(LOGO_TITLE);
+                    logoFile.setDescription("logo file");
+                    logoFile.setMimeType(LOGO_MIME_TYPE);
+                    logoFile.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
+                    //Prepare and create temp file
+                    java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+//                    Log.d(TAG, "path to temp rss.txt file" + logoTmpFile.getAbsolutePath());  //Path to temp file
+                    InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
+                    StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);
+                    FileContent logoFileContent = new FileContent(LOGO_MIME_TYPE, logoTmpFile);
+                    logoFile = drive.files().insert(logoFile, logoFileContent).execute();
+
+                    Log.d(TAG, "ID logo file" + logoFile.getId());
+
+                    if (logoTmpFile.exists()) {
+                        logoTmpFile.delete();
                     }
 
                 } else {
@@ -124,8 +148,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                                     .indexOf(UNLConsts.GD_VIDEO_DIR_NAME))
                             .getId();
                     List<String> fileNames = new ArrayList<String>();
-                    Log.d(TAG,
-                            folderID);
+                    Log.d(TAG, "GD contain upnewslite folder. It ID is: " + folderID);
                     editor.putString(
                             "folderId",
                             files.getItems()
@@ -137,10 +160,12 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     ChildList children = fileList.execute();
                     for (ChildReference child : children.getItems()) {
                         File file = drive.files().get(child.getId()).execute();
-                        fileNames.add(file.getTitle());
+                        if (!file.getExplicitlyTrashed()) {
+                            fileNames.add(file.getTitle());
+                        }
                     }
 
-                    Log.d(TAG, fileNames.toString());
+                    Log.d(TAG, "fileNames in upnewslite folder:" + fileNames.toString());
 
                     if (!fileNames.contains(RSS_TITLE)) {
                         File file = new File();
@@ -150,22 +175,43 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         file.setParents(Arrays.asList(new ParentReference().setId(folderID)));
 
                         java.io.File tmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
-                        Log.d(TAG, tmpFile.getAbsolutePath());
+//                    Log.d(TAG, "path to temp rss.txt file" +  tmpFile.getAbsolutePath());  //Path to temp file
                         InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.rss);
                         StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
                         FileContent fileContent = new FileContent(RSS_MIME_TYPE, tmpFile);
                         file = drive.files().insert(file, fileContent).execute();
-                        Log.d("CreateDriveFolderTask", file.getId());
+                        Log.d(TAG, "ID rss.txt file" + file.getId());
 
                         if (tmpFile.exists()) {
                             tmpFile.delete();
                         }
                     }
 
+                    if (!fileNames.contains(LOGO_TITLE)) {
+                        //Copy logo file in Google Drive
+                        //Prepare and create file
+                        File logoFile = new File();
+                        logoFile.setTitle(LOGO_TITLE);
+                        logoFile.setDescription("logo file");
+                        logoFile.setMimeType(LOGO_MIME_TYPE);
+                        logoFile.setParents(Arrays.asList(new ParentReference().setId(folderID)));
+                        //Prepare and create temp file
+                        java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+//                      Log.d(TAG, "path to temp rss.txt file" + logoTmpFile.getAbsolutePath());  //Path to temp file
+                        InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
+                        StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);
+                        FileContent logoFileContent = new FileContent(LOGO_MIME_TYPE, logoTmpFile);
+                        logoFile = drive.files().insert(logoFile, logoFileContent).execute();
 
+                        Log.d(TAG, "ID logo file" + logoFile.getId());
+
+                        if (logoTmpFile.exists()) {
+                            logoTmpFile.delete();
+                        }
+                    }
                 }
 
-                editor.commit();
+                editor.apply();
                 isAuthSuccess = true;
 
             } catch (UserRecoverableAuthIOException e) {
@@ -194,7 +240,9 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
         if (mStartVideoOnSuccess) {
             if (isAuthSuccess) {
                 DirectoryWorks directoryWorks = new DirectoryWorks(
-                        UNLConsts.VIDEO_DIR_NAME);
+                        UNLConsts.VIDEO_DIR_NAME +
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
                 if (directoryWorks.getDirFileList("if have files").length == 0) {
                     mContext.startActivity(new Intent(mContext,
                             FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));

@@ -34,6 +34,8 @@ public class UNLServer {
     private transient List<GDFile> gdFiles;
     private transient static Drive drive;
     private transient GDFile gdRSS;
+    private transient GDFile gdLogo;
+    private static final String TAG = "unTag_UNLServer";
     private transient Context context;
     private transient UNLApp mApp;
 
@@ -63,15 +65,15 @@ public class UNLServer {
                         resultMD5.add(gdFiles.get(i).getGdFileMD5());
                     }
                 }
-                Log.d("md5 server size", String.valueOf(resultMD5.size()));
+                Log.d(TAG, "md5 server size " + String.valueOf(resultMD5.size()));
             } catch (IOException e) {
-                Log.d("get md5 from server error", e.getLocalizedMessage());
+                Log.d(TAG, "get md5 from server error " + e.getLocalizedMessage());
             }
 
             if (!prefs.getStringSet("md5sApp", defaultSet).equals(resultMD5)) {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putStringSet("md5sApp", resultMD5);
-                editor.commit();
+                editor.apply();
             }
         } else {
             resultMD5 = prefs.getStringSet("md5sApp", resultMD5);
@@ -84,13 +86,13 @@ public class UNLServer {
         List<String> defultURL = new ArrayList<String>();
         if (NetWork.isNetworkAvailable(mApp)) {
             try {
-                Log.d("save urls", "save urls");
+                Log.d(TAG, "save urls");
                 printFilesInFolder(folderId);
                 for (int i = 0; i < gdFiles.size(); i++) {
                     resultURL.add(gdFiles.get(i).getGdFileName());
                 }
             } catch (IOException e) {
-                Log.d("save url error", e.getLocalizedMessage());
+                Log.d(TAG, "save url error " + e.getLocalizedMessage());
             }
             Collections.sort(resultURL, new Comparator<String>() {
 
@@ -101,7 +103,7 @@ public class UNLServer {
                 }
 
             });
-            Log.d("saved urls", resultURL.toString());
+            Log.d(TAG, "saved urls " + resultURL.toString());
             Editor editor = prefs.edit();
             String prefURL = prefs.getString("urls", defultURL.toString());
             if (!prefURL.equals(resultURL)) {
@@ -111,19 +113,19 @@ public class UNLServer {
             Set<String> defaultSet = new HashSet<String>();
             for (int i = 0; i < resultURL.size(); i++) {
                 urlsSet.add(Environment.getExternalStorageDirectory()
-                        + UNLConsts.VIDEO_DIR_NAME + resultURL.get(i));
+                        + UNLConsts.VIDEO_DIR_NAME + UNLConsts.GD_STORAGE_DIR_NAME + "/" + resultURL.get(i));
             }
             if (!prefs.getStringSet("filesServer", defaultSet).equals(urlsSet)) {
                 editor.putStringSet("filesServer", urlsSet);
             }
-            editor.commit();
+            editor.apply();
         }
     }
 
 
     private void printFilesInFolder(String folderId)
             throws IOException {
-        Log.d("UNLServer", "print google drive folder");
+        Log.d(TAG, "print google drive folder");
         Children.List request = drive.children().list(folderId);
 
         do {
@@ -150,18 +152,23 @@ public class UNLServer {
                                 .getMd5Checksum(), file);
                     }
 
-
+                    if (UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle()) && !file.getExplicitlyTrashed()){
+                        gdLogo = new GDFile(file.getId(),
+                                            file.getTitle(),
+                                            file.getWebContentLink(),
+                                            String.valueOf(file.getFileSize()),
+                                            file.getFileExtension(),
+                                            file.getMd5Checksum(),
+                                            file);
+                    }
                 }
                 request.setPageToken(children.getNextPageToken());
             } catch (IOException e) {
                 System.out.println("An error occurred: " + e);
                 request.setPageToken(null);
             }
-        } while (request.getPageToken() != null
-                && request.getPageToken().length() > 0);
-
+        } while (request.getPageToken() != null && request.getPageToken().length() > 0);
     }
-
 
     public GDFile getGdRSS() {
         try {
@@ -177,10 +184,22 @@ public class UNLServer {
         return rss;
     }
 
+    public GDFile getGdLogo() {
+        try {
+            printFilesInFolder(folderId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        GDFile logo = new GDFile("1", "empty",
+                "empty", String.valueOf(0), "empty", "empty", new File());
+        if (gdLogo != null) {
+            logo = gdLogo;
+        }
+        return logo;
+    }
 
     public List<GDFile> getGdFiles() {
         return gdFiles;
     }
-
 
 }
