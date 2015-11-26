@@ -18,18 +18,25 @@ import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
-    private transient UNLServer server;
     private transient Set<String> md5set;
     private transient SharedPreferences prefs;
     private transient UNLApp mApp;
     private transient String mActName;
     private transient Context mContext;
+    private static final String TAG = "unTag_DeleteBrokeFiles";
 
 
     public DeleteBrokeFilesTask(UNLApp app, Context context, String actName) {
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         mApp = app;
-        server = new UNLServer(app);
+        mActName = actName;
+        mContext = context;
+    }
+
+    public DeleteBrokeFilesTask(UNLApp app, Context context, Set<String> serverMD5, String actName) {
+        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
+        mApp = app;
+        md5set = serverMD5;
         mActName = actName;
         mContext = context;
     }
@@ -37,31 +44,35 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
         if (NetWork.isNetworkAvailable(mApp)) {
-            if (!prefs.getBoolean("isDownload", false)) {
-                Log.d("isDelete", "isDel");
+            if (!UNLApp.getIsDownloadTaskRunning()) {
+                Log.d(TAG, "Start deleting broken files");
                 DirectoryWorks directoryWorks = new DirectoryWorks(
-                        UNLConsts.VIDEO_DIR_NAME);
+                        UNLConsts.VIDEO_DIR_NAME +
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
+                String[] folderFiles = directoryWorks.getDirFileList("del");
                 List<String> folderMD5s = directoryWorks.getMD5Sums();
-                List<Integer> maskList = new ArrayList<Integer>();
-                md5set = server.getMD5FromServer();
+                List<String> maskList = new ArrayList<>();  //masklist with names
+                if (md5set==null) {
+                    UNLServer server = new UNLServer(mApp);
+                    md5set = server.getMD5FromServer();
+                }
                 List<String> md5sList = new ArrayList<String>();
                 md5sList.addAll(md5set);
-                Log.d("md5 list", md5sList.toString());
-                Log.d("md5 folder list", folderMD5s.toString());
+                Log.d(TAG, "md5 list " + md5sList.toString());
+                Log.d(TAG, "md5 folder list " + folderMD5s.toString());
                 if (md5sList.size() == 0
-                        && directoryWorks.getDirFileList("del").length > 0) {
-                    maskList.add(0);
+                        && folderFiles.length > 0) {
+                    maskList.add("unLiteDelAll");
                 } else {
-                    for (int i = 1; i < folderMD5s.size(); i++) {
+                    for (int i = 0; i < folderMD5s.size(); i++) {
                         if (!md5sList.contains(folderMD5s.get(i))) {
-                            maskList.add(i);
+                            maskList.add(folderFiles[i]);
                         }
                     }
                 }
-                Log.d("mask list task", maskList.toString());
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("isDeleting", true);
-                editor.commit();
+                Log.d(TAG, "mask list task " + maskList.toString());
+                UNLApp.setIsDeleting(true);
                 directoryWorks.deleteFilesFromDir(maskList, mApp.getApplicationContext());
             } else {
                 cancel(true);

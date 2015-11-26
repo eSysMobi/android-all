@@ -79,7 +79,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             }
         } else {
             //in no internet connection then play saved files
-            Log.d("log_tag", "We have no inet");
+            Log.d("unTag_DriveAuthActivity", "We have no inet");
             //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
 
             DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
@@ -228,6 +228,10 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         if (!videoDir.exists()) {
             videoDir.mkdir();
         }
+        File storageDir = new File(videoDir.getAbsolutePath() + UNLConsts.STORAGE_DIR_NAME);
+        if (!storageDir.exists()) {
+            storageDir.mkdir();
+        }
         File logoDir = new File(videoDir.getAbsolutePath() + UNLConsts.LOGO_DIR_NAME);
         if (!logoDir.exists()) {
             logoDir.mkdir();
@@ -246,7 +250,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             setLoadState(); //show loading screen
             picker();
         } else {
-            Log.d("log_tag", "We have no inet");
+            Log.d("unTag_DriveAuthActivity", "We have no inet");
             //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
         }
     }

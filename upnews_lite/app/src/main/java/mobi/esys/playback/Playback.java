@@ -33,13 +33,12 @@ public class Playback {
     private transient MediaController mController;
     private transient Context mContext;
     private transient VideoView mVideo;
-    private static final String TAG = "Playback";
+    private static final String TAG = "unTag_Playback";
     private transient String[] files;
     private transient SharedPreferences preferences;
     private transient String[] ulrs = {""};
     private transient int serverIndex = 0;
     private transient SharedPreferences prefs;
-    private transient boolean isDownload;
     private transient Set<String> md5sApp;
     private transient UNLApp mApp;
     private transient DownloadVideoTask downloadVideoTask;
@@ -57,7 +56,6 @@ public class Playback {
         mContext = context;
         mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
-        isDownload = false;
         Set<String> defaultSet = new HashSet<String>();
         md5sApp = prefs.getStringSet("md5sApp", defaultSet);
     }
@@ -67,9 +65,9 @@ public class Playback {
         Set<String> defaultSet = new HashSet<String>();
         md5sApp = prefs.getStringSet("md5sApp", defaultSet);  //why here, but not in constructor?
         File file = new File(filePath);
-
         FileWorks fileWorks = new FileWorks(filePath);
         if (file.exists() && md5sApp.contains(fileWorks.getFileMD5())) {
+            UNLApp.setCurPlayFile(filePath);
             mVideo.setVideoURI(Uri.parse(filePath));
             mVideo.start();
         } else {
@@ -81,7 +79,9 @@ public class Playback {
         downloadVideoTask = new DownloadVideoTask(mApp, mContext, "full");
         downloadVideoTask.execute();
         DirectoryWorks directoryWorks = new DirectoryWorks(
-                UNLConsts.VIDEO_DIR_NAME);
+                UNLConsts.VIDEO_DIR_NAME +
+                UNLConsts.GD_STORAGE_DIR_NAME +
+                "/");
         files = directoryWorks.getDirFileList("play folder");
         this.mVideo.setOnErrorListener(new OnErrorListener() {
 
@@ -98,16 +98,8 @@ public class Playback {
 
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    DirectoryWorks directoryWorks = new DirectoryWorks(
-                            UNLConsts.VIDEO_DIR_NAME);
-
-
-                    isDownload = mContext.getSharedPreferences(
-                            UNLConsts.APP_PREF, Context.MODE_PRIVATE)
-                            .getBoolean("isDownload", false);
                     nextTrack(files);
                     restartDownload();
-
                     ((FullscreenActivity) mContext).restartCreepingLine();
                 }
 
@@ -116,7 +108,7 @@ public class Playback {
             mVideo.setOnErrorListener(new OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
-                    Log.d("mp error", String.valueOf(what) + ":" + String.valueOf(extra));
+                    Log.d(TAG,"MediaPlayer error " + String.valueOf(what) + ":" + String.valueOf(extra));
                     nextTrack(files);
                     return false;
                 }
@@ -127,9 +119,7 @@ public class Playback {
                 public void onPrepared(MediaPlayer mp) {
                     mController.show();
                     LinearLayout ll = (LinearLayout) mController.getChildAt(0);
-
                     for (int i = 0; i < ll.getChildCount(); i++) {
-
                         if (ll.getChildAt(i) instanceof LinearLayout) {
                             LinearLayout llC = (LinearLayout) ll.getChildAt(i);
                             for (int j = 0; j < llC.getChildCount(); j++) {
@@ -147,7 +137,7 @@ public class Playback {
                 }
             });
         } else {
-            Log.d(TAG, "file list is empty");
+            Log.d(TAG, "File list is empty");
             mContext.startActivity(new Intent(mContext,
                     FirstVideoActivity.class));
             ((Activity) mContext).finish();
@@ -169,7 +159,7 @@ public class Playback {
 //        signalCheckNewLogo();
 
         if (!prefs.getString("urls", "").replace("[", "").replace("]", "").equals("")) {
-            Log.d("urls string",
+            Log.d(TAG,"urls string " +
                     prefs.getString("urls", "")
                             .replace("[", "").replace("]", ""));
 
@@ -179,47 +169,51 @@ public class Playback {
             if (files.length > 0) {
                 listFiles = new String[ulrs.length];
                 for (int i = 0; i < listFiles.length; i++) {
-                    if (ulrs[i].startsWith(" ")) {
-                        ulrs[i] = ulrs[i].substring(1, ulrs[i].length());
-                    }
+                    ulrs[i] = ulrs[i].trim();
                     listFiles[i] = Environment.getExternalStorageDirectory()
                             .getAbsolutePath()
                             + UNLConsts.VIDEO_DIR_NAME
+                            + UNLConsts.GD_STORAGE_DIR_NAME
+                            + "/"
                             + ulrs[i]
                             .substring(ulrs[i].lastIndexOf('/') + 1,
                                     ulrs[i].length()).replace("[", "")
                             .replace("]", "");
                 }
+                if (serverIndex >= listFiles.length) {
+                    serverIndex=0;
+                }
 
-                Log.d("urls next", Arrays.asList(listFiles).toString());
+                Log.d(TAG,"urls next " + Arrays.asList(listFiles).toString());
                 File fs = new File(listFiles[serverIndex]);
-                Log.d("next file", fs.getAbsolutePath());
+                Log.d(TAG,"next file^ " + fs.getAbsolutePath());
                 String currDownFile = prefs.getString("currDownFile", "");
-                Log.d("current download", currDownFile);
+                Log.d(TAG, "current download " + currDownFile);
                 if (fs.exists()) {
                     if (!currDownFile.equals(fs.getAbsolutePath())) {
                         FileWorks fileWorks = new FileWorks(fs.getAbsolutePath());
 
                         DirectoryWorks directoryWorks = new DirectoryWorks(
-                                UNLConsts.VIDEO_DIR_NAME);
+                                UNLConsts.VIDEO_DIR_NAME +
+                                UNLConsts.GD_STORAGE_DIR_NAME +
+                                "/");
                         String[] refreshFiles = directoryWorks.getDirFileList("folder");
-                        Log.d("files", Arrays.asList(refreshFiles).toString());
-                        Log.d("ext", fileWorks.getFileExtension());
+                        Log.d(TAG,"files " + Arrays.asList(refreshFiles).toString());
                         if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
                             if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(fs.getAbsolutePath())) {
 
-                                if (serverIndex == listFiles.length - 1) {
-                                    Log.d("index", String.valueOf(serverIndex));
-                                    Log.d("len", String.valueOf(listFiles.length));
+                                if (serverIndex >= listFiles.length - 1) {
+                                    Log.d(TAG,"File index " + String.valueOf(serverIndex));
+                                    Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
                                     playFile(listFiles[serverIndex]);
                                     serverIndex = 0;
                                 } else {
                                     playFile(listFiles[serverIndex]);
-                                    Log.d("index", String.valueOf(serverIndex));
+                                    Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
                                     serverIndex++;
                                 }
                             } else {
-                                if (serverIndex == listFiles.length - 1) {
+                                if (serverIndex >= listFiles.length - 1) {
                                     serverIndex=0;
                                 } else {
                                     serverIndex++;
@@ -227,7 +221,7 @@ public class Playback {
                                 nextTrack(refreshFiles);
                             }
                         } else {
-                            if (serverIndex == listFiles.length - 1) {
+                            if (serverIndex >= listFiles.length - 1) {
                                 serverIndex=0;
                             } else {
                                 serverIndex++;
@@ -235,7 +229,7 @@ public class Playback {
                             nextTrack(refreshFiles);
                         }
                     } else {
-                        if (serverIndex == listFiles.length - 1) {
+                        if (serverIndex >= listFiles.length - 1) {
                             serverIndex=0;
                         } else {
                             serverIndex++;
@@ -244,7 +238,7 @@ public class Playback {
                     }
 
                 } else {
-                    if (serverIndex == listFiles.length - 1) {
+                    if (serverIndex >= listFiles.length - 1) {
                         serverIndex=0;
                     } else {
                         serverIndex++;
@@ -252,13 +246,16 @@ public class Playback {
                     nextTrack(files);
                 }
             }
+        }else {
+            mContext.startActivity(new Intent(mContext,FirstVideoActivity.class));
+            ((Activity) mContext).finish();
         }
 
     }
 
 
     public void restartDownload() {
-        if (!isDownload) {
+        if (!UNLApp.getIsDownloadTaskRunning()) {
             downloadVideoTask.cancel(true);
             downloadVideoTask = new DownloadVideoTask(mApp, mContext, "full");
             downloadVideoTask.execute();

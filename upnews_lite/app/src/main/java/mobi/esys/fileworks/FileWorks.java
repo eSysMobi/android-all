@@ -114,7 +114,7 @@ public class FileWorks {
         Bitmap result = null;
         if (file.exists()) {
             result = BitmapFactory.decodeFile(file.getAbsolutePath());
-            Log.d("log_tag", "Logo from file decoded");
+            Log.d("unTag_FileWorks", "Logo from file decoded");
         }
         return result;
     }

@@ -7,6 +7,8 @@ public final class UNLConsts {
     public static final String GD_VIDEO_DIR_NAME = "upnewslite";
     public static final String LOGO_DIR_NAME = "/logo/";
     public static final String GD_LOGO_DIR_NAME = "logo";
+    public static final String STORAGE_DIR_NAME = "/video/";
+    public static final String GD_STORAGE_DIR_NAME = "video";
     public static final String APP_PREF = "UNLPref";
     public static final String GD_RSS_FILE_TITLE = "rss.txt";
     public static final String GD_RSS_FILE_MIME_TYPE = "text/plain";

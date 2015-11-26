@@ -31,7 +31,6 @@ import mobi.esys.fileworks.FileWorks;
 import mobi.esys.playback.Playback;
 import mobi.esys.tasks.CheckAndGetLogoFromGDriveTask;
 import mobi.esys.tasks.CreateDriveFolderTask;
-import mobi.esys.tasks.DownloadVideoTask;
 import mobi.esys.tasks.RSSTask;
 
 @SuppressLint({"NewApi", "SimpleDateFormat"})
@@ -83,14 +82,14 @@ public class FullscreenActivity extends Activity {
         br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d("lg", "Receive signal from BroadcastReceiver");
+                Log.d("unTag_FullscreenAct", "Receive signal from BroadcastReceiver");
                 switch (intent.getByteExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NOT_OK)) {
                     case UNLConsts.STATUS_NOT_OK:
-                        Log.d("lg", "Receive logo is fail");
+                        Log.d("unTag_FullscreenAct", "Receive logo is fail");
                         //mLogo.setImageDrawable(getDrawable(R.drawable.upnews_logo_w2));
                         break;
                     case UNLConsts.STATUS_OK:
-                        Log.d("log_tag", "Receive logo is success");
+                        Log.d("unTag_FullscreenAct", "Receive logo is success");
                         checkAndSetLogoFromExStorage();
                         break;
                     case UNLConsts.STATUS_NEED_CHECK_LOGO:
@@ -103,9 +102,6 @@ public class FullscreenActivity extends Activity {
         intFilt = new IntentFilter(UNLConsts.BROADCAST_ACTION);
 
         startPlayback();
-        DownloadVideoTask downloadVideoTask = new DownloadVideoTask(
-                mApp, FullscreenActivity.this, "full");
-        downloadVideoTask.execute();
     }
 
     private void checkAndSetLogoFromExStorage() {
@@ -130,7 +126,7 @@ public class FullscreenActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("log_tag", "Unegister Receiver in onDestroy()");
+        Log.d("unTag_FullscreenAct", "Unregister Receiver in onDestroy()");
         unregisterReceiver(br);
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
@@ -149,7 +145,6 @@ public class FullscreenActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
         }
@@ -168,7 +163,9 @@ public class FullscreenActivity extends Activity {
     protected void onRestart() {
         super.onRestart();
         DirectoryWorks directoryWorks = new DirectoryWorks(
-                UNLConsts.VIDEO_DIR_NAME);
+                UNLConsts.VIDEO_DIR_NAME +
+                UNLConsts.GD_STORAGE_DIR_NAME +
+                "/");
         if (directoryWorks.getDirFileList("fullscreen").length == 0) {
             startActivity(new Intent(FullscreenActivity.this,
                     FirstVideoActivity.class));
@@ -185,7 +182,9 @@ public class FullscreenActivity extends Activity {
     protected void onResume() {
         super.onResume();
         DirectoryWorks directoryWorks = new DirectoryWorks(
-                UNLConsts.VIDEO_DIR_NAME);
+                UNLConsts.VIDEO_DIR_NAME +
+                UNLConsts.GD_STORAGE_DIR_NAME +
+                "/");
         if (directoryWorks.getDirFileList("fullscreen").length == 0) {
             startActivity(new Intent(FullscreenActivity.this,
                     FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -207,18 +206,16 @@ public class FullscreenActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("log_tag", "Register Receiver");
+        Log.d("unTag_FullscreenAct", "Register Receiver");
         registerReceiver(br, intFilt);
-        Log.d("log_tag", "Check remote logo from FullscreenActivity");
+        Log.d("unTag_FullscreenAct", "Check remote logo from FullscreenActivity");
         renewLogo();
     }
 
 
     public void startRSS(String feed) {
         if (isFirstRSS) {
-
             Log.d("feed", feed);
-
             textView.setBackgroundColor(getResources().getColor(R.color.rss_line));
             textView.setTextColor(Color.WHITE);
             RelativeLayout.LayoutParams tslp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 80);
@@ -237,7 +234,6 @@ public class FullscreenActivity extends Activity {
             textView.setFocusableInTouchMode(true);
             textView.setFreezesText(true);
             textView.requestFocus();
-
 
             textView.setText(Html.fromHtml(feed), TextView.BufferType.SPANNABLE);
             relativeLayout.addView(textView);
