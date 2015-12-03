@@ -1,7 +1,6 @@
 package mobi.esys.fileworks;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 

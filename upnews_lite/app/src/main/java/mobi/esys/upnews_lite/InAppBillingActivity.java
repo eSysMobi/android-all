@@ -7,9 +7,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.android.vending.billing.IInAppBillingService;
@@ -19,12 +23,15 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import mobi.esys.constants.UNLConsts;
 import mobi.esys.tasks.GetProductInfoTask;
 
 public class InAppBillingActivity extends Activity {
     private transient static final int BILL_INTENT_CODE = 1001;
     private transient IInAppBillingService billingService;
     private transient ServiceConnection billingServiceConn;
+    private transient boolean buyOK = false;
+    private transient boolean permOK = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +83,8 @@ public class InAppBillingActivity extends Activity {
                                     0);
                         }
                     } else {
-                        startActivity(new Intent(InAppBillingActivity.this,
-                                DriveAuthActivity.class));
-                        finish();
-
+                        buyOK = true;
+                        allOK();
                     }
 
                 } catch (RemoteException | IntentSender.SendIntentException ignored) {
@@ -88,13 +93,50 @@ public class InAppBillingActivity extends Activity {
 
         };
 
+        checkPermision();
+
         if (BuildConfig.DEBUG) {
             Log.d("buy", "It's debug version. Not need to buy!");
-            startActivity(new Intent(InAppBillingActivity.this, DriveAuthActivity.class));
+            buyOK = true;
         } else {
             bindService(new Intent(
                             "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
                     billingServiceConn, BIND_AUTO_CREATE);
+        }
+        allOK();
+    }
+
+
+    void allOK() {
+        if (buyOK && permOK) {
+            startActivity(new Intent(InAppBillingActivity.this, DriveAuthActivity.class));
+            finish();
+        }
+    }
+
+    void checkPermision() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        UNLConsts.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+            } else {
+                permOK = true;
+            }
+        } else {
+            permOK = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == UNLConsts.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permOK = true;
+                allOK();
+            }
         }
     }
 
@@ -125,8 +167,8 @@ public class InAppBillingActivity extends Activity {
                     String sku = jo.getString("productId");
                     Log.d("buy", "You have bought the " + sku
                             + ". Excellent choice," + "adventurer!");
-                    startActivity(new Intent(InAppBillingActivity.this,
-                            DriveAuthActivity.class));
+                    buyOK = true;
+                    allOK();
 
                 } catch (JSONException e) {
                     Log.d("buy", "Failed to parse purchase data.");
