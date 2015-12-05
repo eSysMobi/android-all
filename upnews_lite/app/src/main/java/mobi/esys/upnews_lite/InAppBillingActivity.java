@@ -1,6 +1,7 @@
 package mobi.esys.upnews_lite;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -31,13 +32,14 @@ public class InAppBillingActivity extends Activity {
     private transient IInAppBillingService billingService;
     private transient ServiceConnection billingServiceConn;
     private transient boolean buyOK = false;
-    private transient boolean permOK = false;
+    private transient boolean permWriteOK = false;
+    //    private transient boolean permReadOK = false;
+    private transient boolean permAccOK = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inappbilling);
-
 
         billingServiceConn = new ServiceConnection() {
 
@@ -92,7 +94,6 @@ public class InAppBillingActivity extends Activity {
             }
 
         };
-
         checkPermision();
 
         if (BuildConfig.DEBUG) {
@@ -108,7 +109,7 @@ public class InAppBillingActivity extends Activity {
 
 
     void allOK() {
-        if (buyOK && permOK) {
+        if (buyOK && permWriteOK && permAccOK) {
             startActivity(new Intent(InAppBillingActivity.this, DriveAuthActivity.class));
             finish();
         }
@@ -116,28 +117,74 @@ public class InAppBillingActivity extends Activity {
 
     void checkPermision() {
         if (Build.VERSION.SDK_INT >= 23) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            ArrayList<String> perm = new ArrayList<>();
+            //checking permission WRITE_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        UNLConsts.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                perm.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             } else {
-                permOK = true;
+                Log.d("unTag_InAppBillingAct ", "PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE already granted");
+                permWriteOK = true;
             }
+            //checking permission GET_ACCOUNTS
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                shouldShowRequestPermissionRationale(Manifest.permission.GET_ACCOUNTS);
+                perm.add(Manifest.permission.GET_ACCOUNTS);
+            } else {
+                Log.d("unTag_InAppBillingAct ", "GET_ACCOUNTS already granted");
+                permAccOK = true;
+            }
+            //request permissions
+            if (perm.size() > 0) {
+                ActivityCompat.requestPermissions(this,
+                        perm.toArray(new String[perm.size()]),
+                        UNLConsts.PERMISSIONS_REQUEST);
+            }
+
         } else {
-            permOK = true;
+            permWriteOK = true;
+            permAccOK = true;
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == UNLConsts.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                permOK = true;
-                allOK();
+        if (requestCode == UNLConsts.PERMISSIONS_REQUEST && grantResults.length > 0) {
+            for (int i = 0; i < permissions.length; i++) {
+                switch (permissions[i]) {
+                    case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            permWriteOK = true;
+                        }
+                        break;
+                    case Manifest.permission.GET_ACCOUNTS:
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            permAccOK = true;
+                        }
+                        break;
+                }
             }
+            allOK();
         }
+
+//        switch (requestCode) {
+//            case UNLConsts.PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    permWriteOK = true;
+//                    allOK();
+//                }
+//                break;
+//            case UNLConsts.PERMISSIONS_REQUEST_GET_ACCOUNTS:
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    permAccOK = true;
+//                    allOK();
+//                }
+//                break;
+//        }
     }
 
 

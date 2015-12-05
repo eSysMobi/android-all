@@ -1,24 +1,31 @@
 apply plugin: 'com.android.application'
-
 android {
-    compileSdkVersion 'Google Inc.:Google APIs:22'
-    buildToolsVersion "23.0.1"
-
-
-
+    signingConfigs {
+        config {
+            storeFile file('D:/esys-mobi/keystore/upnewslite_release.keystore')
+            storePassword 'Qwg2L2nPm8'
+            keyAlias 'upnewslite'
+            keyPassword 'Qwg2L2nPm8'
+        }
+    }
+    compileSdkVersion 'Google Inc.:Google APIs:23'
+    buildToolsVersion '23.0.2'
     defaultConfig {
         applicationId "mobi.esys.upnews_lite"
         minSdkVersion 11
         targetSdkVersion 23
+        signingConfig signingConfigs.config
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
-
     dependencies {
         compile fileTree(dir: 'libs', include: ['*.jar'])
         compile project(':sAXRSSReader')
@@ -26,7 +33,11 @@ android {
         compile 'com.google.android.gms:play-services-analytics:8.1.0'
         compile 'com.squareup.picasso:picasso:2.5.2'
         compile 'com.google.code.gson:gson:2.4'
+        compile 'com.android.support:appcompat-v7:23.1.1'
+    }
+    productFlavors {
     }
 }
 
-
+dependencies {
+}
