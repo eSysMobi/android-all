@@ -8,6 +8,9 @@
         android:id="@+id/fbLgBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:focusable="true"
+        android:layout_centerInParent="true">
+        <requestFocus/>
+        </com.facebook.login.widget.LoginButton>
 
 </RelativeLayout>

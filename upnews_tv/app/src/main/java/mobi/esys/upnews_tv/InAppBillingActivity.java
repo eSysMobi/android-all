@@ -1,14 +1,19 @@
 package mobi.esys.upnews_tv;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -27,13 +32,16 @@ public class InAppBillingActivity extends Activity {
     private transient static final int BILL_INTENT_CODE = 1001;
     private transient IInAppBillingService billingService;
     private transient ServiceConnection billingServiceConn;
+    private transient boolean buyOK = false;
+    private transient boolean permWriteOK = false;
+    //    private transient boolean permReadOK = false;
+    private transient boolean permAccOK = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
 
 
         setContentView(R.layout.activity_inappbilling);
@@ -79,22 +87,86 @@ public class InAppBillingActivity extends Activity {
                                 Integer.valueOf(0), Integer.valueOf(0),
                                 Integer.valueOf(0));
                     } else {
-                        startActivity(new Intent(InAppBillingActivity.this,
-                                LoginActivity.class));
-                        finish();
-
+                        buyOK = true;
+                        allOK();
                     }
-
                 } catch (RemoteException e) {
                 } catch (IntentSender.SendIntentException e) {
                 }
             }
-
         };
+        checkPermision();
 
-        bindService(new Intent(
-                        "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
-                billingServiceConn, BIND_AUTO_CREATE);
+        if (BuildConfig.DEBUG) {
+            Log.d("buy", "It's debug version. Not need to buy!");
+            buyOK = true;
+        } else {
+            bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+                    billingServiceConn, BIND_AUTO_CREATE);
+        }
+        allOK();
+    }
+
+    void allOK() {
+        if (buyOK && permWriteOK && permAccOK && !isFinishing()) {
+            startActivity(new Intent(InAppBillingActivity.this, LoginActivity.class));
+            finish();
+        }
+    }
+
+    void checkPermision() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            ArrayList<String> perm = new ArrayList<>();
+            //checking permission WRITE_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                perm.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            } else {
+                Log.d("unTag_InAppBillingAct ", "PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE already granted");
+                permWriteOK = true;
+            }
+            //checking permission READ_CONTACTS
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS);
+                perm.add(Manifest.permission.READ_CONTACTS);
+            } else {
+                Log.d("unTag_InAppBillingAct ", "GET_ACCOUNTS already granted");
+                permAccOK = true;
+            }
+            //request permissions
+            if (perm.size() > 0) {
+                ActivityCompat.requestPermissions(this,
+                        perm.toArray(new String[perm.size()]),
+                        333);
+            }
+
+        } else {
+            permWriteOK = true;
+            permAccOK = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 333 && grantResults.length > 0) {
+            for (int i = 0; i < permissions.length; i++) {
+                switch (permissions[i]) {
+                    case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            permWriteOK = true;
+                        }
+                        break;
+                    case Manifest.permission.READ_CONTACTS:
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            permAccOK = true;
+                        }
+                        break;
+                }
+            }
+            allOK();
+        }
     }
 
 
@@ -124,9 +196,8 @@ public class InAppBillingActivity extends Activity {
                     String sku = jo.getString("productId");
                     Log.d("buy", "You have bought the " + sku
                             + ". Excellent choice," + "adventurer!");
-                    startActivity(new Intent(InAppBillingActivity.this,
-                            LoginActivity.class));
-
+                    buyOK = true;
+                    allOK();
                 } catch (JSONException e) {
                     Log.d("buy", "Failed to parse purchase data.");
                     e.printStackTrace();

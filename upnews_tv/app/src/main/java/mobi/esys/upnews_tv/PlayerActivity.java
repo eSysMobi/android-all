@@ -1,8 +1,10 @@
 package mobi.esys.upnews_tv;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.location.Address;
@@ -16,6 +18,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -100,7 +103,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     private transient List<FacebookVideoItem> videoItems;
     private transient int videoIndex = 0;
 
-    public static final String[] VIDEOS_EXTS={"avi","mp4"};
+    public static final String[] VIDEOS_EXTS = {"avi", "mp4"};
 
     private transient VideoView playerView;
 
@@ -134,10 +137,13 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     private transient Handler locationHandler;
     private transient Runnable locationRunnable;
 
+    private final static int PERMISSION_REQUEWST_CODE = 334;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //embUri = Uri.parse("android.resource://" + getPackageName() + "/assets/" + R.raw.emb);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
@@ -335,15 +341,14 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         Runnable twitterFeedRunnable = new Runnable() {
             @Override
             public void run() {
-                if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+                if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
                     Twitter.getInstance();
                     TwitterHelper.startLoadTweets(Twitter.getApiClient(), relativeLayout, PlayerActivity.this, isFirst);
                     isFirst = false;
                     twitterFeedHandler.postDelayed(this,
                             TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
-                }
-                else{
-                    Toast.makeText(PlayerActivity.this,"Twitter is unavailable",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(PlayerActivity.this, "Twitter is unavailable", Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -415,7 +420,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
 
     public void updateIGPhotos() {
-        if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             String tag = preferences.getString("instHashTag", "");
             final GetIGPhotosTask getTagPhotoIGTask = new GetIGPhotosTask(tag);
             getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
@@ -439,9 +444,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
             InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivity.this, folder, tag);
             instagramDownloader.download(igPhotos);
-        }
-        else{
-            Toast.makeText(PlayerActivity.this,"Can't update instagram photos",
+        } else {
+            Toast.makeText(PlayerActivity.this, "Can't update instagram photos",
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -449,7 +453,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
 
     private void getIGPhotos(JSONObject igObject) {
-        if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             igPhotos = new ArrayList<>();
             try {
                 Log.d("object main", igObject.toString());
@@ -484,15 +488,14 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             } catch (JSONException e) {
                 Log.d("json", "json_error: ".concat(e.getMessage()));
             }
-        }
-        else{
-           Toast.makeText(PlayerActivity.this,"Can't get photos from Instagram",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(PlayerActivity.this, "Can't get photos from Instagram", Toast.LENGTH_SHORT).show();
         }
     }
 
 
     private void loadfbGroupVideos() {
-        if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             String fbGroupID = preferences.getString("fbGroupID", "");
             videoItemsTmp = new ArrayList<>();
             GraphRequest request = new GraphRequest(
@@ -553,10 +556,9 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
             request.setParameters(parameters);
             request.executeAsync();
-        }
-        else{
+        } else {
             Toast.makeText(PlayerActivity.this,
-                    "Can't update facebook videos",Toast.LENGTH_SHORT).show();
+                    "Can't update facebook videos", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -602,7 +604,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
     @Override
     public void gotWeatherInfo(WeatherInfo weatherInfo) {
-        if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             if (weatherInfo != null) {
                 weatherLayout.removeAllViews();
                 weatherLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -637,14 +639,13 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             } else {
                 Toast.makeText(PlayerActivity.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
             }
-        }
-        else{
+        } else {
             Toast.makeText(PlayerActivity.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void loadCurrencyDashboard(CurrenciesList list, CurrenciesList yesterdayList) {
-        if(NetMonitor.isNetworkAvailable((UpnewsOnlineApp)getApplication())) {
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             String euro = "\u20ac" + " 0,0";
             String dollar = "\u0024" + " 0,0";
             String pound = "\u00a3" + " 0,0";
@@ -804,8 +805,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             } else {
                 Toast.makeText(this, "Currencies data unavailable", Toast.LENGTH_SHORT).show();
             }
-        }
-        else{
+        } else {
             Toast.makeText(this, "Currencies data unavailable", Toast.LENGTH_SHORT).show();
         }
     }
@@ -821,35 +821,47 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
             if (!isGPSEnabled && !isNetworkEnabled) {
-                Toast.makeText(this,"Please turn GPS or network for location searching",
+                Toast.makeText(this, "Please turn GPS or network for location searching",
                         Toast.LENGTH_SHORT).show();
             } else {
-                if (isNetworkEnabled) {
-                    loc.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            0,
-                            0, this);
-                    Log.d("Network", "Network Enabled");
-                    if (loc != null) {
-                        location = loc
-                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    }
+                boolean allowflag = false;
+
+                if (Build.VERSION.SDK_INT>=23){
+                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_CONTACTS},
+                                PERMISSION_REQUEWST_CODE);
+                    }else {allowflag = true;}
+                }else {
+                    allowflag = true;
                 }
-                if (isGPSEnabled) {
-                    if (location == null) {
+                if (allowflag){
+                    if (isNetworkEnabled) {
                         loc.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
+                                LocationManager.NETWORK_PROVIDER,
                                 0,
                                 0, this);
-                        Log.d("GPS", "GPS Enabled");
+                        Log.d("Network", "Network Enabled");
                         if (loc != null) {
                             location = loc
-                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        }
+                    }
+                    if (isGPSEnabled) {
+                        if (location == null) {
+                            loc.requestLocationUpdates(
+                                    LocationManager.GPS_PROVIDER,
+                                    0,
+                                    0, this);
+                            Log.d("GPS", "GPS Enabled");
+                            if (loc != null) {
+                                location = loc
+                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                            }
                         }
                     }
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -880,7 +892,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             if (cityName.equals("Not Found")) {
                 Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
             }
-
             else{
                 mYahooWeather.setNeedDownloadIcons(true);
                 mYahooWeather.setUnit(YahooWeather.UNIT.CELSIUS);
@@ -891,11 +902,20 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         else{
             Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
         }
-
         return cityName;
-
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEWST_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocation();
+                }
+                break;
+            }
+        }
+    }
 
     @Override
     protected void onDestroy() {
