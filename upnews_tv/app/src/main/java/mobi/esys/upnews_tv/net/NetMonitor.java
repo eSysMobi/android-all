@@ -27,6 +27,7 @@ public class NetMonitor {
         boolean dataOnWifiOnly = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(
                         "data_wifi_only", true);
+//        dataOnWifiOnly = false; //for emulator
         return (!dataOnWifiOnly && (mobile.equals(NetworkInfo.State.CONNECTED) || wifi
                 .equals(NetworkInfo.State.CONNECTED)))
                 || (dataOnWifiOnly && wifi.equals(NetworkInfo.State.CONNECTED));

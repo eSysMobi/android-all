@@ -40,7 +40,7 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "mobi.esys.upnews_tv"
-        minSdkVersion 11
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "2.0"
@@ -69,7 +69,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], exclude: 'android-support-*.jar', dir: 'libs')
     compile project(':instagram')
     compile project(':yWeatherGetter4a')
-    compile 'com.facebook.android:facebook-android-sdk:4.4.0'
+    compile 'com.facebook.android:facebook-android-sdk:4.7.0'
     compile('com.twitter.sdk.android:twitter:1.6.0@aar') {
         transitive = true;
     }

@@ -138,12 +138,13 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     private transient Runnable locationRunnable;
 
     private final static int PERMISSION_REQUEWST_CODE = 334;
+    private transient boolean allowflag = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //embUri = Uri.parse("android.resource://" + getPackageName() + "/assets/" + R.raw.emb);
+        embUri = Uri.parse("android.resource://" + getPackageName() + "/assets/" + R.raw.emb);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
@@ -252,6 +253,15 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         instagram = new Instagram(PlayerActivity.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
 
+        if (Build.VERSION.SDK_INT>=23){
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSION_REQUEWST_CODE);
+            }else {allowflag = true;}
+        }else {
+            allowflag = true;
+        }
         locationHandler = new Handler();
         locationRunnable = new Runnable() {
             @Override
@@ -824,17 +834,17 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 Toast.makeText(this, "Please turn GPS or network for location searching",
                         Toast.LENGTH_SHORT).show();
             } else {
-                boolean allowflag = false;
-
-                if (Build.VERSION.SDK_INT>=23){
-                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(this,
-                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_CONTACTS},
-                                PERMISSION_REQUEWST_CODE);
-                    }else {allowflag = true;}
-                }else {
-                    allowflag = true;
-                }
+//                boolean allowflag = false;
+//
+//                if (Build.VERSION.SDK_INT>=23){
+//                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                        ActivityCompat.requestPermissions(this,
+//                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                                PERMISSION_REQUEWST_CODE);
+//                    }else {allowflag = true;}
+//                }else {
+//                    allowflag = true;
+//                }
                 if (allowflag){
                     if (isNetworkEnabled) {
                         loc.requestLocationUpdates(
@@ -910,7 +920,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         switch (requestCode) {
             case PERMISSION_REQUEWST_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getLocation();
+                    allowflag = true;
+//                    getLocation();
                 }
                 break;
             }

@@ -12,7 +12,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <uses-sdk tools:overrideLibrary="tv.danmaku.ijk.media.player_arm64" />
 

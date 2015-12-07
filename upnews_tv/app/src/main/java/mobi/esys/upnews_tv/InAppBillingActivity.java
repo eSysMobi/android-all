@@ -33,9 +33,7 @@ public class InAppBillingActivity extends Activity {
     private transient IInAppBillingService billingService;
     private transient ServiceConnection billingServiceConn;
     private transient boolean buyOK = false;
-    private transient boolean permWriteOK = false;
-    //    private transient boolean permReadOK = false;
-    private transient boolean permAccOK = false;
+    private transient boolean permOK = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +106,7 @@ public class InAppBillingActivity extends Activity {
     }
 
     void allOK() {
-        if (buyOK && permWriteOK && permAccOK && !isFinishing()) {
+        if (buyOK && permOK && !isFinishing()) {
             startActivity(new Intent(InAppBillingActivity.this, LoginActivity.class));
             finish();
         }
@@ -116,56 +114,27 @@ public class InAppBillingActivity extends Activity {
 
     void checkPermision() {
         if (Build.VERSION.SDK_INT >= 23) {
-            ArrayList<String> perm = new ArrayList<>();
-            //checking permission WRITE_EXTERNAL_STORAGE
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
-                shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                perm.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            } else {
-                Log.d("unTag_InAppBillingAct ", "PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE already granted");
-                permWriteOK = true;
-            }
-            //checking permission READ_CONTACTS
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS);
-                perm.add(Manifest.permission.READ_CONTACTS);
-            } else {
-                Log.d("unTag_InAppBillingAct ", "GET_ACCOUNTS already granted");
-                permAccOK = true;
-            }
-            //request permissions
-            if (perm.size() > 0) {
                 ActivityCompat.requestPermissions(this,
-                        perm.toArray(new String[perm.size()]),
+                        new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         333);
+            } else {
+                permOK = true;
             }
-
         } else {
-            permWriteOK = true;
-            permAccOK = true;
+            permOK = true;
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == 333 && grantResults.length > 0) {
-            for (int i = 0; i < permissions.length; i++) {
-                switch (permissions[i]) {
-                    case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                            permWriteOK = true;
-                        }
-                        break;
-                    case Manifest.permission.READ_CONTACTS:
-                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                            permAccOK = true;
-                        }
-                        break;
-                }
+        if (requestCode == 333) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permOK = true;
+                allOK();
             }
-            allOK();
         }
     }
 
