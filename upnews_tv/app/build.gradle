@@ -40,10 +40,10 @@ android {
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "mobi.esys.upnews_tv"
-        minSdkVersion 21
+        minSdkVersion 15
         targetSdkVersion 23
-        versionCode 1
-        versionName "2.0"
+        versionCode 3
+        versionName "2.1.0"
         signingConfig signingConfigs.config
     }
     sourceSets {
@@ -53,8 +53,10 @@ android {
     }
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
         debug {
             signingConfig signingConfigs.config

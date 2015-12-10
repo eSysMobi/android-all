@@ -102,6 +102,10 @@ public class InAppBillingActivity extends Activity {
             bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
                     billingServiceConn, BIND_AUTO_CREATE);
         }
+
+//        bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+//                billingServiceConn, BIND_AUTO_CREATE);
+
         allOK();
     }
 

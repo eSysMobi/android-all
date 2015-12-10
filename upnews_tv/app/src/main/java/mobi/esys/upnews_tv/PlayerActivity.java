@@ -153,6 +153,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         getWindow().setFormat(PixelFormat.TRANSPARENT);
 

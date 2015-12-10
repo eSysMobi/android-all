@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.text.Spanned;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -59,15 +60,21 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
         twitterLineRunnable = new Runnable() {
             @Override
             public void run() {
-                textSwitcher.setText(textToSwitch.get(tweetsCounter));
-                twitterLineHandler.postDelayed(this, 10000);
+                try {
+                    textSwitcher.setText(textToSwitch.get(tweetsCounter));
+                    twitterLineHandler.postDelayed(this, 10000);
 
-                Glide.with(mContext).load(mTwProfImagesUrls.get(tweetsCounter)).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().error(R.drawable.twitter_128).into(profileImage);
-                if (tweetsCounter == textToSwitch.size() - 1) {
-                    tweetsCounter = 0;
-                } else {
-                    tweetsCounter++;
+                    Glide.with(mContext).load(mTwProfImagesUrls.get(tweetsCounter)).diskCacheStrategy(DiskCacheStrategy.ALL).fitCenter().error(R.drawable.twitter_128).into(profileImage);
+                    if (tweetsCounter == textToSwitch.size() - 1) {
+                        tweetsCounter = 0;
+                    } else {
+                        tweetsCounter++;
+                    }
                 }
+                catch (Exception e){
+                    Log.d("esys_upn","Can not load twits");
+                }
+
             }
         };
 
