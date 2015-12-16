@@ -80,11 +80,7 @@ dependencies {
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
-    compile project(':player-java')
-    compile project(':player-armv7a')
-    compile project(':player-x86')
-    compile project(':player-armv5')
-    compile project(':player-arm64')
+    
     compile 'commons-io:commons-io:2.4'
     compile 'com.android.support:support-v4:23.0.1'
     compile 'com.nineoldandroids:library:2.4.0'

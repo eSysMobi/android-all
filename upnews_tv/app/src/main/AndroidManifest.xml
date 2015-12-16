@@ -13,7 +13,11 @@
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
 
-    <uses-sdk tools:overrideLibrary="tv.danmaku.ijk.media.player_arm64" />
+    <uses-sdk
+        tools:overrideLibrary="tv.danmaku.ijk.media.player_arm64"
+        android:minSdkVersion="15"
+        android:targetSdkVersion="23"
+        />
 
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.hardware.faketouch" android:required="false"/>
