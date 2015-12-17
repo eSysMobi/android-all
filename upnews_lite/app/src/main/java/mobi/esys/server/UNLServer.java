@@ -38,43 +38,49 @@ public class UNLServer {
     private static final String TAG = "unTag_UNLServer";
     private transient Context context;
     private transient UNLApp mApp;
+    private transient boolean allOK = false;
 
 
     public UNLServer(UNLApp app) {
         mApp = app;
         context = app.getApplicationContext();
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
-        drive = app.getDriveService();
+        drive = UNLApp.getDriveService();
         folderId = prefs.getString("folderId", "");
         gdFiles = new ArrayList<>();
     }
 
     @SuppressLint("LongLogTag")
     public Set<String> getMD5FromServer() {
-        saveURLS();
 
         Set<String> resultMD5 = new HashSet<String>();
         Set<String> defaultSet = new HashSet<String>();
 
         if (NetWork.isNetworkAvailable(mApp)) {
-            try {
-                printFilesInFolder(folderId);
-                for (int i = 0; i < gdFiles.size(); i++) {
-                    if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
-                            .contains(gdFiles.get(i).getGdFileInst().getFileExtension())) {
-                        resultMD5.add(gdFiles.get(i).getGdFileMD5());
+            //save URLS from google disk to the SharedPreferences
+            saveURLS();
+//            try {
+//                printFilesInFolder(folderId); // not need because this check has in saveURLS()
+                if(allOK){  //if getting GDfiles in saveURLS() is success
+                    for (int i = 0; i < gdFiles.size(); i++) {
+                        if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
+                                .contains(gdFiles.get(i).getGdFileInst().getFileExtension())) {
+                            resultMD5.add(gdFiles.get(i).getGdFileMD5());
+                        }
                     }
+                    Log.d(TAG, "md5 server size " + String.valueOf(resultMD5.size()));
+                    if (!prefs.getStringSet("md5sApp", defaultSet).equals(resultMD5)) {
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putStringSet("md5sApp", resultMD5);
+                        editor.apply();
+                    }
+                } else{ //if getting GDfiles in saveURLS() is fail return old MD5
+                    resultMD5 = prefs.getStringSet("md5sApp", resultMD5);
                 }
-                Log.d(TAG, "md5 server size " + String.valueOf(resultMD5.size()));
-            } catch (IOException e) {
-                Log.d(TAG, "get md5 from server error " + e.getLocalizedMessage());
-            }
-
-            if (!prefs.getStringSet("md5sApp", defaultSet).equals(resultMD5)) {
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putStringSet("md5sApp", resultMD5);
-                editor.apply();
-            }
+//            } catch (IOException e) {
+//                Log.d(TAG, "get md5 from server error " + e.getLocalizedMessage());
+//                resultMD5 = prefs.getStringSet("md5sApp", resultMD5);
+//            }
         } else {
             resultMD5 = prefs.getStringSet("md5sApp", resultMD5);
         }
@@ -83,42 +89,43 @@ public class UNLServer {
 
     private void saveURLS() {
         List<String> resultURL = new ArrayList<String>();
-        List<String> defultURL = new ArrayList<String>();
+        List<String> defaultURL = new ArrayList<String>();
         if (NetWork.isNetworkAvailable(mApp)) {
             try {
-                Log.d(TAG, "save urls");
+                Log.d(TAG, "Start saving urls");
                 printFilesInFolder(folderId);
-                for (int i = 0; i < gdFiles.size(); i++) {
-                    resultURL.add(gdFiles.get(i).getGdFileName());
+                if (allOK) {
+                    for (int i = 0; i < gdFiles.size(); i++) {
+                        resultURL.add(gdFiles.get(i).getGdFileName());
+                    }
+                    Collections.sort(resultURL, new Comparator<String>() {
+                        @Override
+                        public int compare(String lhs, String rhs) {
+                            return lhs.toLowerCase(Locale.getDefault()).compareTo(
+                                    rhs.toLowerCase(Locale.getDefault()));
+                        }
+                    });
+                    Log.d(TAG, "saved urls " + resultURL.toString());
+                    Editor editor = prefs.edit();
+                    String prefURL = prefs.getString("urls", defaultURL.toString());
+                    if (!prefURL.equals(resultURL)) {
+                        Log.d(TAG, "URLs in SharedPreferences NOT equals URLs from server, overwrite.");
+                        editor.putString("urls", resultURL.toString());
+                    }
+                    Set<String> urlsSet = new HashSet<String>();
+                    Set<String> defaultSet = new HashSet<String>();
+                    for (int i = 0; i < resultURL.size(); i++) {
+                        urlsSet.add(Environment.getExternalStorageDirectory()
+                                + UNLConsts.VIDEO_DIR_NAME + UNLConsts.GD_STORAGE_DIR_NAME + "/" + resultURL.get(i));
+                    }
+                    if (!prefs.getStringSet("filesServer", defaultSet).equals(urlsSet)) {
+                        editor.putStringSet("filesServer", urlsSet);
+                    }
+                    editor.apply();
                 }
             } catch (IOException e) {
                 Log.d(TAG, "save url error " + e.getLocalizedMessage());
             }
-            Collections.sort(resultURL, new Comparator<String>() {
-
-                @Override
-                public int compare(String lhs, String rhs) {
-                    return lhs.toLowerCase(Locale.getDefault()).compareTo(
-                            rhs.toLowerCase(Locale.getDefault()));
-                }
-
-            });
-            Log.d(TAG, "saved urls " + resultURL.toString());
-            Editor editor = prefs.edit();
-            String prefURL = prefs.getString("urls", defultURL.toString());
-            if (!prefURL.equals(resultURL)) {
-                editor.putString("urls", resultURL.toString());
-            }
-            Set<String> urlsSet = new HashSet<String>();
-            Set<String> defaultSet = new HashSet<String>();
-            for (int i = 0; i < resultURL.size(); i++) {
-                urlsSet.add(Environment.getExternalStorageDirectory()
-                        + UNLConsts.VIDEO_DIR_NAME + UNLConsts.GD_STORAGE_DIR_NAME + "/" + resultURL.get(i));
-            }
-            if (!prefs.getStringSet("filesServer", defaultSet).equals(urlsSet)) {
-                editor.putStringSet("filesServer", urlsSet);
-            }
-            editor.apply();
         }
     }
 
@@ -131,35 +138,38 @@ public class UNLServer {
         do {
             try {
                 ChildList children = request.execute();
-
+                allOK = true;
                 for (ChildReference child : children.getItems()) {
 
                     File file = drive.files().get(child.getId()).execute();
                     if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
                             .contains(file.getFileExtension())) {
-                        gdFiles.add(new GDFile(file.getId(), file.getTitle(),
-                                file.getDownloadUrl(), String.valueOf(file
-                                .getFileSize()), file
-                                .getFileExtension(), file
-                                .getMd5Checksum(), file));
+                        gdFiles.add(new GDFile(file.getId(),
+                                file.getTitle(),
+                                file.getDownloadUrl(),
+                                String.valueOf(file.getFileSize()),
+                                file.getFileExtension(),
+                                file.getMd5Checksum(), file));
                     }
 
                     if ("rss.txt".equals(file.getTitle())) {
-                        gdRSS = new GDFile(file.getId(), file.getTitle(),
-                                file.getWebContentLink(), String.valueOf(file
-                                .getFileSize()), file
-                                .getFileExtension(), file
-                                .getMd5Checksum(), file);
+                        gdRSS = new GDFile(file.getId(),
+                                file.getTitle(),
+                                file.getWebContentLink(),
+                                String.valueOf(file.getFileSize()),
+                                file.getFileExtension(),
+                                file.getMd5Checksum(),
+                                file);
                     }
 
-                    if (UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle()) && !file.getExplicitlyTrashed()){
+                    if (UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle()) && !file.getExplicitlyTrashed()) {
                         gdLogo = new GDFile(file.getId(),
-                                            file.getTitle(),
-                                            file.getWebContentLink(),
-                                            String.valueOf(file.getFileSize()),
-                                            file.getFileExtension(),
-                                            file.getMd5Checksum(),
-                                            file);
+                                file.getTitle(),
+                                file.getWebContentLink(),
+                                String.valueOf(file.getFileSize()),
+                                file.getFileExtension(),
+                                file.getMd5Checksum(),
+                                file);
                     }
                 }
                 request.setPageToken(children.getNextPageToken());

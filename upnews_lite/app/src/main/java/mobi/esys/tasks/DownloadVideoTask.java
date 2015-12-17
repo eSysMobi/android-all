@@ -69,6 +69,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
         if (NetWork.isNetworkAvailable(mApp)) {
             if (!UNLApp.getIsDeleting()) {
                 Log.d("unTag_down", "isDownload");
+                UNLApp.setIsDownloadTaskRunning(true);
 
                 serverMD5 = server.getMD5FromServer();
                 gdFiles = server.getGdFiles();
@@ -81,7 +82,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                         .getSharedPreferences(UNLConsts.APP_PREF,
                                 Context.MODE_PRIVATE).getString("urls", "")
                         .replace("[", "").replace("]", "").split(",")));
-                UNLApp.setIsDownloadTaskRunning(true);
 
                 //deleting duplicates
                 listWithoutDuplicates = new ArrayList<>(gdFiles);
