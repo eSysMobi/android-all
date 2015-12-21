@@ -24,8 +24,7 @@ public class DirectoryWorks {
     }
 
     public void checkDirs() {
-        File videoDir = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath() + UNLConsts.VIDEO_DIR_NAME);
+        File videoDir = new File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME);
         if (!videoDir.exists()) {
             videoDir.mkdir();
         }
@@ -40,8 +39,7 @@ public class DirectoryWorks {
     }
 
     public String[] getDirFileList(String mess) {
-        File videoDir = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath().concat(this.directoryPath));
+        File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
         Log.d(DIR_WORKS_TAG, videoDir.getAbsolutePath());
         List<String> filePaths = new ArrayList<>();
         if (videoDir.exists()) {
@@ -62,11 +60,9 @@ public class DirectoryWorks {
     }
 
     public void deleteFilesFromDir(List<String> maskList, Context context) {
-        File videoDir = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath().concat(this.directoryPath));
+        File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
         Log.d(DIR_WORKS_TAG, "deleteFilesFromDir Deleting " + maskList.size() + " files");
-        Log.d(DIR_WORKS_TAG, Environment.getExternalStorageDirectory()
-                .getAbsolutePath().concat(this.directoryPath));
+        Log.d(DIR_WORKS_TAG, UNLApp.getAppExtCachePath().concat(this.directoryPath));
 
         Log.d(DIR_WORKS_TAG, "mask list task" + maskList.toString());
         if (videoDir.exists()) {
@@ -74,17 +70,9 @@ public class DirectoryWorks {
 
             //check maskList
             if (maskList.size() == 1 && maskList.get(0).equals("unLiteDelAll")) {
-
+                //delete all files in videodirectory excluded user files (with prefix dd)
                 for (int i = 0; i < files.length; i++) {
-                    Date modDate = new Date(files[i].lastModified());
-                    Calendar today = Calendar.getInstance();
-
-
-                    long diff = today.getTimeInMillis() - modDate.getTime();
-                    long days = diff / (24 * 60 * 60 * 1000);
-                    if (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14) {
-                        files[i].delete();
-                    } else {
+                    if (!files[i].getName().startsWith(UNLConsts.PREFIX_USER_VIDEOFILES)) {
                         files[i].delete();
                     }
                 }

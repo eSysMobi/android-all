@@ -35,7 +35,6 @@ public class Playback {
     private transient VideoView mVideo;
     private static final String TAG = "unTag_Playback";
     private transient String[] files;
-    private transient SharedPreferences preferences;
     private transient String[] ulrs = {""};
     private transient int serverIndex = 0;
     private transient SharedPreferences prefs;
@@ -170,8 +169,7 @@ public class Playback {
                 listFiles = new String[ulrs.length];
                 for (int i = 0; i < listFiles.length; i++) {
                     ulrs[i] = ulrs[i].trim();
-                    listFiles[i] = Environment.getExternalStorageDirectory()
-                            .getAbsolutePath()
+                    listFiles[i] = UNLApp.getAppExtCachePath()
                             + UNLConsts.VIDEO_DIR_NAME
                             + UNLConsts.GD_STORAGE_DIR_NAME
                             + "/"

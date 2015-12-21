@@ -44,7 +44,7 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
 //            String newMD5 = newRemoteLogo.getGdFileMD5();
 
             if (!newRemoteLogo.getGdFileSize().equals("0")) {
-                String logoDirPath = Environment.getExternalStorageDirectory()
+                String logoDirPath = UNLApp.getAppExtCachePath()
                         + UNLConsts.VIDEO_DIR_NAME
                         + UNLConsts.GD_LOGO_DIR_NAME
                         + "/";
@@ -54,7 +54,7 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
                     logoDir.mkdir();
                 }
 
-                String oldFilePath = Environment.getExternalStorageDirectory()
+                String oldFilePath = UNLApp.getAppExtCachePath()
                         + UNLConsts.VIDEO_DIR_NAME
                         + UNLConsts.GD_LOGO_DIR_NAME
                         + "/"

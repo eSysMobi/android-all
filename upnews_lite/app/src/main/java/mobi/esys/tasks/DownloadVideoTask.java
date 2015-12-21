@@ -66,12 +66,12 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
+        serverMD5 = server.getMD5FromServer();
         if (NetWork.isNetworkAvailable(mApp)) {
             if (!UNLApp.getIsDeleting()) {
                 Log.d("unTag_down", "isDownload");
                 UNLApp.setIsDownloadTaskRunning(true);
 
-                serverMD5 = server.getMD5FromServer();
                 gdFiles = server.getGdFiles();
                 directoryWorks = new DirectoryWorks(
                         UNLConsts.VIDEO_DIR_NAME +
@@ -159,17 +159,15 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                     .buildGetRequest(
                                             new GenericUrl(file.getDownloadUrl()))
                                     .execute();
-                            String root_sd = Environment
-                                    .getExternalStorageDirectory()
-                                    .getAbsolutePath()
+                            String root_dir = UNLApp.getAppExtCachePath()
                                     + UNLConsts.VIDEO_DIR_NAME
                                     + UNLConsts.GD_STORAGE_DIR_NAME
                                     + "/";
                             String path = file.getTitle().substring(0, file.getTitle().indexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
                             Log.d("unTag_down", path);
-                            java.io.File downFile = new java.io.File(root_sd, path);
+                            java.io.File downFile = new java.io.File(root_dir, path);
                             SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("unTag_currDownFile", downFile.getAbsolutePath());
+                            editor.putString("currDownFile", downFile.getAbsolutePath());
                             editor.apply();
                             FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
                             Log.d("unTag_down", downFile.getAbsolutePath());

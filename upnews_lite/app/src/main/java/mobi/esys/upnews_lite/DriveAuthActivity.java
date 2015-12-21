@@ -47,6 +47,8 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     private transient ProgressBar mpbDriveAuthActivity;
     private transient Button gdAuthBtn;
 
+    private transient boolean externalStorageIsAvailable=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,34 +66,37 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         mtvDriveAuthActivity = (TextView) findViewById(R.id.tvDriveAuthActivity);
         mpbDriveAuthActivity = (ProgressBar) findViewById(R.id.pbDriveAuthActivity);
         gdAuthBtn = (Button) findViewById(R.id.gdAuthBtn);
+
         gdAuthBtn.setOnClickListener(this);
 
-        if (NetWork.isNetworkAvailable(mApp)) {
-            if (accName.isEmpty()) {
-                //if we have not accName
+        if (externalStorageIsAvailable) {
+            if (NetWork.isNetworkAvailable(mApp)) {
+                if (accName.isEmpty()) {
+                    //if we have not accName
+                } else {
+                    //if we have accName then request
+                    setLoadState(); //show loading screen
+                    credential.setSelectedAccountName(accName);
+                    drive = getDriveService(credential);
+                    mApp.registerGoogle(drive);
+                    createFolderInDriveIfDontExists();
+                }
             } else {
-                //if we have accName then request
-                setLoadState(); //show loading screen
-                credential.setSelectedAccountName(accName);
-                drive = getDriveService(credential);
-                mApp.registerGoogle(drive);
-                createFolderInDriveIfDontExists();
-            }
-        } else {
-            //in no internet connection then play saved files
-            Log.d("unTag_DriveAuthActivity", "We have no inet");
-            //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+                //in no internet connection then play saved files
+                Log.d("unTag_DriveAuthActivity", "We have no inet");
+                //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
 
-            DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
+                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
 
-            if (directoryWorks.getDirFileList("if have files").length == 0) {
-                startActivity(new Intent(DriveAuthActivity.this,
-                        FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-                DriveAuthActivity.this.finish();
-            } else {
-                startActivity(new Intent(DriveAuthActivity.this,
-                        FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-                DriveAuthActivity.this.finish();
+                if (directoryWorks.getDirFileList("if have files").length == 0) {
+                    startActivity(new Intent(DriveAuthActivity.this,
+                            FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+                    DriveAuthActivity.this.finish();
+                } else {
+                    startActivity(new Intent(DriveAuthActivity.this,
+                            FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+                    DriveAuthActivity.this.finish();
+                }
             }
         }
     }
@@ -223,18 +228,25 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     }
 
     private void createFolderIfNotExist() {
-        File videoDir = new File(Environment.getExternalStorageDirectory()
-                .getAbsolutePath() + UNLConsts.VIDEO_DIR_NAME);
-        if (!videoDir.exists()) {
-            videoDir.mkdir();
-        }
-        File storageDir = new File(videoDir.getAbsolutePath() + UNLConsts.STORAGE_DIR_NAME);
-        if (!storageDir.exists()) {
-            storageDir.mkdir();
-        }
-        File logoDir = new File(videoDir.getAbsolutePath() + UNLConsts.LOGO_DIR_NAME);
-        if (!logoDir.exists()) {
-            logoDir.mkdir();
+        //checking availability external storage
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            externalStorageIsAvailable=true;
+            //UNLApp.setAppExtCachePath(mApp.getExternalCacheDir().getAbsolutePath());
+            UNLApp.setAppExtCachePath(Environment.getExternalStorageDirectory().getAbsolutePath());
+            //checking existing all directories
+            File videoDir = new File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME);
+            if (!videoDir.exists()) {
+                videoDir.mkdir();
+            }
+            File storageDir = new File(videoDir.getAbsolutePath() + UNLConsts.STORAGE_DIR_NAME);
+            if (!storageDir.exists()) {
+                storageDir.mkdir();
+            }
+            File logoDir = new File(videoDir.getAbsolutePath() + UNLConsts.LOGO_DIR_NAME);
+            if (!logoDir.exists()) {
+                logoDir.mkdir();
+            }
         }
     }
 
@@ -245,13 +257,18 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
      */
     @Override
     public void onClick(View v) {
-        //check inet
-        if (NetWork.isNetworkAvailable(mApp)) {
-            setLoadState(); //show loading screen
-            picker();
+        if (externalStorageIsAvailable) {
+            //check inet
+            if (NetWork.isNetworkAvailable(mApp)) {
+                setLoadState(); //show loading screen
+                picker();
+            } else {
+                Log.d("unTag_DriveAuthActivity", "We have no inet");
+                Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+            }
         } else {
-            Log.d("unTag_DriveAuthActivity", "We have no inet");
-            //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+            Log.d("unTag_DriveAuthActivity", "External storage is not available");
+            Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
         }
     }
 }

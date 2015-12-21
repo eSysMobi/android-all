@@ -17,6 +17,15 @@ public class UNLApp extends Application {
     private static AtomicBoolean isDownloadTaskRunning;
     private static AtomicBoolean isDeleting;
     private static String curPlayFile;
+    private static String appExtCachePath;
+
+    public static String getAppExtCachePath() {
+        return appExtCachePath;
+    }
+
+    public static void setAppExtCachePath(String newPath) {
+        appExtCachePath = newPath;
+    }
 
     public static void setIsDownloadTaskRunning(boolean state) {
         Log.d("unTag_UNLApp", "Set isDownloadTaskRunning " + state);

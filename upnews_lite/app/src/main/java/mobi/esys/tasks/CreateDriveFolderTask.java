@@ -108,7 +108,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     file.setMimeType(RSS_MIME_TYPE);
                     file.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
                     //Prepare and create temp file
-                    java.io.File tmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
+                    java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
 //                    Log.d(TAG, "path to temp rss.txt file" +  tmpFile.getAbsolutePath());  //Path to temp file
                     InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.rss);
                     StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
@@ -129,7 +129,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     logoFile.setMimeType(LOGO_MIME_TYPE);
                     logoFile.setParents(Arrays.asList(new ParentReference().setId(unlFolder.getId())));
                     //Prepare and create temp file
-                    java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+                    java.io.File logoTmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
 //                    Log.d(TAG, "path to temp rss.txt file" + logoTmpFile.getAbsolutePath());  //Path to temp file
                     InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
                     StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);
@@ -174,7 +174,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         file.setMimeType(RSS_MIME_TYPE);
                         file.setParents(Arrays.asList(new ParentReference().setId(folderID)));
 
-                        java.io.File tmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
+                        java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "rss.txt");
 //                    Log.d(TAG, "path to temp rss.txt file" +  tmpFile.getAbsolutePath());  //Path to temp file
                         InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.rss);
                         StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
@@ -196,7 +196,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         logoFile.setMimeType(LOGO_MIME_TYPE);
                         logoFile.setParents(Arrays.asList(new ParentReference().setId(folderID)));
                         //Prepare and create temp file
-                        java.io.File logoTmpFile = new java.io.File(Environment.getExternalStorageDirectory() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
+                        java.io.File logoTmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, LOGO_TITLE);
 //                      Log.d(TAG, "path to temp rss.txt file" + logoTmpFile.getAbsolutePath());  //Path to temp file
                         InputStream logoTmpInStream = mContext.getResources().openRawResource(R.raw.logo_to_drive);
                         StremsUtils.copyInputStreamToFile(logoTmpInStream, logoTmpFile);

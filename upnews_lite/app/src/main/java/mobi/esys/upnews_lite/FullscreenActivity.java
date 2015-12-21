@@ -105,7 +105,7 @@ public class FullscreenActivity extends Activity {
     }
 
     private void checkAndSetLogoFromExStorage() {
-        String logoFilePath = Environment.getExternalStorageDirectory()
+        String logoFilePath = UNLApp.getAppExtCachePath()
                 + UNLConsts.VIDEO_DIR_NAME
                 + UNLConsts.GD_LOGO_DIR_NAME
                 + "/"

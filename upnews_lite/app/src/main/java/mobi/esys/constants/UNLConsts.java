@@ -16,6 +16,7 @@ public final class UNLConsts {
     public static final String GD_LOGO_FILE_MIME_TYPE = "image/png";
     public static final String GD_FOLDER_QUERY = "'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed=false";
 
+    public static final String PREFIX_USER_VIDEOFILES = "dd";
 
     public static final String[] UNL_ACCEPTED_FILE_EXTS = {"mp4", "avi"};
     public static final String STATUS_GET_LOGO = "status";
