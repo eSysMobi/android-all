@@ -20,6 +20,7 @@ public final class ISConsts {
         public static final String default_hashtag = "#news";
         public static final String default_logtag_devider = ":";
         public static final int default_image_size = 640;
+        public static final int PERMISSION_REQUEST_CODE = 299;
     }
 
 

@@ -3,6 +3,7 @@ package mobi.esys.recievers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 import mobi.esys.consts.ISConsts;
 import mobi.esys.upnews_hashtag.InstaLoginActivity;
@@ -18,9 +19,12 @@ public class BootUpReceiver extends BroadcastReceiver {
                 Thread.sleep(ISConsts.times.app_start_delay);
             } catch (InterruptedException e) {
             }
-            context.startActivity(new Intent(context, InstaLoginActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
-
+            SharedPreferences prefs = context.getSharedPreferences(ISConsts.globals.pref_prefix, 0);
+            String hashtag = prefs.getString(ISConsts.prefstags.instagram_hashtag, "");
+            if (!hashtag.isEmpty()){
+                context.startActivity(new Intent(context, InstaLoginActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+            }
         }
     }
 }
