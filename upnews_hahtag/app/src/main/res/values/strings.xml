@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">upnews | hashtag</string>
 
-    <string name="twitter_auth_failure_message">Twitter authorization fail.Try again</string>
+    <string name="twitter_auth_failure_message">Twitter authorization fail. Try again</string>
     <string name="twitter_hashtag_required_message">Input hashtag for tweets searching</string>
-    <string name="get_twitter_feed_message">Can not get from twitter.Next attempt will be in 5 minutes</string>
+    <string name="get_twitter_feed_message">Can not get data from twitter. Next attempt will be in 5 minutes</string>
 
-    <string name="instagram_auth_failure_message">Twitter authorization fail.Try again</string>
+    <string name="instagram_auth_failure_message">Instagram authorization fail. Try again</string>
     <string name="instagram_auth_cancel_message">Instagram authorization has been canceled</string>
     <string name="instagram_hashtag_required_message">Input hashtag for searching photos from instagram</string>
 
@@ -14,6 +14,10 @@
     <string name="hashsymbol">#</string>
     <string name="twLogoDesc">twitter logo</string>
     <string name="okString">OK</string>
-    <string name="twitterTagNeed">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="login_twitter">Login to Twitter</string>
+    <string name="twitter_tag_input">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="login_instagram">Login to Instagram</string>
+    <string name="instagram_tag_input">Введите тэг для поиска изображений в Instagram</string>
+    <string name="login_skip">Skip</string>
 
 </resources>
