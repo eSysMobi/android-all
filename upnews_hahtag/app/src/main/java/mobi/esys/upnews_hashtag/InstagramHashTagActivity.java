@@ -3,6 +3,8 @@ package mobi.esys.upnews_hashtag;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -11,9 +13,17 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +38,7 @@ import java.util.concurrent.ExecutionException;
 
 import mobi.esys.consts.ISConsts;
 import mobi.esys.tasks.CheckInstaTagTask;
+import mobi.esys.view.DrawProgress;
 
 
 public class InstagramHashTagActivity extends Activity implements View.OnClickListener {
@@ -36,8 +47,8 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     private transient UNHApp mApp;
     private transient Instagram instagram;
     private transient EasyTracker easyTracker;
-    private transient boolean isEdit=false;
-    private transient boolean isFirstLaunch=true;
+    private transient boolean isEdit = false;
+    private transient boolean isFirstLaunch = true;
 
     private transient String prevHashTag;
 
@@ -46,9 +57,98 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_instagram_hash_tag);
+        setContentView(R.layout.activity_instagram_hash_tag_2);
 
         easyTracker = EasyTracker.getInstance(InstagramHashTagActivity.this);
+
+//interface v.2
+
+        if (ISConsts.progressSizes.drawProgress == null) {
+            ISConsts.progressSizes.drawProgress = new DrawProgress(getResources().getColor(R.color.deep_gray), getResources().getColor(R.color.progress_color));
+        }
+
+        RelativeLayout rl_instagram_hash_tag = (RelativeLayout) findViewById(R.id.rl_instagram_hash_tag);
+
+        if (Build.VERSION.SDK_INT < 16) {
+            rl_instagram_hash_tag.setBackgroundDrawable(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
+        } else {
+            rl_instagram_hash_tag.setBackground(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
+        }
+
+        TextView tv_instagram_hash_tag = (TextView) findViewById(R.id.tv_instagram_hash_tag);
+        tv_instagram_hash_tag.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 2 * ISConsts.progressSizes.progressDotSize);
+
+        LinearLayout ll_instagram_hash_tag = (LinearLayout) findViewById(R.id.ll_instagram_hash_tag);
+        ll_instagram_hash_tag.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 3 * ISConsts.progressSizes.progressDotSize);
+
+        //iv_dot_instagram_hash_tag_1
+        ImageView iv_dot_instagram_hash_tag_1 = (ImageView) findViewById(R.id.iv_dot_instagram_hash_tag_1);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(ISConsts.progressSizes.progressDots[0] - ISConsts.progressSizes.progressLineSize,
+                (int) (ISConsts.progressSizes.screenHeight / 2) - ISConsts.progressSizes.progressLineSize,
+                0,
+                0);
+        iv_dot_instagram_hash_tag_1.setLayoutParams(lp);
+        iv_dot_instagram_hash_tag_1.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
+        // Animation iv_dot_instagram_hash_tag_1
+        Animation scale_up = AnimationUtils.loadAnimation(this, R.anim.inflate_dot);
+        iv_dot_instagram_hash_tag_1.startAnimation(scale_up);
+
+        //iv_dot_instagram_hash_tag_2
+        ImageView iv_dot_instagram_hash_tag_2 = (ImageView) findViewById(R.id.iv_dot_instagram_hash_tag_2);
+        RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp2.setMargins(ISConsts.progressSizes.progressDots[0] - ISConsts.progressSizes.progressLineSize,
+                (int) (ISConsts.progressSizes.screenHeight / 2) - ISConsts.progressSizes.progressLineSize,
+                0,
+                0);
+        iv_dot_instagram_hash_tag_2.setLayoutParams(lp2);
+        iv_dot_instagram_hash_tag_2.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
+        // Animation iv_dot_instagram_hash_tag_2
+        Animation animMove = new TranslateAnimation(0,
+                ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0], 0, 0);
+        Log.d("TAG", "move second dot to " + (ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0]) + " pixels");
+        animMove.setDuration(2000);
+        animMove.setFillAfter(true);
+        Animation scale_up_delayed = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
+                Animation.ABSOLUTE, ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0] + ISConsts.progressSizes.progressLineSize,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        scale_up_delayed.setDuration(1000);
+        scale_up_delayed.setStartOffset(2010);
+        scale_up_delayed.setFillAfter(true);
+        Animation scale_down_delayed = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
+                Animation.ABSOLUTE, ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0] + ISConsts.progressSizes.progressLineSize,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        scale_down_delayed.setDuration(500);
+        scale_down_delayed.setStartOffset(3010);
+        scale_down_delayed.setFillAfter(true);
+        AnimationSet allDot2Animation = new AnimationSet(true);
+        allDot2Animation.addAnimation(animMove);
+        allDot2Animation.addAnimation(scale_up_delayed);
+        allDot2Animation.addAnimation(scale_down_delayed);
+        allDot2Animation.setFillAfter(true);
+        iv_dot_instagram_hash_tag_2.startAnimation(allDot2Animation);
+
+        //iv_bar_instagram_hash_tag
+        ImageView iv_bar_instagram_hash_tag = (ImageView) findViewById(R.id.iv_bar_instagram_hash_tag);
+        RelativeLayout.LayoutParams lp3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp3.setMargins(ISConsts.progressSizes.progressDots[0],
+                (int) (ISConsts.progressSizes.screenHeight / 2) - (int)(ISConsts.progressSizes.progressLineSize*0.8),
+                0,
+                0);
+        iv_bar_instagram_hash_tag.setLayoutParams(lp3);
+        iv_bar_instagram_hash_tag.setImageBitmap(ISConsts.progressSizes.drawProgress.getProgressLine());
+        // Animation iv_bar_instagram_hash_tag
+        Animation scale_right = new ScaleAnimation(
+                1.0f,
+                (ISConsts.progressSizes.progressDots[1]-ISConsts.progressSizes.progressDots[0])/2,
+                1.0f,
+                1.0f,
+                Animation.RELATIVE_TO_SELF, 0,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        scale_right.setDuration(2000);
+        scale_right.setFillAfter(true);
+        iv_bar_instagram_hash_tag.startAnimation(scale_right);
+//
 
         hashTagEdit = (EditText) findViewById(R.id.instHashTagEdit);
         Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
@@ -63,20 +163,19 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
 
         preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
 
-        prevHashTag= preferences.getString(ISConsts.prefstags.instagram_hashtag, "");
+        prevHashTag = preferences.getString(ISConsts.prefstags.instagram_hashtag, "");
         if (!prevHashTag.isEmpty()) {
             hashTagEdit.setText(prevHashTag);
-            isFirstLaunch=false;
-        }
-        else{
-            isFirstLaunch=true;
+            isFirstLaunch = false;
+        } else {
+            isFirstLaunch = true;
         }
 
         final Handler startHandler = new Handler();
         final Runnable twitterFeedRunnable = new Runnable() {
             @Override
             public void run() {
-                if(!isEdit&&!isFirstLaunch) {
+                if (!isEdit && !isFirstLaunch) {
                     checkTagAndGo(true);
                 }
             }
@@ -96,7 +195,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                isEdit=true;
+                isEdit = true;
                 startHandler.removeCallbacks(twitterFeedRunnable);
             }
 
@@ -118,7 +217,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
                 if (s.toString().length() == 1) {
                     hashTagEdit.setSelection(1);
                 }
-                isEdit=false;
+                isEdit = false;
             }
 
         });
@@ -147,20 +246,20 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     }
 
     public void checkTagAndGo(boolean twitterAutoStart) {
-        isEdit=true;
+        isEdit = true;
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
-            Log.d("hash tag",prevHashTag);
-            Log.d("hash tag",hashTagEdit.getEditableText().toString());
+            Log.d("hash tag", prevHashTag);
+            Log.d("hash tag", hashTagEdit.getEditableText().toString());
 
-            if(!"".equals(prevHashTag)&&!hashTagEdit.getEditableText().toString().equals(prevHashTag)){
+            if (!"".equals(prevHashTag) && !hashTagEdit.getEditableText().toString().equals(prevHashTag)) {
                 clearFolder();
             }
             CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString(), mApp);
             checkInstaTagTask.execute(instagram.getSession().getAccessToken());
             try {
                 if (checkInstaTagTask.get()) {
-                    startActivity(new Intent(InstagramHashTagActivity.this, TwitterLoginActivity.class).putExtra("tas",twitterAutoStart));
+                    startActivity(new Intent(InstagramHashTagActivity.this, TwitterLoginActivity.class).putExtra("tas", twitterAutoStart));
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString(ISConsts.prefstags.instagram_hashtag, hashTagEdit.getEditableText().toString());
                     editor.apply();

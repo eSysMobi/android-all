@@ -1,6 +1,8 @@
 package mobi.esys.consts;
 
 
+import mobi.esys.view.DrawProgress;
+
 public final class ISConsts {
 
 
@@ -63,5 +65,16 @@ public final class ISConsts {
         public static final String is_music_download = "is_music_download";
     }
 
+    public static class progressSizes {
+        public static int screenWidth = 0;
+        public static int screenHeight = 0;
+        public static int progressDots[] = new int[4];
+
+        public static final float progressDotDelta = (float) 0.025;
+        public static int progressDotSize;
+        public static final float progressLineDelta = (float) 0.008;
+        public static int progressLineSize;
+        public static DrawProgress drawProgress;
+    }
 
 }

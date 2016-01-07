@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/rl_instagram_hash_tag"
+    android:background="@android:color/white">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/instagram_tag_input"
+        android:id="@+id/tv_instagram_hash_tag"
+        android:textColor="@android:color/black"
+        android:layout_centerHorizontal="true" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:id="@+id/ll_instagram_hash_tag"
+        android:gravity="bottom"
+        android:layout_below="@+id/tv_instagram_hash_tag"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/instHashTagEdit"
+            android:digits="0,1,2,3,4,5,6,7,8,9,_,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
+            android:ellipsize="end"
+            android:focusableInTouchMode="true"
+            android:imeOptions="actionDone"
+            android:lines="1"
+            android:textColor="@android:color/black"
+            android:maxLines="1"
+            android:inputType="textNoSuggestions"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            android:text="#"
+            android:layout_weight="0.02" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/okString"
+            android:id="@+id/enterHashTagBtn"/>
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iv_dot_instagram_hash_tag_1"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iv_dot_instagram_hash_tag_2"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iv_bar_instagram_hash_tag"
+        android:layout_centerVertical="true" />
+
+</RelativeLayout>
