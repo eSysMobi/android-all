@@ -41,7 +41,7 @@ import mobi.esys.tasks.CheckInstaTagTask;
 import mobi.esys.view.DrawProgress;
 
 
-public class InstagramHashTagActivity extends Activity implements View.OnClickListener {
+public class InstagramHashTagActivity extends Activity {
     private transient EditText hashTagEdit;
     private transient SharedPreferences preferences;
     private transient UNHApp mApp;
@@ -49,6 +49,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     private transient EasyTracker easyTracker;
     private transient boolean isEdit = false;
     private transient boolean isFirstLaunch = true;
+    private transient ImageView iv_button_next_instagram_hash_tag;
 
     private transient String prevHashTag;
 
@@ -75,6 +76,16 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
             rl_instagram_hash_tag.setBackground(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
         }
 
+        //iv_button_next_instagram_hash_tag
+        iv_button_next_instagram_hash_tag = (ImageView) findViewById(R.id.iv_button_next_instagram_hash_tag);
+        iv_button_next_instagram_hash_tag.setTranslationX(ISConsts.progressSizes.progressDots[3] + ISConsts.progressSizes.progressDotSize);
+        final View.OnClickListener onClickListenerNext = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkTagAndGo(false);
+            }
+        };
+
         TextView tv_instagram_hash_tag = (TextView) findViewById(R.id.tv_instagram_hash_tag);
         tv_instagram_hash_tag.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 2 * ISConsts.progressSizes.progressDotSize);
 
@@ -91,8 +102,22 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
         iv_dot_instagram_hash_tag_1.setLayoutParams(lp);
         iv_dot_instagram_hash_tag_1.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
         // Animation iv_dot_instagram_hash_tag_1
-        Animation scale_up = AnimationUtils.loadAnimation(this, R.anim.inflate_dot);
-        iv_dot_instagram_hash_tag_1.startAnimation(scale_up);
+        Animation scale_up = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        scale_up.setDuration((long) (ISConsts.progressSizes.animDuration*2/3));
+        scale_up.setFillAfter(true);
+        Animation scale_down = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        scale_down.setDuration((long) (ISConsts.progressSizes.animDuration/3));
+        scale_down.setStartOffset((long) (10+ISConsts.progressSizes.animDuration*2/3));
+        scale_down.setFillAfter(true);
+        AnimationSet allDot1Animation = new AnimationSet(true);
+        allDot1Animation.addAnimation(scale_up);
+        allDot1Animation.addAnimation(scale_down);
+        allDot1Animation.setFillAfter(true);
+        iv_dot_instagram_hash_tag_1.startAnimation(allDot1Animation);
 
         //iv_dot_instagram_hash_tag_2
         ImageView iv_dot_instagram_hash_tag_2 = (ImageView) findViewById(R.id.iv_dot_instagram_hash_tag_2);
@@ -107,25 +132,37 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
         Animation animMove = new TranslateAnimation(0,
                 ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0], 0, 0);
         Log.d("TAG", "move second dot to " + (ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0]) + " pixels");
-        animMove.setDuration(2000);
+        animMove.setDuration(ISConsts.progressSizes.animDuration);
         animMove.setFillAfter(true);
         Animation scale_up_delayed = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
                 Animation.ABSOLUTE, ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0] + ISConsts.progressSizes.progressLineSize,
                 Animation.RELATIVE_TO_SELF, 0.5f);
-        scale_up_delayed.setDuration(1000);
-        scale_up_delayed.setStartOffset(2010);
+        scale_up_delayed.setDuration((long) (ISConsts.progressSizes.animDuration * 2 / 3));
+        scale_up_delayed.setStartOffset(10 + ISConsts.progressSizes.animDuration);
         scale_up_delayed.setFillAfter(true);
         Animation scale_down_delayed = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
                 Animation.ABSOLUTE, ISConsts.progressSizes.progressDots[1] - ISConsts.progressSizes.progressDots[0] + ISConsts.progressSizes.progressLineSize,
                 Animation.RELATIVE_TO_SELF, 0.5f);
-        scale_down_delayed.setDuration(500);
-        scale_down_delayed.setStartOffset(3010);
+        scale_down_delayed.setDuration((long) (ISConsts.progressSizes.animDuration / 3));
+        scale_down_delayed.setStartOffset(20 + ISConsts.progressSizes.animDuration + (long) (ISConsts.progressSizes.animDuration * 2 / 3));
         scale_down_delayed.setFillAfter(true);
         AnimationSet allDot2Animation = new AnimationSet(true);
         allDot2Animation.addAnimation(animMove);
         allDot2Animation.addAnimation(scale_up_delayed);
         allDot2Animation.addAnimation(scale_down_delayed);
         allDot2Animation.setFillAfter(true);
+        allDot2Animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                iv_button_next_instagram_hash_tag.setOnClickListener(onClickListenerNext);
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
         iv_dot_instagram_hash_tag_2.startAnimation(allDot2Animation);
 
         //iv_bar_instagram_hash_tag
@@ -145,15 +182,12 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
                 1.0f,
                 Animation.RELATIVE_TO_SELF, 0,
                 Animation.RELATIVE_TO_SELF, 0.5f);
-        scale_right.setDuration(2000);
+        scale_right.setDuration(ISConsts.progressSizes.animDuration);
         scale_right.setFillAfter(true);
         iv_bar_instagram_hash_tag.startAnimation(scale_right);
 //
 
         hashTagEdit = (EditText) findViewById(R.id.instHashTagEdit);
-        Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
-
-        enterHashBtn.setOnClickListener(InstagramHashTagActivity.this);
 
         mApp = (UNHApp) getApplicationContext();
 
@@ -237,12 +271,6 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
         });
 
 
-    }
-
-
-    @Override
-    public void onClick(View v) {
-        checkTagAndGo(false);
     }
 
     public void checkTagAndGo(boolean twitterAutoStart) {

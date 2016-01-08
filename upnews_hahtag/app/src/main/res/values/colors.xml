@@ -2,8 +2,8 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="rss_line">#99000000</color>
-    <color name="progress_color">#002291</color>
-    <color name="deep_gray">#636363</color>
+    <color name="progress_color">#09b1f4</color>
+    <color name="deep_gray">#a4a4a4</color>
 
 
 </resources>

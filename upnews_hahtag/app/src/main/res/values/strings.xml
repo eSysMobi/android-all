@@ -15,9 +15,12 @@
     <string name="twLogoDesc">twitter logo</string>
     <string name="okString">OK</string>
     <string name="login_twitter">Login to Twitter</string>
-    <string name="twitter_tag_input">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="twitter_tag_input">Enter a tag to search for messages on Twitter</string>
     <string name="login_instagram">Login to Instagram</string>
-    <string name="instagram_tag_input">Введите тэг для поиска изображений в Instagram</string>
+    <string name="instagram_tag_input">Enter a tag to search for images on Instagram</string>
     <string name="login_skip">Skip</string>
+    <string name="twitter_skip_question">Skip Twitter autorization?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
 </resources>

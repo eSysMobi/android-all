@@ -12,7 +12,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -30,10 +32,10 @@ import mobi.esys.consts.ISConsts;
 import mobi.esys.view.DrawProgress;
 
 
-public class InstaLoginActivity extends Activity implements View.OnClickListener {
+public class InstaLoginActivity extends Activity{
     private transient Instagram instagram;
-    private transient Button instAuthBtn;
     private transient EasyTracker easyTracker;
+    private transient ImageView iv_button_next_instalogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +85,21 @@ public class InstaLoginActivity extends Activity implements View.OnClickListener
                 rl_instalogin.setBackground(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
             }
 
+            //iv_button_next_instalogin
+            iv_button_next_instalogin = (ImageView) findViewById(R.id.iv_button_next_instalogin);
+            iv_button_next_instalogin.setTranslationX(ISConsts.progressSizes.progressDots[3] + ISConsts.progressSizes.progressDotSize);
+            final View.OnClickListener onClickListenerNext =new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    instagram.authorize(igAuthListener);
+                }
+            };
+
+            //positing tv_instalogin
             TextView tv_instalogin = (TextView) findViewById(R.id.tv_instalogin);
             tv_instalogin.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 2 * ISConsts.progressSizes.progressDotSize);
 
+            //iv_dot_instalogin
             ImageView iv_dot_instalogin = (ImageView) findViewById(R.id.iv_dot_instalogin);
             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.setMargins(ISConsts.progressSizes.progressDots[0] - ISConsts.progressSizes.progressLineSize,
@@ -96,29 +110,37 @@ public class InstaLoginActivity extends Activity implements View.OnClickListener
             iv_dot_instalogin.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
             Log.d("TAG", "w bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getWidth());
             Log.d("TAG", "h bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getHeight());
-
             // Animation
-            Animation scale_up = AnimationUtils.loadAnimation(this, R.anim.inflate_dot);
+            Animation scale_up = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
+                    Animation.RELATIVE_TO_SELF, 0.5f,
+                    Animation.RELATIVE_TO_SELF, 0.5f);
+            scale_up.setDuration((long) (ISConsts.progressSizes.animDuration*2/3));
+            scale_up.setFillAfter(true);
+            Animation scale_down = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
+                    Animation.RELATIVE_TO_SELF, 0.5f,
+                    Animation.RELATIVE_TO_SELF, 0.5f);
+            scale_down.setDuration((long) (ISConsts.progressSizes.animDuration / 3));
+            scale_down.setStartOffset((long) (10 + ISConsts.progressSizes.animDuration * 2 / 3));
+            scale_down.setFillAfter(true);
+            AnimationSet allDot1Animation = new AnimationSet(true);
+            allDot1Animation.addAnimation(scale_up);
+            allDot1Animation.addAnimation(scale_down);
+            allDot1Animation.setFillAfter(true);
+            allDot1Animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    iv_button_next_instalogin.setOnClickListener(onClickListenerNext);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+            iv_dot_instalogin.startAnimation(allDot1Animation);
 
-//            Animation scale_up = new ScaleAnimation(1.0f, 4.0f, 1.0f, 4.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-//            scale_up.setDuration(2000);
-//            scale_up.setStartOffset(1000);
-//            scale_up.setFillAfter(true);
-
-            iv_dot_instalogin.startAnimation(scale_up);
 //
-//            AnimationSet allAnimation = new AnimationSet(true);
-//            allAnimation.addAnimation(animMove);
-//            allAnimation.addAnimation(scale_up);
-//            allAnimation.setFillAfter(true);
-
-//            iv_dot_instalogin.startAnimation(allAnimation);
-
-//
-
-
-            instAuthBtn = (Button) findViewById(R.id.instAuthBtn);
-            instAuthBtn.setOnClickListener(this);
         } else {
             finish();
             startActivity(new Intent(InstaLoginActivity.this, InstagramHashTagActivity.class));
@@ -157,12 +179,6 @@ public class InstaLoginActivity extends Activity implements View.OnClickListener
                     "instagram_auth", "cancel", null).build());
         }
     };
-
-
-    @Override
-    public void onClick(View v) {
-        instagram.authorize(igAuthListener);
-    }
 
     @Override
     public void onBackPressed() {

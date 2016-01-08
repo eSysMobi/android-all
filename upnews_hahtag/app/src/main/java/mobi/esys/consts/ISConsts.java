@@ -75,6 +75,8 @@ public final class ISConsts {
         public static final float progressLineDelta = (float) 0.008;
         public static int progressLineSize;
         public static DrawProgress drawProgress;
+
+        public static final long animDuration = 1500;
     }
 
 }
