@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">upnews | hashtag</string>
+
+    <string name="twitter_auth_failure_message">Ошибка авторизации в Twitter. Попробуйте ещё раз.</string>
+    <string name="twitter_hashtag_required_message">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="get_twitter_feed_message">Невозможно получить данные с Twitter. Следующая попытка через 5 минут.</string>
+
+    <string name="instagram_auth_failure_message">Ошибка авторизации в Instagram. Попробуйте ещё раз.</string>
+    <string name="instagram_auth_cancel_message">Авторизация в Instagram отменена</string>
+    <string name="instagram_hashtag_required_message">Введите тэг для поиска изображений в Instagram</string>
+
+
+    <string name="drive_folder_create_dialog_message">Google Drive folder processing</string>
+    <string name="hashsymbol">#</string>
+    <string name="twLogoDesc">twitter logo</string>
+    <string name="okString">OK</string>
+    <string name="login_twitter">Авторизация в Twitter</string>
+    <string name="twitter_tag_input">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="login_instagram">Авторизация в Instagram</string>
+    <string name="instagram_tag_input">Введите тэг для поиска изображений в Instagram</string>
+    <string name="login_skip">Пропустить</string>
+    <string name="twitter_skip_question">Пропустить авторизацию в Twitter?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+</resources>
