@@ -4,38 +4,56 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/fbGroupEdit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center_horizontal"
-        android:digits="0,1,2,3,4,5,6,7,8,9,_,*,.,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
-        android:ellipsize="end"
-        android:focusableInTouchMode="true"
-        android:hint="Input facebook group id"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:lines="1"
-        android:maxLines="1"
-        android:scrollHorizontally="false"
-        android:singleLine="true"
-        android:text=""
-        android:textColor="@android:color/black" />
-
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:src="@drawable/facebook"
+        android:layout_above="@+id/linearLayout"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/facebook" />
+        android:layout_marginBottom="50dp" />
 
-    <Button
-        android:id="@+id/enterfbGroupBtn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/fbGroupEdit"
-        android:layout_centerHorizontal="true"
-        android:text="OK" />
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:id="@+id/linearLayout">
+
+        <EditText
+            android:id="@+id/fbGroupEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:digits="0,1,2,3,4,5,6,7,8,9,_,*,.,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
+            android:ellipsize="end"
+            android:focusableInTouchMode="true"
+            android:hint="@string/hint_facebook"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            android:text=""
+            android:textColor="@android:color/black"
+            android:nextFocusRight="@+id/enterfbGroupBtn"
+            android:nextFocusLeft="@+id/enterfbGroupBtn"
+            android:layout_weight="1">
+            <requestFocus/>
+            </EditText>
+
+        <Button
+            android:id="@+id/enterfbGroupBtn"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:nextFocusRight="@+id/fbGroupEdit"
+            android:nextFocusLeft="@+id/fbGroupEdit"
+            android:text="OK" />
+    </LinearLayout>
 
 </RelativeLayout>

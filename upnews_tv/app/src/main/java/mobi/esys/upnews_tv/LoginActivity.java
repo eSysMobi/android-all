@@ -13,16 +13,23 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class LoginActivity extends Activity {
     private transient CallbackManager callbackManager;
     private transient SharedPreferences prefs;
     private transient EasyTracker easyTracker;
+    private transient String versionName;
 
 
     @Override
@@ -36,9 +43,18 @@ public class LoginActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-
-        String fbAT = prefs.getString("fbAT", "");
-        Log.d("fbAt", fbAT);
+        String fbAT = "";
+        //check old version and new version
+        versionName = BuildConfig.VERSION_NAME;
+        String fbATversion = prefs.getString("fbATversion", "");
+        if (versionName.equals(fbATversion)) {
+            fbAT = prefs.getString("fbAT", "");
+            Log.d("fbAt = ", fbAT);
+        } else {
+            if (!prefs.getString("fbAT", "").isEmpty()) {
+                LoginManager.getInstance().logOut();
+            }
+        }
 
         if (fbAT.equals("")) {
             setContentView(R.layout.fragment_facebooklogin);
@@ -54,6 +70,7 @@ public class LoginActivity extends Activity {
                 public void onSuccess(LoginResult loginResult) {
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("fbAT", loginResult.getAccessToken().getToken());
+                    editor.putString("fbATversion", versionName);
                     editor.apply();
                     startActivity(new Intent(LoginActivity.this, FacebookGroupActivity.class));
                     finish();
@@ -61,7 +78,6 @@ public class LoginActivity extends Activity {
 
                 @Override
                 public void onCancel() {
-
                 }
 
                 @Override
@@ -73,7 +89,6 @@ public class LoginActivity extends Activity {
             startActivity(new Intent(LoginActivity.this, FacebookGroupActivity.class));
             finish();
         }
-
     }
 
     @Override

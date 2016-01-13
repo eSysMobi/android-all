@@ -42,8 +42,8 @@ android {
         applicationId "mobi.esys.upnews_tv"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 3
-        versionName "2.1.0"
+        versionCode 4
+        versionName "2.2.2"
         signingConfig signingConfigs.config
     }
     sourceSets {
@@ -71,8 +71,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], exclude: 'android-support-*.jar', dir: 'libs')
     compile project(':instagram')
     compile project(':yWeatherGetter4a')
-    compile 'com.facebook.android:facebook-android-sdk:4.7.0'
-    compile('com.twitter.sdk.android:twitter:1.6.0@aar') {
+    compile('com.twitter.sdk.android:twitter:1.10.0@aar') {
         transitive = true;
     }
     compile('org.simpleframework:simple-xml:2.7.1') {
@@ -80,7 +79,6 @@ dependencies {
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
-    
     compile 'commons-io:commons-io:2.4'
     compile 'com.android.support:support-v4:23.0.1'
     compile 'com.nineoldandroids:library:2.4.0'
@@ -91,4 +89,5 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.3.0'
     compile 'com.danikula:videocache:1.0.1'
     compile 'com.warnyul.android.fast-video-view:fast-video-view:1.0.2'
+    compile project(':facebook')
 }

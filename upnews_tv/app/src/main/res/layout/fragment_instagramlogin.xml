@@ -5,9 +5,14 @@
 
     <Button
         android:id="@+id/igLgBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="220dp"
+        android:layout_height="40dp"
         android:layout_centerInParent="true"
-        android:text="Login to Instagram" />
+        android:text="@string/login_instagram"
+        android:textColor="@android:color/white"
+        android:background="#c21244b7"
+        android:textStyle="bold">
+        <requestFocus/>
+        </Button>
 
 </RelativeLayout>
