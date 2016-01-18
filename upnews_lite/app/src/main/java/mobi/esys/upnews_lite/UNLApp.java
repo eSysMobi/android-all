@@ -18,6 +18,15 @@ public class UNLApp extends Application {
     private static AtomicBoolean isDeleting;
     private static String curPlayFile;
     private static String appExtCachePath;
+    private static String[] camerasID = null;
+
+    public static void setCamerasID(String[] camerasID) {
+        UNLApp.camerasID = camerasID;
+    }
+
+    public static String[] getCamerasID() {
+        return camerasID;
+    }
 
     public static String getAppExtCachePath() {
         return appExtCachePath;
@@ -84,6 +93,4 @@ public class UNLApp extends Application {
     public void onTerminate() {
         super.onTerminate();
     }
-
-
 }

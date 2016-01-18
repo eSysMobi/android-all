@@ -5,10 +5,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -23,8 +25,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import mobi.esys.constants.UNLConsts;
+import mobi.esys.tasks.CameraShot;
 import mobi.esys.tasks.GetProductInfoTask;
 
 public class InAppBillingActivity extends Activity {
@@ -35,6 +39,7 @@ public class InAppBillingActivity extends Activity {
     private transient boolean permWriteOK = false;
     //    private transient boolean permReadOK = false;
     private transient boolean permAccOK = false;
+    private transient boolean permCamOK = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,48 @@ public class InAppBillingActivity extends Activity {
             }
 
         };
+
+        //check cameras
+        Log.d("unTag_InAppBillingAct", "SDK version is " + Build.VERSION.SDK_INT);
+        //camera2 api
+        if (Build.VERSION.SDK_INT >= 21) {
+            android.hardware.camera2.CameraManager cameraManager = (android.hardware.camera2.CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            String cameraIdList[];
+            try {
+                cameraIdList = cameraManager.getCameraIdList();
+                if (cameraIdList.length > 0) {
+                    UNLApp.setCamerasID(cameraIdList);
+                }
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        //camera1 api
+        if (Build.VERSION.SDK_INT >= 14 && Build.VERSION.SDK_INT < 21) {
+            android.hardware.Camera mCamera = null;
+            int numCameras = android.hardware.Camera.getNumberOfCameras();
+            Log.d("unTag_InAppBillingAct", "numCameras version is " + numCameras);
+
+            if (numCameras > 0) {
+                List<String> cameraIdList = new ArrayList<>();
+                for (int i = 0; i < numCameras; i++) {
+                    mCamera = android.hardware.Camera.open(i);
+                    android.hardware.Camera.Parameters params = mCamera.getParameters();
+                    int faceSupport = params.getMaxNumDetectedFaces();
+                    Log.d("unTag_InAppBillingAct", "Camera with id " + i + " support MaxNumDetectedFaces " + faceSupport);
+                    if (faceSupport > 0) {
+                        cameraIdList.add(String.valueOf(i));
+                    }
+                    mCamera.release();
+                }
+                if (cameraIdList.size() > 0) {
+                    String[] cameraIdArray = new String[cameraIdList.size()];
+                    cameraIdArray = cameraIdList.toArray(cameraIdArray);
+                    UNLApp.setCamerasID(cameraIdArray);
+                }
+            }
+        }
+
         checkPermision();
 
         if (BuildConfig.DEBUG) {
@@ -107,9 +154,8 @@ public class InAppBillingActivity extends Activity {
         allOK();
     }
 
-
     void allOK() {
-        if (buyOK && permWriteOK && permAccOK) {
+        if (buyOK && permWriteOK && permAccOK && permCamOK) {
             startActivity(new Intent(InAppBillingActivity.this, DriveAuthActivity.class));
             finish();
         }
@@ -118,24 +164,42 @@ public class InAppBillingActivity extends Activity {
     void checkPermision() {
         if (Build.VERSION.SDK_INT >= 23) {
             ArrayList<String> perm = new ArrayList<>();
+
             //checking permission WRITE_EXTERNAL_STORAGE
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
                 shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 perm.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             } else {
-                Log.d("unTag_InAppBillingAct ", "PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE already granted");
+                Log.d("unTag_InAppBillingAct ", "WRITE_EXTERNAL_STORAGE permission already granted");
                 permWriteOK = true;
             }
+
             //checking permission GET_ACCOUNTS
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
                     != PackageManager.PERMISSION_GRANTED) {
                 shouldShowRequestPermissionRationale(Manifest.permission.GET_ACCOUNTS);
                 perm.add(Manifest.permission.GET_ACCOUNTS);
             } else {
-                Log.d("unTag_InAppBillingAct ", "GET_ACCOUNTS already granted");
+                Log.d("unTag_InAppBillingAct ", "GET_ACCOUNTS permission already granted");
                 permAccOK = true;
             }
+
+            //checking permission CAMERA
+            if (UNLApp.getCamerasID() != null) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
+                    perm.add(Manifest.permission.CAMERA);
+                } else {
+                    Log.d("unTag_InAppBillingAct ", "CAMERA permission already granted");
+                    permCamOK = true;
+                }
+            } else {
+                // if we have not a cameras
+                permCamOK = true;
+            }
+
             //request permissions
             if (perm.size() > 0) {
                 ActivityCompat.requestPermissions(this,
@@ -146,6 +210,7 @@ public class InAppBillingActivity extends Activity {
         } else {
             permWriteOK = true;
             permAccOK = true;
+            permCamOK = true;
         }
     }
 
@@ -162,6 +227,11 @@ public class InAppBillingActivity extends Activity {
                     case Manifest.permission.GET_ACCOUNTS:
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                             permAccOK = true;
+                        }
+                        break;
+                    case Manifest.permission.CAMERA:
+                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                            permCamOK = true;
                         }
                         break;
                 }
