@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mobi.esys.constants.UNLConsts;
-import mobi.esys.tasks.CameraShot;
 import mobi.esys.tasks.GetProductInfoTask;
 
 public class InAppBillingActivity extends Activity {
@@ -102,6 +101,7 @@ public class InAppBillingActivity extends Activity {
 
         //check cameras
         Log.d("unTag_InAppBillingAct", "SDK version is " + Build.VERSION.SDK_INT);
+        /*
         //camera2 api
         if (Build.VERSION.SDK_INT >= 21) {
             android.hardware.camera2.CameraManager cameraManager = (android.hardware.camera2.CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -115,23 +115,30 @@ public class InAppBillingActivity extends Activity {
                 e.printStackTrace();
             }
         }
+        */
         //camera1 api
-        if (Build.VERSION.SDK_INT >= 14 && Build.VERSION.SDK_INT < 21) {
-            android.hardware.Camera mCamera = null;
+        //if (Build.VERSION.SDK_INT >= 14 && Build.VERSION.SDK_INT < 21) {
+        if (Build.VERSION.SDK_INT >= 11) {
             int numCameras = android.hardware.Camera.getNumberOfCameras();
             Log.d("unTag_InAppBillingAct", "numCameras version is " + numCameras);
 
             if (numCameras > 0) {
                 List<String> cameraIdList = new ArrayList<>();
                 for (int i = 0; i < numCameras; i++) {
+                    /*
+                    // check supporting face detection for camera
+                    android.hardware.Camera mCamera = null;
                     mCamera = android.hardware.Camera.open(i);
                     android.hardware.Camera.Parameters params = mCamera.getParameters();
+
                     int faceSupport = params.getMaxNumDetectedFaces();
                     Log.d("unTag_InAppBillingAct", "Camera with id " + i + " support MaxNumDetectedFaces " + faceSupport);
                     if (faceSupport > 0) {
                         cameraIdList.add(String.valueOf(i));
                     }
                     mCamera.release();
+                    */
+                    cameraIdList.add(String.valueOf(i));
                 }
                 if (cameraIdList.size() > 0) {
                     String[] cameraIdArray = new String[cameraIdList.size()];

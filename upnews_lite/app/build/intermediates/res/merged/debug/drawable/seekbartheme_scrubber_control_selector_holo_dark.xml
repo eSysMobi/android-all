@@ -20,4 +20,4 @@
     <item android:state_selected="true" android:drawable="@drawable/seekbartheme_scrubber_control_focused_holo" />
     <item android:drawable="@drawable/seekbartheme_scrubber_control_normal_holo" />
 </selector>
-<!-- From: file:/C:/upnewslite_release/app/src/main/res/drawable/seekbartheme_scrubber_control_selector_holo_dark.xml -->
+<!-- From: file:/D:/esys-mobi/android-all/upnews_lite/app/src/main/res/drawable/seekbartheme_scrubber_control_selector_holo_dark.xml -->

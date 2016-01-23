@@ -11,5 +11,8 @@
     <string name="no_inet" tools:ignore="MissingTranslation">Отсутствует подключение к сети интернет.</string>
     <string name="processing" tools:ignore="MissingTranslation">Обработка…</string>
 
+    <string name="collumn_time" tools:ignore="MissingTranslation">Время</string>
+    <string name="collumn_all_videos" tools:ignore="MissingTranslation">Все видео</string>
+    <string name="row_all" tools:ignore="MissingTranslation">Всего</string>
 
 </resources>

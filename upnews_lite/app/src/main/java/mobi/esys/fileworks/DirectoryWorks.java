@@ -1,17 +1,23 @@
 package mobi.esys.fileworks;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import mobi.esys.constants.UNLConsts;
+import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DirectoryWorks {
@@ -36,6 +42,65 @@ public class DirectoryWorks {
         if (!logoDir.exists()) {
             logoDir.mkdir();
         }
+        File statisticsDir = new File(videoDir.getAbsolutePath() + UNLConsts.STATISTICS_DIR_NAME);
+        if (!statisticsDir.exists()) {
+            statisticsDir.mkdir();
+        }
+    }
+
+    public File checkLastStatisticFile(Context mContext) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String dateToday = df.format(Calendar.getInstance().getTime());
+        String fileName = dateToday + ".csv";
+        File statisticFile = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME, fileName);
+        if (!statisticFile.exists()) {
+            try {
+                statisticFile.createNewFile();
+                InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.statistic_file_sample);
+                if (tmpInStream != null) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(tmpInStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String receiveString = "";
+
+                    FileWriter logWriter = new FileWriter(statisticFile);
+                    BufferedWriter out = new BufferedWriter(logWriter);
+                    int numLine = 0;
+                    while ((receiveString = bufferedReader.readLine()) != null) {
+                        if (numLine > 0) {
+                            out.newLine();
+                        }
+                        out.write(receiveString);
+                        //out.flush();
+                        numLine++;
+                    }
+                    out.close();
+                    tmpInStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return statisticFile;
+    }
+
+    public boolean deleteRedundantStatistics() {
+        boolean isDeleted = false;
+        File statisticDir = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + this.directoryPath);
+        Log.d(DIR_WORKS_TAG, statisticDir.getAbsolutePath());
+        if (statisticDir.exists()) {
+            //get all files from directory
+            File[] files = statisticDir.listFiles();
+            if (files.length > 7) {
+                if (files[0].exists()) {
+                    Log.d(DIR_WORKS_TAG, "File " + files[0].getName() + " delete");
+                    isDeleted = files[0].delete();
+                }
+            }
+        } else {
+            Log.d(DIR_WORKS_TAG, "folder don't exist");
+            checkDirs();
+        }
+        return isDeleted;
     }
 
     public String[] getDirFileList(String mess) {
@@ -88,8 +153,8 @@ public class DirectoryWorks {
                         long days = diff / (24 * 60 * 60 * 1000);
                         if ((files[i].exists() && !files[i].getAbsolutePath().equals(UNLApp.getCurPlayFile()))
                                 ||
-                             (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14)
-                            ) {
+                                (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14)
+                                ) {
                             files[i].delete();
                         }
                     }

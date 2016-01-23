@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/unImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/gdImage"
@@ -29,10 +29,10 @@
         android:src="@drawable/google_drive" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/tvDriveAuthActivity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imageView1"
+        android:layout_below="@+id/unImage"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="18dp"
         android:text="@string/add_gd"
@@ -43,8 +43,17 @@
         android:id="@+id/gdAuthBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
+        android:layout_below="@+id/tvDriveAuthActivity"
         android:layout_centerHorizontal="true"
         android:text="OK" />
 
-</RelativeLayout><!-- From: file:/C:/upnewslite_release/app/src/main/res/layout/drive_auth_activity.xml -->
+    <ProgressBar
+        android:id="@+id/pbDriveAuthActivity"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/tvDriveAuthActivity"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+
+</RelativeLayout><!-- From: file:/D:/esys-mobi/android-all/upnews_lite/app/src/main/res/layout/drive_auth_activity.xml -->

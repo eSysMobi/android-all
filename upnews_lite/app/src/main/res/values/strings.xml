@@ -11,4 +11,9 @@
     <string name="no_inet" tools:ignore="MissingTranslation">No Internet connection</string>
     <string name="processing" tools:ignore="MissingTranslation">Processing…</string>
 
+    <!-- statistics strings -->
+    <string name="collumn_time" tools:ignore="MissingTranslation">Time</string>
+    <string name="collumn_all_videos" tools:ignore="MissingTranslation">All videos</string>
+    <string name="row_all" tools:ignore="MissingTranslation">All</string>
+
 </resources>

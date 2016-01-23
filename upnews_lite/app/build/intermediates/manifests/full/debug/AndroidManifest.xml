@@ -10,6 +10,7 @@
         android:targetSdkVersion="23" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -17,14 +18,15 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="com.android.vending.BILLING" />
 
     <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:name="mobi.esys.upnews_lite.UNLApp"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
@@ -42,7 +44,7 @@
             android:screenOrientation="landscape" >
             <meta-data
                 android:name="com.google.android.apps.drive.APP_ID"
-                android:value="id=127578844442-skkvtc2kg83cnt1qc304h51fh6ucf799" />
+                android:value="id=127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k" />
         </activity>
         <activity
             android:name="mobi.esys.upnews_lite.InAppBillingActivity"

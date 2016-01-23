@@ -2,20 +2,14 @@ package mobi.esys.upnews_lite;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.graphics.Bitmap;
-import android.hardware.Camera;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +29,6 @@ import java.io.IOException;
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
-import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
 
@@ -94,7 +87,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                 Log.d("unTag_DriveAuthActivity", "We have no inet");
                 //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
 
-                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
+                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME); //TODO check this
 
                 if (directoryWorks.getDirFileList("if have files").length == 0) {
                     startActivity(new Intent(DriveAuthActivity.this,
@@ -255,6 +248,10 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             if (!logoDir.exists()) {
                 logoDir.mkdir();
             }
+            File statisticsDir = new File(videoDir.getAbsolutePath() + UNLConsts.STATISTICS_DIR_NAME);
+            if (!statisticsDir.exists()) {
+                statisticsDir.mkdir();
+            }
         }
     }
 
@@ -278,12 +275,6 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             Log.d("unTag_DriveAuthActivity", "External storage is not available");
             Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
         }
-    }
-
-    public void takePhotoFromButton(View view) {
-        CameraShotTask cst = new CameraShotTask();
-        ImageView tt = (ImageView) findViewById(R.id.unImage);
-        cst.getPhoto(tt, getApplicationContext());
     }
 
 }

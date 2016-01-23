@@ -23,6 +23,7 @@ import java.util.Set;
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
+import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.DownloadVideoTask;
 import mobi.esys.upnews_lite.FirstVideoActivity;
 import mobi.esys.upnews_lite.FullscreenActivity;
@@ -36,6 +37,7 @@ public class Playback {
     private static final String TAG = "unTag_Playback";
     private transient String[] files;
     private transient String[] ulrs = {""};
+    private transient String nameCurrentPlayedFile = "";
     private transient int serverIndex = 0;
     private transient SharedPreferences prefs;
     private transient Set<String> md5sApp;
@@ -97,6 +99,12 @@ public class Playback {
 
                 @Override
                 public void onCompletion(MediaPlayer mp) {
+
+                    //TODO using cameras
+                    Log.d(TAG, "Start face counting after ending file " + nameCurrentPlayedFile);
+                    CameraShotTask csTask = new CameraShotTask(mContext,nameCurrentPlayedFile);
+                    csTask.start();
+
                     nextTrack(files);
                     restartDownload();
                     ((FullscreenActivity) mContext).restartCreepingLine();
@@ -145,6 +153,7 @@ public class Playback {
         ((FullscreenActivity) mContext).recToMP("playlist_video_play", "Start playing playlist video");
     }
 
+    //if need check logo on GoogleDrive
     private void signalCheckNewLogo() {
         Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
         intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NEED_CHECK_LOGO);
@@ -203,9 +212,11 @@ public class Playback {
                                 if (serverIndex >= listFiles.length - 1) {
                                     Log.d(TAG,"File index " + String.valueOf(serverIndex));
                                     Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
+                                    nameCurrentPlayedFile = fs.getName();
                                     playFile(listFiles[serverIndex]);
                                     serverIndex = 0;
                                 } else {
+                                    nameCurrentPlayedFile = fs.getName();
                                     playFile(listFiles[serverIndex]);
                                     Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
                                     serverIndex++;
