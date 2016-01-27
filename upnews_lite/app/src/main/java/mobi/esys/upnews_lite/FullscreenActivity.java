@@ -16,9 +16,13 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 
@@ -46,12 +50,18 @@ public class FullscreenActivity extends Activity {
     private transient BroadcastReceiver br;
     private transient IntentFilter intFilt;
     private transient ImageView mLogo;
+    SurfaceHolder holder;
 
 
     @Override
     protected void onCreate(Bundle stateBundle) {
         super.onCreate(stateBundle);
         setContentView(R.layout.activity_videofullscreen);
+
+        SurfaceView surfaceView = new SurfaceView(FullscreenActivity.this);
+        FrameLayout surfaceHodler = (FrameLayout) findViewById(R.id.surfaceHolder);
+        surfaceHodler.addView(surfaceView);
+        holder = surfaceView.getHolder();
 
         relativeLayout = (RelativeLayout) findViewById(R.id.fullscreenLayout);
         textView = new TextView(FullscreenActivity.this);
@@ -94,6 +104,9 @@ public class FullscreenActivity extends Activity {
                         break;
                     case UNLConsts.STATUS_NEED_CHECK_LOGO:
                         renewLogo();
+                        break;
+                    case UNLConsts.SIGNAL_TOAST:
+                        Toast.makeText(FullscreenActivity.this, intent.getStringExtra("toastText"), Toast.LENGTH_SHORT).show();
                         break;
                 }
             }
@@ -195,7 +208,7 @@ public class FullscreenActivity extends Activity {
     }
 
     public void startPlayback() {
-        playback = new Playback(FullscreenActivity.this, mApp);
+        playback = new Playback(FullscreenActivity.this, mApp, holder);
         playback.playFolder();
     }
 

@@ -10,6 +10,7 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.SeekBar;
@@ -43,12 +44,13 @@ public class Playback {
     private transient Set<String> md5sApp;
     private transient UNLApp mApp;
     private transient DownloadVideoTask downloadVideoTask;
+    SurfaceHolder mHolder;
 
 
     //127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k debug
     //127578844442-h41s9f3md1ni2soa7e3t3rpuqrukkd1u release
 
-    public Playback(Context context, UNLApp app) {
+    public Playback(Context context, UNLApp app, SurfaceHolder holder) {
         super();
         mController = new MediaController(context);
         mVideo = ((FullscreenActivity) context).getVideoView();
@@ -59,6 +61,7 @@ public class Playback {
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         Set<String> defaultSet = new HashSet<String>();
         md5sApp = prefs.getStringSet("md5sApp", defaultSet);
+        mHolder = holder;
     }
 
 
@@ -81,8 +84,8 @@ public class Playback {
         downloadVideoTask.execute();
         DirectoryWorks directoryWorks = new DirectoryWorks(
                 UNLConsts.VIDEO_DIR_NAME +
-                UNLConsts.GD_STORAGE_DIR_NAME +
-                "/");
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
         files = directoryWorks.getDirFileList("play folder");
         this.mVideo.setOnErrorListener(new OnErrorListener() {
 
@@ -102,8 +105,11 @@ public class Playback {
 
                     //TODO using cameras
                     Log.d(TAG, "Start face counting after ending file " + nameCurrentPlayedFile);
-                    CameraShotTask csTask = new CameraShotTask(mContext,nameCurrentPlayedFile);
-                    csTask.start();
+//                    CameraShotTask csTask = new CameraShotTask(mContext,nameCurrentPlayedFile);
+//                    csTask.start();
+                    CameraShotTask csTask = new CameraShotTask(mHolder, mContext, nameCurrentPlayedFile, mApp);
+                    Thread thread = new Thread(null, csTask, "CameraShotTask");
+                    thread.start();
 
                     nextTrack(files);
                     restartDownload();
@@ -115,7 +121,7 @@ public class Playback {
             mVideo.setOnErrorListener(new OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
-                    Log.d(TAG,"MediaPlayer error " + String.valueOf(what) + ":" + String.valueOf(extra));
+                    Log.d(TAG, "MediaPlayer error " + String.valueOf(what) + ":" + String.valueOf(extra));
                     nextTrack(files);
                     return false;
                 }
@@ -167,7 +173,7 @@ public class Playback {
 //        signalCheckNewLogo();
 
         if (!prefs.getString("urls", "").replace("[", "").replace("]", "").equals("")) {
-            Log.d(TAG,"urls string " +
+            Log.d(TAG, "urls string " +
                     prefs.getString("urls", "")
                             .replace("[", "").replace("]", ""));
 
@@ -188,12 +194,12 @@ public class Playback {
                             .replace("]", "");
                 }
                 if (serverIndex >= listFiles.length) {
-                    serverIndex=0;
+                    serverIndex = 0;
                 }
 
-                Log.d(TAG,"urls next " + Arrays.asList(listFiles).toString());
+                Log.d(TAG, "urls next " + Arrays.asList(listFiles).toString());
                 File fs = new File(listFiles[serverIndex]);
-                Log.d(TAG,"next file^ " + fs.getAbsolutePath());
+                Log.d(TAG, "next file^ " + fs.getAbsolutePath());
                 String currDownFile = prefs.getString("currDownFile", "");
                 Log.d(TAG, "current download " + currDownFile);
                 if (fs.exists()) {
@@ -202,28 +208,28 @@ public class Playback {
 
                         DirectoryWorks directoryWorks = new DirectoryWorks(
                                 UNLConsts.VIDEO_DIR_NAME +
-                                UNLConsts.GD_STORAGE_DIR_NAME +
-                                "/");
+                                        UNLConsts.GD_STORAGE_DIR_NAME +
+                                        "/");
                         String[] refreshFiles = directoryWorks.getDirFileList("folder");
-                        Log.d(TAG,"files " + Arrays.asList(refreshFiles).toString());
+                        Log.d(TAG, "files " + Arrays.asList(refreshFiles).toString());
                         if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
                             if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(fs.getAbsolutePath())) {
 
                                 if (serverIndex >= listFiles.length - 1) {
-                                    Log.d(TAG,"File index " + String.valueOf(serverIndex));
-                                    Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
+                                    Log.d(TAG, "File index " + String.valueOf(serverIndex));
+                                    Log.d(TAG, "Played files counts is " + String.valueOf(listFiles.length));
                                     nameCurrentPlayedFile = fs.getName();
                                     playFile(listFiles[serverIndex]);
                                     serverIndex = 0;
                                 } else {
                                     nameCurrentPlayedFile = fs.getName();
                                     playFile(listFiles[serverIndex]);
-                                    Log.d(TAG,"Played files counts is " + String.valueOf(listFiles.length));
+                                    Log.d(TAG, "Played files counts is " + String.valueOf(listFiles.length));
                                     serverIndex++;
                                 }
                             } else {
                                 if (serverIndex >= listFiles.length - 1) {
-                                    serverIndex=0;
+                                    serverIndex = 0;
                                 } else {
                                     serverIndex++;
                                 }
@@ -231,7 +237,7 @@ public class Playback {
                             }
                         } else {
                             if (serverIndex >= listFiles.length - 1) {
-                                serverIndex=0;
+                                serverIndex = 0;
                             } else {
                                 serverIndex++;
                             }
@@ -239,7 +245,7 @@ public class Playback {
                         }
                     } else {
                         if (serverIndex >= listFiles.length - 1) {
-                            serverIndex=0;
+                            serverIndex = 0;
                         } else {
                             serverIndex++;
                         }
@@ -248,15 +254,15 @@ public class Playback {
 
                 } else {
                     if (serverIndex >= listFiles.length - 1) {
-                        serverIndex=0;
+                        serverIndex = 0;
                     } else {
                         serverIndex++;
                     }
                     nextTrack(files);
                 }
             }
-        }else {
-            mContext.startActivity(new Intent(mContext,FirstVideoActivity.class));
+        } else {
+            mContext.startActivity(new Intent(mContext, FirstVideoActivity.class));
             ((Activity) mContext).finish();
         }
 

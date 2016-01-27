@@ -15,10 +15,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class UNLApp extends Application {
     private static Drive driveService;
     private static AtomicBoolean isDownloadTaskRunning;
+    private static AtomicBoolean isCreatingDriveFolder;
     private static AtomicBoolean isDeleting;
+    private static AtomicBoolean isCamerasWorking;
     private static String curPlayFile;
     private static String appExtCachePath;
     private static String[] camerasID = null;
+
+    public static void setIsCamerasWorking(boolean state) {
+        UNLApp.isCamerasWorking.set(state);
+    }
+
+    public static boolean getIsCamerasWorking() {
+        return isCamerasWorking.get();
+    }
+
+    public static void setIsCreatingDriveFolder(boolean state) {
+        UNLApp.isCreatingDriveFolder.set(state);
+    }
+
+    public static boolean getIsCreatingDriveFolder() {
+        return isCreatingDriveFolder.get();
+    }
 
     public static void setCamerasID(String[] camerasID) {
         UNLApp.camerasID = camerasID;
@@ -76,6 +94,8 @@ public class UNLApp extends Application {
         super.onCreate();
         isDownloadTaskRunning = new AtomicBoolean(false);
         isDeleting = new AtomicBoolean(false);
+        isCreatingDriveFolder = new AtomicBoolean(false);
+        isCamerasWorking = new AtomicBoolean(false);
     }
 
     @Override

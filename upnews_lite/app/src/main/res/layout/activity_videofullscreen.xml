@@ -6,6 +6,12 @@
     android:background="@null"
     tools:context=".FullscreenActivity">
 
+    <FrameLayout
+        android:id="@+id/surfaceHolder"
+        android:layout_width="1px"
+        android:layout_height="1px" >
+    </FrameLayout>
+
     <include layout="@layout/video_with_logo" />
 
 

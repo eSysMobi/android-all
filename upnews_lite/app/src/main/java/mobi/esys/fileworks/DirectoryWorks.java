@@ -7,12 +7,15 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +51,22 @@ public class DirectoryWorks {
         }
     }
 
+    public File[] getStatisticsFiles(){
+        File[] result = null;
+        File statisticFolder = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME);
+        if (statisticFolder.exists()){
+            result = statisticFolder.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                    return filename.toLowerCase().endsWith(".csv");
+                }
+            });
+        }
+        return result;
+    }
+
     public File checkLastStatisticFile(Context mContext) {
+        //check today statistic file
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String dateToday = df.format(Calendar.getInstance().getTime());
         String fileName = dateToday + ".csv";
@@ -78,9 +96,46 @@ public class DirectoryWorks {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                deleteRedundantStatistics();
             }
         }
         return statisticFile;
+    }
+
+    public File checkAllStatisticFile(Context mContext) {
+        //check common statistic file
+        File allStatisticFile = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME, UNLConsts.ALL_STATISTICS_FINE_NAME);
+        if (!allStatisticFile.exists()) {
+            try {
+                allStatisticFile.createNewFile();
+                InputStream tmpInStream = mContext.getResources().openRawResource(R.raw.statistic_file_sample);
+                if (tmpInStream != null) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(tmpInStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String receiveString = "";
+
+                    FileWriter logWriter = new FileWriter(allStatisticFile);
+                    BufferedWriter out = new BufferedWriter(logWriter);
+                    int numLine = 0;
+                    while ((receiveString = bufferedReader.readLine()) != null) {
+                        if (numLine > 0) {
+                            out.newLine();
+                        }
+                        out.write(receiveString);
+                        //out.flush();
+                        numLine++;
+                    }
+                    out.close();
+                    tmpInStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                deleteRedundantStatistics();
+            }
+        }
+        return allStatisticFile;
     }
 
     public boolean deleteRedundantStatistics() {
@@ -88,12 +143,23 @@ public class DirectoryWorks {
         File statisticDir = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + this.directoryPath);
         Log.d(DIR_WORKS_TAG, statisticDir.getAbsolutePath());
         if (statisticDir.exists()) {
-            //get all files from directory
+            //get all files from statistics directory
             File[] files = statisticDir.listFiles();
-            if (files.length > 7) {
-                if (files[0].exists()) {
-                    Log.d(DIR_WORKS_TAG, "File " + files[0].getName() + " delete");
-                    isDeleted = files[0].delete();
+            if (files.length > UNLConsts.NUM_STATISTICS_FILES) {
+                List<File> statisticsList = Arrays.asList(files);
+//                for (int i=0; i<statisticsList.size(); i++){
+//                    if (statisticsList.get(i).exists() && statisticsList.get(i).getName().equals(UNLConsts.ALL_STATISTICS_FINE_NAME)){
+//                        statisticsList.remove(i);
+//                    }
+//                }
+                Collections.sort(statisticsList);
+                Collections.reverse(statisticsList);
+                //delete files older than 7 days
+                for (int j=UNLConsts.NUM_STATISTICS_FILES; j<statisticsList.size(); j++){
+                    if (statisticsList.get(j).exists()){
+                        Log.d(DIR_WORKS_TAG, "Redundant Statistics file " + statisticsList.get(j).getName() + " deleted");
+                        isDeleted=statisticsList.get(j).delete();
+                    }
                 }
             }
         } else {

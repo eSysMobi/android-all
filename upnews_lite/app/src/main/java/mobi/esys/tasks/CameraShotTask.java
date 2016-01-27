@@ -1,6 +1,7 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
@@ -31,7 +32,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 17.01.2016.
  */
-public class CameraShotTask extends Thread {
+public class CameraShotTask implements Runnable {
     private int MAX_FACES = 15;
     private Context mContext;
     private String mVideoName;
@@ -39,42 +40,68 @@ public class CameraShotTask extends Thread {
     private int currentCamID;
     private SurfaceView svDriveAuth;
     private int count = 0;
+    private SurfaceHolder sHolder;
+    private boolean allowToast = UNLConsts.ALLOW_TOAST;
+    UNLApp mApp;
 
-    public CameraShotTask(Context context, String videoName) {
+    public CameraShotTask(SurfaceHolder mHolder, Context context, String videoName, UNLApp app) {
         mContext = context;
+//        mVideoName = videoName;
+//        svDriveAuth = new SurfaceView(context);
+//        sHolder = svDriveAuth.getHolder();
+//        sHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        sHolder = mHolder;
         mVideoName = videoName;
-        svDriveAuth = new SurfaceView(context);
+        mApp = app;
     }
 
     @Override
     public void run() {
         if (UNLApp.getCamerasID() != null && !mVideoName.isEmpty()) {
-            if (UNLApp.getCamerasID()[0] != null) {
-                int id = Integer.parseInt(UNLApp.getCamerasID()[0]);
-                Log.d("unTag_Camera", "We have " + UNLApp.getCamerasID().length + " cameras. Start with id=" + id);
-                currentCamID = id;
-                getPhotoAndParce(id);
+            if (!UNLApp.getIsCamerasWorking()) {
+                UNLApp.setIsCamerasWorking(true);
+                try {
+                    if (UNLApp.getCamerasID()[0] != null) {
+                        int id = Integer.parseInt(UNLApp.getCamerasID()[0]);
+                        Log.d("unTag_Camera", "We have " + UNLApp.getCamerasID().length + " cameras. Start with id=" + id);
+                        currentCamID = id;
+                        getPhotoAndParse(id);
+                    }
+                } finally {
+                    Log.d("unTag_Camera", "Release camera thread!");
+                    UNLApp.setIsCamerasWorking(false);
+                }
+            } else {
+                Log.d("unTag_Camera", "Cameras working in another thread");
             }
         }
     }
 
-    private void getPhotoAndParce(int cameraId) {
-        boolean camOpened = false;
-
-        SurfaceHolder sHolder = svDriveAuth.getHolder();
-        sHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-        try {
-//            mCamera = Camera.open(1);
-            camOpened = safeCameraOpen(cameraId);
-            mCamera.setPreviewDisplay(sHolder);
-        } catch (IOException exception) {
-            //mCamera.release();
-            mCamera = null;
-        }
 
 
+    private void getPhotoAndParse(int cameraId) {
+        boolean camOpened = safeCameraOpen(cameraId);
         if (camOpened) {
+            try {
+                mCamera.setPreviewDisplay(sHolder);
+            } catch (IOException e) {
+                e.printStackTrace();
+                if (allowToast) {
+                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                    intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                    String toastText = "Problem setPreviewDisplay camera id " + currentCamID;
+                    intentOut.putExtra("toastText", toastText);
+                    mApp.sendBroadcast(intentOut);
+                }
+            }
+
+            if (allowToast) {
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                String toastText = "camera " + currentCamID + " opened";
+                intentOut.putExtra("toastText", toastText);
+                mApp.sendBroadcast(intentOut);
+            }
 
             Camera.Parameters parameters = mCamera.getParameters();
 
@@ -149,15 +176,30 @@ public class CameraShotTask extends Thread {
                         Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
                         count = count + face_count;
 
+                        if (allowToast) {
+                            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                            intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                            String toastText = "camera " + currentCamID + " detect " + face_count + " faces";
+                            intentOut.putExtra("toastText", toastText);
+                            mApp.sendBroadcast(intentOut);
+                        }
+
                     } catch (IOException e) {
-                        //do something about it
+                        Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
+                        if (allowToast) {
+                            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                            intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                            String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
+                            intentOut.putExtra("toastText", toastText);
+                            mApp.sendBroadcast(intentOut);
+                        }
                     }
 
                     releaseCameraAndPreview();
 
                     currentCamID = currentCamID + 1;
                     if (currentCamID < UNLApp.getCamerasID().length) {
-                        getPhotoAndParce(currentCamID);
+                        getPhotoAndParse(currentCamID);
                     } else {
                         if (count > 0) {
                             finalCount();
@@ -169,9 +211,10 @@ public class CameraShotTask extends Thread {
             mCamera.takePicture(null, null, mCall);
 
         } else {
+            Log.e("unTag_Camera", "Camera id " + currentCamID + " is not open. Next camera.");
             currentCamID = currentCamID + 1;
             if (currentCamID < UNLApp.getCamerasID().length) {
-                getPhotoAndParce(currentCamID);
+                getPhotoAndParse(currentCamID);
             } else {
                 if (count > 0) {
                     finalCount();
@@ -184,19 +227,20 @@ public class CameraShotTask extends Thread {
         Log.d("unTag_Camera", "Faces detected from all cameras: " + count);
         DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.STATISTICS_DIR_NAME);
         File statisticFile = directoryWorks.checkLastStatisticFile(mContext);
+//        File allStatisticFile = directoryWorks.checkAllStatisticFile(mContext);
 
         try {
+            //LAST STATISTICS FILE
             //parse last statistic file
             Scanner scanner = new Scanner(new FileInputStream(statisticFile));
             ArrayList<ArrayList<String>> collection = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] myList = line.split(";");
+                String[] myList = line.split(UNLConsts.CSV_SEPARATOR);
                 ArrayList<String> stringList = new ArrayList<String>(Arrays.asList(myList));
                 collection.add(stringList);
             }
             scanner.close();
-
             //check video file name in the parsed data
             if (!collection.get(0).contains(mVideoName)) {
                 collection.get(0).add(mVideoName);
@@ -204,10 +248,8 @@ public class CameraShotTask extends Thread {
                     collection.get(i).add("0");
                 }
             }
-
             //get column in the parsed data for writing info
             int colIndex = collection.get(0).indexOf(mVideoName);
-
             //get and parse current time
             int rowIndex = 1;
             SimpleDateFormat df = new SimpleDateFormat("k");
@@ -225,7 +267,6 @@ public class CameraShotTask extends Thread {
                     rowIndex = i;
                 }
             }
-
             //adding detected faced to the data
             //adding data to current video
             int countFacesFromData = Integer.parseInt(collection.get(rowIndex).get(colIndex));
@@ -238,7 +279,7 @@ public class CameraShotTask extends Thread {
             tmp.set(1, String.valueOf(countFacesFromData));
             collection.set(rowIndex, tmp);
             //adding data to current video in all time
-            int lastRow = collection.size()-1;
+            int lastRow = collection.size() - 1;
             countFacesFromData = Integer.parseInt(collection.get(lastRow).get(colIndex));
             countFacesFromData = countFacesFromData + count;
             ArrayList<String> tmp2 = collection.get(lastRow);
@@ -248,17 +289,15 @@ public class CameraShotTask extends Thread {
             countFacesFromData = countFacesFromData + count;
             tmp2.set(1, String.valueOf(countFacesFromData));
             collection.set(lastRow, tmp2);
-
             //parse data to lines
             ArrayList<String> tmpStrings = new ArrayList<>();
             for (int i = 0; i < collection.size(); i++) {
                 String tmpString = collection.get(i).get(0);
                 for (int j = 1; j < collection.get(i).size(); j++) {
-                    tmpString = tmpString + ";" + collection.get(i).get(j);
+                    tmpString = tmpString + UNLConsts.CSV_SEPARATOR + collection.get(i).get(j);
                 }
                 tmpStrings.add(tmpString);
             }
-
             //write data to file
             FileWriter logWriter = new FileWriter(statisticFile);
             BufferedWriter out = new BufferedWriter(logWriter);
@@ -271,6 +310,96 @@ public class CameraShotTask extends Thread {
             tmpStrings.clear();
             out.close();
 
+            if (allowToast) {
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                String toastText = "cameras detect " + count + " faces";
+                intentOut.putExtra("toastText", toastText);
+                mApp.sendBroadcast(intentOut);
+            }
+
+//            //ALL STATISTICS FILE
+//            //parse all statistic file
+//            Scanner scannerAll = new Scanner(new FileInputStream(allStatisticFile));
+//            ArrayList<ArrayList<String>> collectionAll = new ArrayList<>();
+//            while (scannerAll.hasNextLine()) {
+//                String line = scannerAll.nextLine();
+//                String[] myList = line.split(UNLConsts.CSV_SEPARATOR);
+//                ArrayList<String> stringList = new ArrayList<String>(Arrays.asList(myList));
+//                collectionAll.add(stringList);
+//            }
+//            scannerAll.close();
+//            //check video file name in the parsed data
+//            if (!collectionAll.get(0).contains(mVideoName)) {
+//                collectionAll.get(0).add(mVideoName);
+//                for (int i = 1; i < collectionAll.size(); i++) {
+//                    collectionAll.get(i).add("0");
+//                }
+//            }
+//            //get column in the parsed data for writing info
+//            int colIndexAll = collectionAll.get(0).indexOf(mVideoName);
+//            //get and parse current time
+//            int rowIndexAll = 1;
+//            String currTimeAll;
+//            currTimeAll = df.format(Calendar.getInstance().getTime());
+//            if (currTimeAll.length() == 1) {
+//                currTimeAll = "0" + currTimeAll;
+//            }
+//            if (currTimeAll.equals("24")) {
+//                currTimeAll = "00";
+//            }
+//            currTimeAll = currTimeAll + ":00-";
+//            for (int i = 1; i < collectionAll.size(); i++) {
+//                if (collectionAll.get(i).get(0).contains(currTimeAll)) {
+//                    rowIndexAll = i;
+//                }
+//            }
+//            //adding detected faced to the data
+//            //adding data to current video
+//            int countFacesFromDataAll = Integer.parseInt(collectionAll.get(rowIndexAll).get(colIndexAll));
+//            countFacesFromDataAll = countFacesFromDataAll + count;
+//            ArrayList<String> tmpAll = collectionAll.get(rowIndexAll);
+//            tmpAll.set(colIndexAll, String.valueOf(countFacesFromDataAll));
+//            //adding data to all videos
+//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(rowIndexAll).get(1));
+//            countFacesFromDataAll = countFacesFromDataAll + count;
+//            tmpAll.set(1, String.valueOf(countFacesFromDataAll));
+//            collectionAll.set(rowIndexAll, tmpAll);
+//            //adding data to current video in all time
+//            int lastRowAll = collectionAll.size() - 1;
+//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(lastRowAll).get(colIndexAll));
+//            countFacesFromDataAll = countFacesFromDataAll + count;
+//            ArrayList<String> tmpAll2 = collectionAll.get(lastRowAll);
+//            tmpAll2.set(colIndexAll, String.valueOf(countFacesFromDataAll));
+//            //adding data to all videos in all time
+//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(lastRowAll).get(1));
+//            countFacesFromDataAll = countFacesFromDataAll + count;
+//            tmpAll2.set(1, String.valueOf(countFacesFromDataAll));
+//            collectionAll.set(lastRowAll, tmpAll2);
+//            //parse data to lines
+//            ArrayList<String> tmpStringsAll = new ArrayList<>();
+//            for (int i = 0; i < collectionAll.size(); i++) {
+//                String tmpString = collectionAll.get(i).get(0);
+//                for (int j = 1; j < collectionAll.get(i).size(); j++) {
+//                    tmpString = tmpString + UNLConsts.CSV_SEPARATOR + collectionAll.get(i).get(j);
+//                }
+//                tmpStringsAll.add(tmpString);
+//            }
+//            //write data to file
+//            FileWriter logWriterAll = new FileWriter(allStatisticFile);
+//            BufferedWriter outAll = new BufferedWriter(logWriterAll);
+//            for (int k = 0; k < tmpStringsAll.size(); k++) {
+//                if (k > 0) {
+//                    outAll.newLine();
+//                }
+//                outAll.write(tmpStringsAll.get(k));
+//            }
+//            tmpStringsAll.clear();
+//            outAll.close();
+
+            //sending statistics in GD
+            SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp);
+            sstGD.start();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -289,6 +418,7 @@ public class CameraShotTask extends Thread {
             qOpened = (mCamera != null);
         } catch (Exception e) {
             Log.e("unTag_Camera", "failed to open Camera");
+            mCamera = null;
             e.printStackTrace();
         }
 
@@ -304,7 +434,5 @@ public class CameraShotTask extends Thread {
 
         }
     }
-    //}
-
 
 }

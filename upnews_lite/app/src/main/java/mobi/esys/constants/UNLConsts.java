@@ -18,6 +18,8 @@ public final class UNLConsts {
     public static final String GD_FOLDER_QUERY = "'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed=false";
     public static final String STATISTICS_TEMP_PHOTO_FILE_NAME = "tmp.jpg";
     public static final String STATISTICS_DIR_NAME = "/statistics/";
+    public static final String GD_STATISTICS_DIR_NAME = "Statistics";
+    public static final String ALL_STATISTICS_FINE_NAME = "StatisticsAll.csv";
     public static final String STATISTICS_MIME_TYPE = "text/csv";
 
     public static final String PREFIX_USER_VIDEOFILES = "dd";
@@ -30,6 +32,9 @@ public final class UNLConsts {
     public static final byte STATUS_NEED_CHECK_LOGO = 102;
     public static final String BROADCAST_ACTION = "com.moby.esys.backbroadcast";
 
+    //signals
+    public static final byte SIGNAL_TOAST = 56;
+
     //time constants
     public final static int APP_START_DELAY = 10000;
     public final static int RSS_REFRESH_INTERVAL = 1000 * 60 * 5;
@@ -39,8 +44,11 @@ public final class UNLConsts {
     public final static int PERMISSIONS_REQUEST = 330;
 
     //statistics constants
-    public static final String SCV_SEPARATOR = ";";
+    public static final String CSV_SEPARATOR = ",";
+    public static final int NUM_STATISTICS_FILES = 7;
 
+    //debug
+    public static final boolean ALLOW_TOAST = true;
 
     public static final String MP_TOKEN = "5a24b4c7001b8850ace0573dc56dc1b9";
 }
