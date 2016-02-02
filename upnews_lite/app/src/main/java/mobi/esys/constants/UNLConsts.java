@@ -26,19 +26,21 @@ public final class UNLConsts {
 
     //logo constants
     public static final String[] UNL_ACCEPTED_FILE_EXTS = {"mp4", "avi"};
-    public static final String STATUS_GET_LOGO = "status";
-    public static final byte STATUS_OK = 100;
-    public static final byte STATUS_NOT_OK = 101;
+    public static final String SIGNAL_TO_FULLSCREEN = "status";
+    public static final byte GET_LOGO_STATUS_OK = 100;
+    public static final byte GET_LOGO_STATUS_NOT_OK = 101;
     public static final byte STATUS_NEED_CHECK_LOGO = 102;
     public static final String BROADCAST_ACTION = "com.moby.esys.backbroadcast";
 
     //signals
-    public static final byte SIGNAL_TOAST = 56;
+    public static final byte SIGNAL_TOAST = 90;
+    public static final byte SIGNAL_CAMERASHOT = 80;
+    public static final byte SIGNAL_SEND_STATDATA_TO_GD = 70;
 
     //time constants
     public final static int APP_START_DELAY = 10000;
     public final static int RSS_REFRESH_INTERVAL = 1000 * 60 * 5;
-    public final static int RSS_TASK_START_DELAY = 6000;
+    public final static int RSS_TASK_START_DELAY = 15000;
 
     //permissionns constants
     public final static int PERMISSIONS_REQUEST = 330;

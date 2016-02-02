@@ -8,9 +8,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.SeekBar;
@@ -24,7 +22,6 @@ import java.util.Set;
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
-import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.DownloadVideoTask;
 import mobi.esys.upnews_lite.FirstVideoActivity;
 import mobi.esys.upnews_lite.FullscreenActivity;
@@ -44,13 +41,12 @@ public class Playback {
     private transient Set<String> md5sApp;
     private transient UNLApp mApp;
     private transient DownloadVideoTask downloadVideoTask;
-    SurfaceHolder mHolder;
-
+    private transient boolean isFirstSession = true;
 
     //127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k debug
     //127578844442-h41s9f3md1ni2soa7e3t3rpuqrukkd1u release
 
-    public Playback(Context context, UNLApp app, SurfaceHolder holder) {
+    public Playback(Context context, UNLApp app) {
         super();
         mController = new MediaController(context);
         mVideo = ((FullscreenActivity) context).getVideoView();
@@ -61,7 +57,6 @@ public class Playback {
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         Set<String> defaultSet = new HashSet<String>();
         md5sApp = prefs.getStringSet("md5sApp", defaultSet);
-        mHolder = holder;
     }
 
 
@@ -103,13 +98,7 @@ public class Playback {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
 
-                    //TODO using cameras
-                    Log.d(TAG, "Start face counting after ending file " + nameCurrentPlayedFile);
-//                    CameraShotTask csTask = new CameraShotTask(mContext,nameCurrentPlayedFile);
-//                    csTask.start();
-                    CameraShotTask csTask = new CameraShotTask(mHolder, mContext, nameCurrentPlayedFile, mApp);
-                    Thread thread = new Thread(null, csTask, "CameraShotTask");
-                    thread.start();
+                    signalDetectFaces();
 
                     nextTrack(files);
                     restartDownload();
@@ -162,7 +151,15 @@ public class Playback {
     //if need check logo on GoogleDrive
     private void signalCheckNewLogo() {
         Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NEED_CHECK_LOGO);
+        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.STATUS_NEED_CHECK_LOGO);
+        mApp.sendBroadcast(intentOut);
+    }
+
+    //if need do a face detect from cameras
+    private void signalDetectFaces() {
+        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_CAMERASHOT);
+        intentOut.putExtra("nameCurrentPlayedFile", nameCurrentPlayedFile);
         mApp.sendBroadcast(intentOut);
     }
 
@@ -182,16 +179,25 @@ public class Playback {
 
             if (files.length > 0) {
                 listFiles = new String[ulrs.length];
+                int lastPlayedFileIndex = 0;
+                String lastPlayedFileName = prefs.getString("lastPlayedFileName","");
                 for (int i = 0; i < listFiles.length; i++) {
                     ulrs[i] = ulrs[i].trim();
                     listFiles[i] = UNLApp.getAppExtCachePath()
                             + UNLConsts.VIDEO_DIR_NAME
                             + UNLConsts.GD_STORAGE_DIR_NAME
                             + "/"
-                            + ulrs[i]
-                            .substring(ulrs[i].lastIndexOf('/') + 1,
-                                    ulrs[i].length()).replace("[", "")
-                            .replace("]", "");
+                            + ulrs[i];
+//                            .substring(ulrs[i].lastIndexOf('/') + 1,
+//                                    ulrs[i].length()).replace("[", "")
+//                            .replace("]", "");
+                    if(ulrs[i].equals(lastPlayedFileName)){
+                        lastPlayedFileIndex=i;
+                    }
+                }
+                if (isFirstSession) {
+                    isFirstSession = false;
+                    serverIndex = lastPlayedFileIndex;
                 }
                 if (serverIndex >= listFiles.length) {
                     serverIndex = 0;
@@ -199,7 +205,7 @@ public class Playback {
 
                 Log.d(TAG, "urls next " + Arrays.asList(listFiles).toString());
                 File fs = new File(listFiles[serverIndex]);
-                Log.d(TAG, "next file^ " + fs.getAbsolutePath());
+                Log.d(TAG, "next file: " + fs.getAbsolutePath());
                 String currDownFile = prefs.getString("currDownFile", "");
                 Log.d(TAG, "current download " + currDownFile);
                 if (fs.exists()) {
@@ -227,6 +233,10 @@ public class Playback {
                                     Log.d(TAG, "Played files counts is " + String.valueOf(listFiles.length));
                                     serverIndex++;
                                 }
+                                //save lastPlayedFileName
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putString("lastPlayedFileName", nameCurrentPlayedFile);
+                                editor.apply();
                             } else {
                                 if (serverIndex >= listFiles.length - 1) {
                                     serverIndex = 0;

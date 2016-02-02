@@ -62,8 +62,8 @@ public class FirstVideoActivity extends Activity {
 
         prefs = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE);
 
-        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FirstVideoActivity.this, false, mApp, false);
-        createDriveFolderTask.execute();
+//        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FirstVideoActivity.this, false, mApp, false);
+//        createDriveFolderTask.execute();
 
 //        isDown = prefs.getBoolean("isDownload", true);
         uriPath = "";

@@ -2,6 +2,7 @@ package mobi.esys.tasks;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -119,8 +120,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                 while (downCount < listWithoutDuplicates.size() && !isCancelled()) {
                     try {
                         Log.d("unTag_count", String.valueOf(downCount));
-                        downloadFile(drive, listWithoutDuplicates.get(downCount)
-                                .getGdFileInst());
+                        downloadFile(drive, listWithoutDuplicates.get(downCount).getGdFileInst());
                     } catch (Exception e) {
                         Log.d("unTag_exc", e.getLocalizedMessage());
                         downCount++;
@@ -164,13 +164,13 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                     + UNLConsts.GD_STORAGE_DIR_NAME
                                     + "/";
                             String path = file.getTitle().substring(0, file.getTitle().indexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
-                            Log.d("unTag_down", path);
                             java.io.File downFile = new java.io.File(root_dir, path);
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putString("currDownFile", downFile.getAbsolutePath());
                             editor.apply();
                             FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
                             Log.d("unTag_down", downFile.getAbsolutePath());
+                            //if file do not exists on SD
                             if (!downFile.exists()) {
                                 output = new FileOutputStream(downFile);
                                 int bufferSize = 1024;
@@ -179,51 +179,71 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 while ((len = resp.getContent().read(buffer)) != -1) {
                                     output.write(buffer, 0, len);
                                 }
-
                                 output.flush();
                                 output.close();
-
                                 if (serverMD5.contains(fileWorks.getFileMD5())) {
                                     fileWorks.renameFileExtension(file.getFileExtension());
                                     downCount++;
-
-                                    Log.d("unTag_countDownComplete",
-                                            String.valueOf(downCount));
-                                    return;
-                                } else {
-                                    downCount++;
-                                    return;
-                                }
-
-                            } else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension()) && !serverMD5.contains(fileWorks.getFileMD5()) && downFile.length() < file.getFileSize()) {
-                                Log.d("unTag_down_tag", fileWorks.getFileExtension());
-
-                                output = new FileOutputStream(downFile, true);
-                                int bufferSize = 1024;
-                                byte[] buffer = new byte[bufferSize];
-                                int len = 0;
-                                InputStream inputStream = resp.getContent();
-
-                                long skipped = inputStream.skip(file.getFileSize() - downFile.length());
-                                Log.d("down_tag", String.valueOf(file.getFileSize() - downFile.length()) + ":" + String.valueOf(skipped));
-                                if (skipped < file.getFileSize() - downFile.length()) {
-                                    append(downFile, ByteStreams.toByteArray(inputStream));
-                                } else {
-                                    downFile.delete();
-                                }
-
-                                if (serverMD5.contains(fileWorks.getFileMD5())) {
-                                    fileWorks.renameFileExtension(file.getFileExtension());
-                                    downCount++;
-
-                                    Log.d("unTag_countDownComplete",
-                                            String.valueOf(downCount));
+                                    Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
                                     return;
                                 } else {
                                     downCount++;
                                     return;
                                 }
                             }
+                            //if file exists on SD and his extension is "tmp" we delete this file and write new on his place.
+                            else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
+                                if(downFile.delete()){
+                                    Log.d("unTag_down", "TMP file deleted download again");
+                                    output = new FileOutputStream(downFile);
+                                    int bufferSize = 1024;
+                                    byte[] buffer = new byte[bufferSize];
+                                    int len = 0;
+                                    while ((len = resp.getContent().read(buffer)) != -1) {
+                                        output.write(buffer, 0, len);
+                                    }
+                                    output.flush();
+                                    output.close();
+                                    if (serverMD5.contains(fileWorks.getFileMD5())) {
+                                        fileWorks.renameFileExtension(file.getFileExtension());
+                                        downCount++;
+                                        Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
+                                        return;
+                                    } else {
+                                        downCount++;
+                                        return;
+                                    }
+                                }
+                            }
+//                            else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension()) && serverMD5.contains(fileWorks.getFileMD5()) && downFile.length() < file.getFileSize()) {
+//                                Log.d("unTag_down_tag", fileWorks.getFileExtension());
+//
+//                                output = new FileOutputStream(downFile, true);
+//                                int bufferSize = 1024;
+//                                byte[] buffer = new byte[bufferSize];
+//                                int len = 0;
+//                                InputStream inputStream = resp.getContent();
+//
+//                                long skipped = inputStream.skip(file.getFileSize() - downFile.length());
+//                                Log.d("down_tag", String.valueOf(file.getFileSize() - downFile.length()) + ":" + String.valueOf(skipped));
+//                                if (skipped < file.getFileSize() - downFile.length()) {
+//                                    append(downFile, ByteStreams.toByteArray(inputStream));
+//                                } else {
+//                                    downFile.delete();
+//                                }
+//
+//                                if (serverMD5.contains(fileWorks.getFileMD5())) {
+//                                    fileWorks.renameFileExtension(file.getFileExtension());
+//                                    downCount++;
+//
+//                                    Log.d("unTag_countDownComplete",
+//                                            String.valueOf(downCount));
+//                                    return;
+//                                } else {
+//                                    downCount++;
+//                                    return;
+//                                }
+//                            }
                         } catch (IOException e) {
                             downCount++;
                             Log.d("count exc", String.valueOf(downCount));
@@ -277,7 +297,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             ((FirstVideoActivity) context).recToMP("download_error", "Download canceled");
         } else {
             ((FullscreenActivity) context).recToMP("download_error", "Download canceled");
-
         }
     }
 

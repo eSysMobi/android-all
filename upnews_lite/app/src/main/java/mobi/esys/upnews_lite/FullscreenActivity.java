@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.Html;
 import android.text.TextUtils;
@@ -33,9 +32,11 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.playback.Playback;
+import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.CheckAndGetLogoFromGDriveTask;
 import mobi.esys.tasks.CreateDriveFolderTask;
 import mobi.esys.tasks.RSSTask;
+import mobi.esys.tasks.SendStatisticsToGD;
 
 @SuppressLint({"NewApi", "SimpleDateFormat"})
 public class FullscreenActivity extends Activity {
@@ -50,7 +51,7 @@ public class FullscreenActivity extends Activity {
     private transient BroadcastReceiver br;
     private transient IntentFilter intFilt;
     private transient ImageView mLogo;
-    SurfaceHolder holder;
+    private transient SurfaceHolder holder;
 
 
     @Override
@@ -84,21 +85,21 @@ public class FullscreenActivity extends Activity {
 
         videoView = (VideoView) findViewById(R.id.video);
 
-        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FullscreenActivity.this, false, mApp, false);
-        createDriveFolderTask.execute();
+//        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FullscreenActivity.this, false, mApp, false);
+//        createDriveFolderTask.execute();
 
         checkAndSetLogoFromExStorage();
 
         br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d("unTag_FullscreenAct", "Receive signal from BroadcastReceiver");
-                switch (intent.getByteExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NOT_OK)) {
-                    case UNLConsts.STATUS_NOT_OK:
+                Log.d("unTag_FullscreenAct", "Receive signal from BroadcastReceiver " + intent.getByteExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK));
+                switch (intent.getByteExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK)) {
+                    case UNLConsts.GET_LOGO_STATUS_NOT_OK:
                         Log.d("unTag_FullscreenAct", "Receive logo is fail");
                         //mLogo.setImageDrawable(getDrawable(R.drawable.upnews_logo_w2));
                         break;
-                    case UNLConsts.STATUS_OK:
+                    case UNLConsts.GET_LOGO_STATUS_OK:
                         Log.d("unTag_FullscreenAct", "Receive logo is success");
                         checkAndSetLogoFromExStorage();
                         break;
@@ -106,7 +107,32 @@ public class FullscreenActivity extends Activity {
                         renewLogo();
                         break;
                     case UNLConsts.SIGNAL_TOAST:
-                        Toast.makeText(FullscreenActivity.this, intent.getStringExtra("toastText"), Toast.LENGTH_SHORT).show();
+                        if (UNLConsts.ALLOW_TOAST) {
+                            Toast.makeText(FullscreenActivity.this, intent.getStringExtra("toastText"), Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    case UNLConsts.SIGNAL_CAMERASHOT:
+                        String nameCurrentPlayedFile = intent.getStringExtra("nameCurrentPlayedFile");
+                        if (!nameCurrentPlayedFile.isEmpty()) {
+                            Log.d("unTag_FullscreenAct", "Start face counting after ending file " + nameCurrentPlayedFile);
+                            CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
+                            Thread thread = new Thread(csTask,"CameraShotTask");
+                            thread.start();
+                            //or
+                            //CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
+                            //Thread thread = new Thread(null, csTask, "CameraShotTask");
+                            //thread.start();
+                        } else {
+                            Log.d("unTag_FullscreenAct", "Can't start face counting after ending file because nameCurrentPlayedFile is empty");
+                        }
+                        break;
+                    case UNLConsts.SIGNAL_SEND_STATDATA_TO_GD:
+                        if (!UNLApp.getIsDownloadTaskRunning()) {
+                            Log.d("unTag_FullscreenAct", "Start sending statistics to GD.");
+                            SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp);
+                            Thread thread = new Thread(sstGD, "SendStatisticsToGD");
+                            thread.start();
+                        }
                         break;
                 }
             }
@@ -177,8 +203,8 @@ public class FullscreenActivity extends Activity {
         super.onRestart();
         DirectoryWorks directoryWorks = new DirectoryWorks(
                 UNLConsts.VIDEO_DIR_NAME +
-                UNLConsts.GD_STORAGE_DIR_NAME +
-                "/");
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
         if (directoryWorks.getDirFileList("fullscreen").length == 0) {
             startActivity(new Intent(FullscreenActivity.this,
                     FirstVideoActivity.class));
@@ -196,8 +222,8 @@ public class FullscreenActivity extends Activity {
         super.onResume();
         DirectoryWorks directoryWorks = new DirectoryWorks(
                 UNLConsts.VIDEO_DIR_NAME +
-                UNLConsts.GD_STORAGE_DIR_NAME +
-                "/");
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
         if (directoryWorks.getDirFileList("fullscreen").length == 0) {
             startActivity(new Intent(FullscreenActivity.this,
                     FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -208,7 +234,7 @@ public class FullscreenActivity extends Activity {
     }
 
     public void startPlayback() {
-        playback = new Playback(FullscreenActivity.this, mApp, holder);
+        playback = new Playback(FullscreenActivity.this, mApp);
         playback.playFolder();
     }
 
@@ -259,11 +285,9 @@ public class FullscreenActivity extends Activity {
         }
     }
 
-
     public void restartCreepingLine() {
         textView.requestFocus();
     }
-
 
     public void recToMP(String tag, String message) {
         JSONObject props = new JSONObject();

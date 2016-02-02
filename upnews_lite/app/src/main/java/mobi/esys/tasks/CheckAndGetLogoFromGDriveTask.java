@@ -1,7 +1,6 @@
 package mobi.esys.tasks;
 
 import android.content.Intent;
-import android.os.Environment;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
@@ -14,7 +13,6 @@ import java.io.OutputStream;
 
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.data.GDFile;
-import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.server.UNLServer;
 import mobi.esys.upnews_lite.UNLApp;
@@ -155,13 +153,13 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
 
     private void signalUseNewLogo() {
         Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_OK);
+        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
         app.sendBroadcast(intentOut);
     }
 
     private void signalUseStandardLogo() {
         Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.STATUS_NOT_OK);
+        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
         app.sendBroadcast(intentOut);
     }
 }

@@ -30,7 +30,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 27.01.2016.
  */
-public class SendStatisticsToGD extends Thread {
+public class SendStatisticsToGD implements Runnable {
     private transient SharedPreferences prefs;
     private static final String FOLDER_STAT_NAME = UNLConsts.GD_STATISTICS_DIR_NAME;
     private static final String STAT_MIME_TYPE = UNLConsts.STATISTICS_MIME_TYPE;
@@ -38,7 +38,6 @@ public class SendStatisticsToGD extends Thread {
     private transient Drive drive;
     private transient UNLApp mApp;
     private String statisticsGDDirID;
-    private boolean allowToast = UNLConsts.ALLOW_TOAST;
 
     public SendStatisticsToGD(UNLApp app) {
         mApp = app;
@@ -78,9 +77,9 @@ public class SendStatisticsToGD extends Thread {
                         int num_idStatFileGD = 0;
                         //search statFilesOnDevice[i] file in GD
                         for (int j = 0; j < statFilesOnGD.size(); j++) {
-                            if (statFilesOnGD.get(j).getTitle().equals(statFilesOnDevice[i].getName())){
+                            if (statFilesOnGD.get(j).getTitle().equals(statFilesOnDevice[i].getName())) {
                                 idStatFileGD = statFilesOnGD.get(j).getId();
-                                num_idStatFileGD = i;
+                                num_idStatFileGD = j;
                                 break;
                             }
                         }
@@ -107,7 +106,7 @@ public class SendStatisticsToGD extends Thread {
                             //update *.csv file in GD
                             Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " exist in GD.");
                             //checking is this today file
-                            if (statFilesOnDevice[i].getName().equals(todayStatFileName)){
+                            if (statFilesOnDevice[i].getName().equals(todayStatFileName)) {
                                 //Prepare updatable file
                                 com.google.api.services.drive.model.File file = statFilesOnGD.get(num_idStatFileGD);
                                 //Prepare and create temp file
@@ -118,7 +117,11 @@ public class SendStatisticsToGD extends Thread {
                                 file = drive.files().update(idStatFileGD, file, fileContent).execute();
                                 tmpInStream.close();
 
-                                Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " with ID " + file.getId() + " updated in GD");
+                                if (file != null) {
+                                    Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " with ID " + file.getId() + " updated in GD");
+                                } else {
+                                    Log.d(TAG, "Error GD! File " + statFilesOnDevice[i].getName() + " no updated in GD!");
+                                }
                             }
                         }
                     }

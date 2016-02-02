@@ -9,7 +9,7 @@ import android.media.FaceDetector;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+//import android.view.SurfaceView;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,7 +38,7 @@ public class CameraShotTask implements Runnable {
     private String mVideoName;
     private Camera mCamera = null;
     private int currentCamID;
-    private SurfaceView svDriveAuth;
+//    private SurfaceView svDriveAuth;
     private int count = 0;
     private SurfaceHolder sHolder;
     private boolean allowToast = UNLConsts.ALLOW_TOAST;
@@ -77,8 +77,6 @@ public class CameraShotTask implements Runnable {
         }
     }
 
-
-
     private void getPhotoAndParse(int cameraId) {
         boolean camOpened = safeCameraOpen(cameraId);
         if (camOpened) {
@@ -88,7 +86,7 @@ public class CameraShotTask implements Runnable {
                 e.printStackTrace();
                 if (allowToast) {
                     Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                    intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
                     String toastText = "Problem setPreviewDisplay camera id " + currentCamID;
                     intentOut.putExtra("toastText", toastText);
                     mApp.sendBroadcast(intentOut);
@@ -97,7 +95,7 @@ public class CameraShotTask implements Runnable {
 
             if (allowToast) {
                 Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
                 String toastText = "camera " + currentCamID + " opened";
                 intentOut.putExtra("toastText", toastText);
                 mApp.sendBroadcast(intentOut);
@@ -139,70 +137,73 @@ public class CameraShotTask implements Runnable {
                 public void onPictureTaken(byte[] data, Camera camera) {
                     String logoDirPath = UNLApp.getAppExtCachePath()
                             + UNLConsts.VIDEO_DIR_NAME
-                            + UNLConsts.GD_LOGO_DIR_NAME
+                            + UNLConsts.GD_STATISTICS_DIR_NAME
                             + "/";
                     File logoDir = new File(logoDirPath);
 
+                    boolean successLogoDirCheck = true;
                     if (!logoDir.exists()) {
-                        logoDir.mkdir();
+                        successLogoDirCheck = logoDir.mkdir();
                     }
 
-                    String tmpFilePath = UNLApp.getAppExtCachePath()
-                            + UNLConsts.VIDEO_DIR_NAME
-                            + UNLConsts.GD_LOGO_DIR_NAME
-                            + "/"
-                            + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
-                    File tmpFileForFaceDetecting = new File(tmpFilePath);
+                    if (successLogoDirCheck) {
+                        String tmpFilePath = UNLApp.getAppExtCachePath()
+                                + UNLConsts.VIDEO_DIR_NAME
+                                + UNLConsts.GD_STATISTICS_DIR_NAME    // or GD_LOGO_DIR_NAME
+                                + "/"
+                                + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
+                        File tmpFileForFaceDetecting = new File(tmpFilePath);
 
-                    if (tmpFileForFaceDetecting.exists()) {
-                        tmpFileForFaceDetecting.delete();
-                    }
-
-                    FileOutputStream fos;
-                    try {
-                        fos = new FileOutputStream(tmpFileForFaceDetecting);
-                        fos.write(data);
-                        //fos.flush();
-                        fos.close();
-
-                        BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
-                        bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        Bitmap background_image = BitmapFactory.decodeFile(tmpFileForFaceDetecting.getAbsolutePath(), bitmap_options);
-                        FaceDetector face_detector = new FaceDetector(
-                                background_image.getWidth(), background_image.getHeight(),
-                                MAX_FACES);
-                        FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
-                        int face_count = face_detector.findFaces(background_image, faces);
-                        Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
-                        count = count + face_count;
-
-                        if (allowToast) {
-                            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                            intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
-                            String toastText = "camera " + currentCamID + " detect " + face_count + " faces";
-                            intentOut.putExtra("toastText", toastText);
-                            mApp.sendBroadcast(intentOut);
+                        if (tmpFileForFaceDetecting.exists()) {
+                            tmpFileForFaceDetecting.delete();
                         }
 
-                    } catch (IOException e) {
-                        Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
-                        if (allowToast) {
-                            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                            intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
-                            String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
-                            intentOut.putExtra("toastText", toastText);
-                            mApp.sendBroadcast(intentOut);
+                        FileOutputStream fos;
+                        try {
+                            fos = new FileOutputStream(tmpFileForFaceDetecting);
+                            fos.write(data);
+                            //fos.flush();
+                            fos.close();
+
+                            BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
+                            bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
+                            Bitmap background_image = BitmapFactory.decodeFile(tmpFileForFaceDetecting.getAbsolutePath(), bitmap_options);
+                            FaceDetector face_detector = new FaceDetector(
+                                    background_image.getWidth(), background_image.getHeight(),
+                                    MAX_FACES);
+                            FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
+                            int face_count = face_detector.findFaces(background_image, faces);
+                            Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
+                            count = count + face_count;
+
+                            if (allowToast) {
+                                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                                String toastText = "camera " + currentCamID + " detect " + face_count + " faces";
+                                intentOut.putExtra("toastText", toastText);
+                                mApp.sendBroadcast(intentOut);
+                            }
+
+                        } catch (IOException e) {
+                            Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
+                            if (allowToast) {
+                                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                                String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
+                                intentOut.putExtra("toastText", toastText);
+                                mApp.sendBroadcast(intentOut);
+                            }
                         }
-                    }
 
-                    releaseCameraAndPreview();
+                        releaseCameraAndPreview();
 
-                    currentCamID = currentCamID + 1;
-                    if (currentCamID < UNLApp.getCamerasID().length) {
-                        getPhotoAndParse(currentCamID);
-                    } else {
-                        if (count > 0) {
-                            finalCount();
+                        currentCamID = currentCamID + 1;
+                        if (currentCamID < UNLApp.getCamerasID().length) {
+                            getPhotoAndParse(currentCamID);
+                        } else {
+                            if (count > 0) {
+                                finalCount();
+                            }
                         }
                     }
                 }
@@ -312,7 +313,7 @@ public class CameraShotTask implements Runnable {
 
             if (allowToast) {
                 Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                intentOut.putExtra(UNLConsts.STATUS_GET_LOGO, UNLConsts.SIGNAL_TOAST);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
                 String toastText = "cameras detect " + count + " faces";
                 intentOut.putExtra("toastText", toastText);
                 mApp.sendBroadcast(intentOut);
@@ -398,20 +399,28 @@ public class CameraShotTask implements Runnable {
 //            outAll.close();
 
             //sending statistics in GD
-            SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp);
-            sstGD.start();
+            signalSendStatToGD();
+            //or
+//            SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp);
+//            sstGD.start();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    //if need send statistics to GD
+    private void signalSendStatToGD() {
+        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_SEND_STATDATA_TO_GD);
+        intentOut.putExtra("source", "CameraShotTask");
+        mApp.sendBroadcast(intentOut);
     }
 
     private boolean safeCameraOpen(int id) {
         boolean qOpened = false;
-
         try {
             releaseCameraAndPreview();
             mCamera = Camera.open(id);
@@ -421,7 +430,6 @@ public class CameraShotTask implements Runnable {
             mCamera = null;
             e.printStackTrace();
         }
-
         return qOpened;
     }
 
