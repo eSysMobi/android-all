@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Environment;
 import android.util.Log;
 
 import com.google.api.services.drive.Drive;
@@ -38,14 +37,12 @@ public class UNLServer {
     private transient GDFile gdRSS;
     private transient GDFile gdLogo;
     private static final String TAG = "unTag_UNLServer";
-    private transient Context context;
     private transient UNLApp mApp;
     private transient boolean allOK = false;
 
 
     public UNLServer(UNLApp app) {
         mApp = app;
-        context = app.getApplicationContext();
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         drive = UNLApp.getDriveService();
         folderId = prefs.getString("folderId", "");
@@ -94,6 +91,7 @@ public class UNLServer {
                 }
             }
         }
+        //overwrite md5sApp in pref if it different
         if (!prefs.getStringSet("md5sApp", defaultSet).equals(resultMD5)) {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putStringSet("md5sApp", resultMD5);
@@ -129,6 +127,12 @@ public class UNLServer {
                         editor.putStringSet("filesServer", urlsSet);
                     }
                     editor.apply();
+                }else {
+                    //getting resultURL from saved collection
+                    String[] urlsFromSharedPref = prefs.getString("urls", "").replace("[", "").replace("]", "").split(",");;
+                    for (int i = 0; i < urlsFromSharedPref.length; i++) {
+                        resultURL.add(urlsFromSharedPref[i].trim());
+                    }
                 }
             } catch (IOException e) {
                 Log.d(TAG, "save url error " + e.getLocalizedMessage());
@@ -183,7 +187,6 @@ public class UNLServer {
         do {
             try {
                 ChildList children = request.execute();
-                allOK = true;
                 for (ChildReference child : children.getItems()) {
 
                     File file = drive.files().get(child.getId()).execute();
@@ -221,8 +224,15 @@ public class UNLServer {
             } catch (IOException e) {
                 System.out.println("An error occurred: " + e);
                 request.setPageToken(null);
+                allOK = false;
             }
         } while (request.getPageToken() != null && request.getPageToken().length() > 0);
+
+        if (gdFiles.size()>0){
+            allOK = true;
+        } else {
+            allOK = false;
+        }
     }
 
     public GDFile getGdRSS() {

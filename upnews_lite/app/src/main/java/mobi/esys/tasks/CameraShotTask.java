@@ -62,7 +62,7 @@ public class CameraShotTask implements Runnable {
                 UNLApp.setIsCamerasWorking(true);
                 try {
                     if (UNLApp.getCamerasID()[0] != null) {
-                        int id = Integer.parseInt(UNLApp.getCamerasID()[0]);
+                        int id = UNLApp.getCamerasID()[0];
                         Log.d("unTag_Camera", "We have " + UNLApp.getCamerasID().length + " cameras. Start with id=" + id);
                         currentCamID = id;
                         getPhotoAndParse(id);

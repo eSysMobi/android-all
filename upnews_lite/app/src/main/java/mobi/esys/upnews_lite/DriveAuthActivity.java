@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -48,7 +49,8 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     private transient ProgressBar mpbDriveAuthActivity;
     private transient Button gdAuthBtn;
 
-    private transient boolean externalStorageIsAvailable=false;
+    private transient boolean externalStorageIsAvailable = false;
+    private transient boolean buttonPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,22 +74,38 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
 
         if (externalStorageIsAvailable) {
             if (NetWork.isNetworkAvailable(mApp)) {
+                Log.d("unTag_DriveAuthActivity", "Account name: " + accName);
                 if (accName.isEmpty()) {
                     //if we have not accName
                 } else {
-                    //if we have accName then request
-                    setLoadState(); //show loading screen
-                    credential.setSelectedAccountName(accName);
-                    drive = getDriveService(credential);
-                    mApp.registerGoogle(drive);
-                    createFolderInDriveIfDontExists();
+                    //mtvDriveAuthActivity.setText(getString(R.string.autostart_accdrive_message_p1) + accName + getString(R.string.autostart_accdrive_message_p2));
+                    mtvDriveAuthActivity.setText(R.string.autostart_drive10);
+                    gdAuthBtn.setText(R.string.change_profile);
+
+                    final Handler startHandler = new Handler();
+                    final Runnable loadOldAccName = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!buttonPressed) {
+                                //if we have accName then request
+                                setLoadState(); //show loading screen
+                                credential.setSelectedAccountName(accName);
+                                drive = getDriveService(credential);
+                                mApp.registerGoogle(drive);
+                                createFolderInDriveIfDontExists();
+                            }
+                        }
+                    };
+                    startHandler.postDelayed(loadOldAccName, 10000); //TODO change to constanta
                 }
             } else {
                 //in no internet connection then play saved files
                 Log.d("unTag_DriveAuthActivity", "We have no inet");
-                //Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+                if (UNLConsts.ALLOW_TOAST) {
+                    Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+                }
 
-                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME); //TODO check this
+                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
 
                 if (directoryWorks.getDirFileList("if have files").length == 0) {
                     startActivity(new Intent(DriveAuthActivity.this,
@@ -232,7 +250,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         //checking availability external storage
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
-            externalStorageIsAvailable=true;
+            externalStorageIsAvailable = true;
             //UNLApp.setAppExtCachePath(mApp.getExternalCacheDir().getAbsolutePath());
             UNLApp.setAppExtCachePath(Environment.getExternalStorageDirectory().getAbsolutePath());
             //checking existing all directories
@@ -266,6 +284,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             //check inet
             if (NetWork.isNetworkAvailable(mApp)) {
                 setLoadState(); //show loading screen
+                buttonPressed = true;
                 picker();
             } else {
                 Log.d("unTag_DriveAuthActivity", "We have no inet");

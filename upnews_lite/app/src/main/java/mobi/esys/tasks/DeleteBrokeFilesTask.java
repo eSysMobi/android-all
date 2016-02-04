@@ -1,7 +1,6 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -19,7 +18,6 @@ import mobi.esys.upnews_lite.UNLApp;
 
 public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
     private transient Set<String> md5set;
-    private transient SharedPreferences prefs;
     private transient UNLApp mApp;
     private transient String mActName;
     private transient Context mContext;
@@ -27,14 +25,12 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
 
 
     public DeleteBrokeFilesTask(UNLApp app, Context context, String actName) {
-        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         mApp = app;
         mActName = actName;
         mContext = context;
     }
 
     public DeleteBrokeFilesTask(UNLApp app, Context context, Set<String> serverMD5, String actName) {
-        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         mApp = app;
         md5set = serverMD5;
         mActName = actName;
@@ -61,9 +57,9 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
                 md5sList.addAll(md5set);
                 Log.d(TAG, "md5 list " + md5sList.toString());
                 Log.d(TAG, "md5 folder list " + folderMD5s.toString());
-                if (md5sList.size() == 0
-                        && folderFiles.length > 0) {
-                    maskList.add("unLiteDelAll");
+                if (md5sList.size() == 0 && folderFiles.length > 0) {
+                    //delete all local video-files
+                    //maskList.add("unLiteDelAll");
                 } else {
                     for (int i = 0; i < folderMD5s.size(); i++) {
                         if (!md5sList.contains(folderMD5s.get(i))) {

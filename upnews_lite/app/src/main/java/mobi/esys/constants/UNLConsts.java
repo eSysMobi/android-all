@@ -50,7 +50,7 @@ public final class UNLConsts {
     public static final int NUM_STATISTICS_FILES = 7;
 
     //debug
-    public static final boolean ALLOW_TOAST = true;
+    public static boolean ALLOW_TOAST = false;
 
     public static final String MP_TOKEN = "5a24b4c7001b8850ace0573dc56dc1b9";
 }

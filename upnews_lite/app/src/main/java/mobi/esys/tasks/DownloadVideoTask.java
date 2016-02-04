@@ -68,73 +68,84 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... params) {
 
         serverMD5 = server.getMD5FromServer();
-        if (NetWork.isNetworkAvailable(mApp)) {
-            if (!UNLApp.getIsDeleting()) {
-                Log.d("unTag_down", "isDownload");
-                UNLApp.setIsDownloadTaskRunning(true);
+        if (serverMD5.size()!=0) {
+            if (NetWork.isNetworkAvailable(mApp)) {
+                if (!UNLApp.getIsDeleting()) {
+                    Log.d("unTag_down", "isDownload");
+                    UNLApp.setIsDownloadTaskRunning(true);
 
-                gdFiles = server.getGdFiles();
-                directoryWorks = new DirectoryWorks(
-                        UNLConsts.VIDEO_DIR_NAME +
-                                UNLConsts.GD_STORAGE_DIR_NAME +
-                                "/");
+                    gdFiles = server.getGdFiles();
+                    directoryWorks = new DirectoryWorks(
+                            UNLConsts.VIDEO_DIR_NAME +
+                                    UNLConsts.GD_STORAGE_DIR_NAME +
+                                    "/");
 
-                Set<String> urlSetRec = new HashSet<>(Arrays.asList(context
-                        .getSharedPreferences(UNLConsts.APP_PREF,
-                                Context.MODE_PRIVATE).getString("urls", "")
-                        .replace("[", "").replace("]", "").split(",")));
+                    Set<String> urlSetRec = new HashSet<>(Arrays.asList(context
+                            .getSharedPreferences(UNLConsts.APP_PREF,
+                                    Context.MODE_PRIVATE).getString("urls", "")
+                            .replace("[", "").replace("]", "").split(",")));
 
-                //deleting duplicates
-                listWithoutDuplicates = new ArrayList<>(gdFiles);
-                ArrayList<Integer> delEntriesFromList = new ArrayList<>();
-                for (int i = 0; i < listWithoutDuplicates.size(); i++) {
-                    String curMD5 = listWithoutDuplicates.get(i).getGdFileMD5();
-                    for (int j = i + 1; j < listWithoutDuplicates.size(); j++) {
-                        if (curMD5.equals(listWithoutDuplicates.get(j).getGdFileMD5())) {
-                            delEntriesFromList.add(j);
+                    //deleting duplicates
+                    listWithoutDuplicates = new ArrayList<>(gdFiles);
+                    ArrayList<Integer> delEntriesFromList = new ArrayList<>();
+                    for (int i = 0; i < listWithoutDuplicates.size(); i++) {
+                        String curMD5 = listWithoutDuplicates.get(i).getGdFileMD5();
+                        for (int j = i + 1; j < listWithoutDuplicates.size(); j++) {
+                            if (curMD5.equals(listWithoutDuplicates.get(j).getGdFileMD5())) {
+                                delEntriesFromList.add(j);
+                            }
                         }
                     }
-                }
-                for (int i = delEntriesFromList.size() - 1; i >= 0; i--) {
-                    int removePos = delEntriesFromList.get(i);
-                    listWithoutDuplicates.remove(removePos);
-                }
-
-                Log.d("unTag_drive files", String.valueOf(listWithoutDuplicates.size()));
-                Log.d("unTag_md5", String.valueOf(serverMD5.size()));
-                String[] urls = urlSetRec.toArray(new String[urlSetRec.size()]);
-
-                for (int i = 0; i < urls.length; i++) {
-                    urls[i] = urls[i].trim();
-                }
-
-                Collections.sort(listWithoutDuplicates, new Comparator<GDFile>() {
-                    @Override
-                    public int compare(GDFile lhs, GDFile rhs) {
-                        return lhs.getGdFileName().compareTo(rhs.getGdFileName());
+                    for (int i = delEntriesFromList.size() - 1; i >= 0; i--) {
+                        int removePos = delEntriesFromList.get(i);
+                        listWithoutDuplicates.remove(removePos);
                     }
-                });
 
-                Log.d("unTag_files", listWithoutDuplicates.toString());
+                    Log.d("unTag_drive files", String.valueOf(listWithoutDuplicates.size()));
+                    Log.d("unTag_md5", String.valueOf(serverMD5.size()));
+                    String[] urls = urlSetRec.toArray(new String[urlSetRec.size()]);
 
-                while (downCount < listWithoutDuplicates.size() && !isCancelled()) {
-                    try {
-                        Log.d("unTag_count", String.valueOf(downCount));
-                        downloadFile(drive, listWithoutDuplicates.get(downCount).getGdFileInst());
-                    } catch (Exception e) {
-                        Log.d("unTag_exc", e.getLocalizedMessage());
-                        downCount++;
+                    for (int i = 0; i < urls.length; i++) {
+                        urls[i] = urls[i].trim();
                     }
-                }
-            } else {
-                Log.d("unTag_md5", "all MD5");
-                downCount++;
-                if (downCount == listWithoutDuplicates.size() - 1) {
+
+                    Collections.sort(listWithoutDuplicates, new Comparator<GDFile>() {
+                        @Override
+                        public int compare(GDFile lhs, GDFile rhs) {
+                            return lhs.getGdFileName().compareTo(rhs.getGdFileName());
+                        }
+                    });
+
+                    Log.d("unTag_files", listWithoutDuplicates.toString());
+
+                    folderMD5 = directoryWorks.getMD5Sums();
+                    if (folderMD5.containsAll(serverMD5)
+                            && folderMD5.size() == serverMD5.size()) {
+                        Log.d("unTag_down", "Not need down file, all files already exists. Cancel download task");
+                        cancel(true);
+                    } else {
+                        while (downCount < listWithoutDuplicates.size() && !isCancelled()) {
+                            try {
+                                downloadFile(drive, listWithoutDuplicates.get(downCount).getGdFileInst());
+                            } catch (Exception e) {
+                                Log.d("unTag_exc", e.getLocalizedMessage());
+                                downCount++;
+                            }
+                        }
+                    }
+                } else {
+                    Log.d("unTag_down", "Cancel download task because running deleting process");
                     cancel(true);
                 }
+            } else {
+                Log.d("unTag_down", "Cancel download task because no inet");
+                cancel(true);
             }
         } else {
+            Log.d("unTag_down", "We have empty file-list from GoogleDrive");
             cancel(true);
+            server=null;
+            serverMD5=null;
         }
         return null;
     }
@@ -142,36 +153,51 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private void downloadFile(Drive service, File file) {
 
         if (file.getFileSize() < Environment.getExternalStorageDirectory().getUsableSpace()) {
-            folderMD5 = directoryWorks.getMD5Sums();
-            Log.d("unTag_down", "start down file");
-            if (folderMD5.containsAll(serverMD5)
-                    && folderMD5.size() == serverMD5.size()) {
-                Log.d("unTag_down", "Not need down file, all files already exists");
-                cancel(true);
-                downCount++;
-            } else {
-                if (!folderMD5.contains(file.getMd5Checksum())) {
-                    if (file.getDownloadUrl() != null
-                            && file.getDownloadUrl().length() > 0) {
-                        try {
-                            HttpResponse resp = service
-                                    .getRequestFactory()
-                                    .buildGetRequest(
-                                            new GenericUrl(file.getDownloadUrl()))
-                                    .execute();
-                            String root_dir = UNLApp.getAppExtCachePath()
-                                    + UNLConsts.VIDEO_DIR_NAME
-                                    + UNLConsts.GD_STORAGE_DIR_NAME
-                                    + "/";
-                            String path = file.getTitle().substring(0, file.getTitle().indexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
-                            java.io.File downFile = new java.io.File(root_dir, path);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("currDownFile", downFile.getAbsolutePath());
-                            editor.apply();
-                            FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
-                            Log.d("unTag_down", downFile.getAbsolutePath());
-                            //if file do not exists on SD
-                            if (!downFile.exists()) {
+            Log.d("unTag_down", "start down file number " + downCount);
+            if (!folderMD5.contains(file.getMd5Checksum())) {
+                if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0) {
+                    try {
+                        HttpResponse resp = service
+                                .getRequestFactory()
+                                .buildGetRequest(
+                                        new GenericUrl(file.getDownloadUrl()))
+                                .execute();
+                        String root_dir = UNLApp.getAppExtCachePath()
+                                + UNLConsts.VIDEO_DIR_NAME
+                                + UNLConsts.GD_STORAGE_DIR_NAME
+                                + "/";
+                        String path = file.getTitle().substring(0, file.getTitle().indexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
+                        java.io.File downFile = new java.io.File(root_dir, path);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("currDownFile", downFile.getAbsolutePath());
+                        editor.apply();
+                        FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
+                        Log.d("unTag_down", downFile.getAbsolutePath());
+                        //if file do not exists on SD
+                        if (!downFile.exists()) {
+                            output = new FileOutputStream(downFile);
+                            int bufferSize = 1024;
+                            byte[] buffer = new byte[bufferSize];
+                            int len = 0;
+                            while ((len = resp.getContent().read(buffer)) != -1) {
+                                output.write(buffer, 0, len);
+                            }
+                            output.flush();
+                            output.close();
+                            if (serverMD5.contains(fileWorks.getFileMD5())) {
+                                fileWorks.renameFileExtension(file.getFileExtension());
+                                downCount++;
+                                Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
+                                return;
+                            } else {
+                                downCount++;
+                                return;
+                            }
+                        }
+                        //if file exists on SD and his extension is "tmp" we delete this file and write new on his place.
+                        else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
+                            if (downFile.delete()) {
+                                Log.d("unTag_down", "TMP file deleted download again");
                                 output = new FileOutputStream(downFile);
                                 int bufferSize = 1024;
                                 byte[] buffer = new byte[bufferSize];
@@ -191,30 +217,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                     return;
                                 }
                             }
-                            //if file exists on SD and his extension is "tmp" we delete this file and write new on his place.
-                            else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
-                                if(downFile.delete()){
-                                    Log.d("unTag_down", "TMP file deleted download again");
-                                    output = new FileOutputStream(downFile);
-                                    int bufferSize = 1024;
-                                    byte[] buffer = new byte[bufferSize];
-                                    int len = 0;
-                                    while ((len = resp.getContent().read(buffer)) != -1) {
-                                        output.write(buffer, 0, len);
-                                    }
-                                    output.flush();
-                                    output.close();
-                                    if (serverMD5.contains(fileWorks.getFileMD5())) {
-                                        fileWorks.renameFileExtension(file.getFileExtension());
-                                        downCount++;
-                                        Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
-                                        return;
-                                    } else {
-                                        downCount++;
-                                        return;
-                                    }
-                                }
-                            }
+                        }
 //                            else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension()) && serverMD5.contains(fileWorks.getFileMD5()) && downFile.length() < file.getFileSize()) {
 //                                Log.d("unTag_down_tag", fileWorks.getFileExtension());
 //
@@ -244,20 +247,24 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
 //                                    return;
 //                                }
 //                            }
-                        } catch (IOException e) {
-                            downCount++;
-                            Log.d("count exc", String.valueOf(downCount));
-                            Log.d("exc", e.getLocalizedMessage());
-                            return;
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    } catch (IOException e) {
+                        downCount++;
+                        Log.d("count exc", String.valueOf(downCount));
+                        Log.d("exc", e.getLocalizedMessage());
+                        return;
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 } else {
-                    Log.d("unTag_already_down", "file already exists, not need down. downCount = " + String.valueOf(downCount));
+                    Log.d("unTag_down", "Error when download file. Can't get Download Url from GD");
                     downCount++;
                     return;
                 }
+
+            } else {
+                Log.d("unTag_down", "File already exists, not need down.");
+                downCount++;
+                return;
             }
         } else {
             cancel(true);
@@ -282,7 +289,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             ((FullscreenActivity) context).recToMP("download_done", "Download ends fine");
         }
 
-        if (!UNLApp.getIsDeleting()) {
+        if (!UNLApp.getIsDeleting() && serverMD5!=null) {
             DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, context, serverMD5, actName);
             brokeFilesTask.execute();
         }

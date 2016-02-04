@@ -11,8 +11,14 @@
     <string name="no_inet" tools:ignore="MissingTranslation">Отсутствует подключение к сети интернет.</string>
     <string name="processing" tools:ignore="MissingTranslation">Обработка…</string>
 
+    <!-- statistics strings -->
     <string name="collumn_time" tools:ignore="MissingTranslation">Время</string>
     <string name="collumn_all_videos" tools:ignore="MissingTranslation">Все видео</string>
     <string name="row_all" tools:ignore="MissingTranslation">Всего</string>
+
+    <string name="autostart_accdrive_message_p1">"Старый профиль "</string>
+    <string name="autostart_accdrive_message_p2">" будет запущен через 10 секунд…"</string>
+    <string name="change_profile">Сменить профиль</string>
+    <string name="autostart_drive10">Автостарт через 10 секунд…</string>
 
 </resources>

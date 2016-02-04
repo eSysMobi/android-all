@@ -123,7 +123,7 @@ public class InAppBillingActivity extends Activity {
             Log.d("unTag_InAppBillingAct", "numCameras version is " + numCameras);
 
             if (numCameras > 0) {
-                List<String> cameraIdList = new ArrayList<>();
+                List<Integer> cameraIdList = new ArrayList<>();
                 for (int i = 0; i < numCameras; i++) {
                     /*
                     // check supporting face detection for camera
@@ -138,10 +138,10 @@ public class InAppBillingActivity extends Activity {
                     }
                     mCamera.release();
                     */
-                    cameraIdList.add(String.valueOf(i));
+                    cameraIdList.add(i);
                 }
                 if (cameraIdList.size() > 0) {
-                    String[] cameraIdArray = new String[cameraIdList.size()];
+                    Integer[] cameraIdArray = new Integer[cameraIdList.size()];
                     cameraIdArray = cameraIdList.toArray(cameraIdArray);
                     UNLApp.setCamerasID(cameraIdArray);
                 }
@@ -153,6 +153,8 @@ public class InAppBillingActivity extends Activity {
         if (BuildConfig.DEBUG) {
             Log.d("buy", "It's debug version. Not need to buy!");
             buyOK = true;
+            //allow show toast
+            UNLConsts.ALLOW_TOAST = true;
         } else {
             bindService(new Intent(
                             "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),

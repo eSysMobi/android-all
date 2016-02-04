@@ -20,7 +20,7 @@ public class UNLApp extends Application {
     private static AtomicBoolean isCamerasWorking;
     private static String curPlayFile;
     private static String appExtCachePath;
-    private static String[] camerasID = null;
+    private static Integer[] camerasID = null;
 
     public static void setIsCamerasWorking(boolean state) {
         UNLApp.isCamerasWorking.set(state);
@@ -38,11 +38,11 @@ public class UNLApp extends Application {
         return isCreatingDriveFolder.get();
     }
 
-    public static void setCamerasID(String[] camerasID) {
+    public static void setCamerasID(Integer[] camerasID) {
         UNLApp.camerasID = camerasID;
     }
 
-    public static String[] getCamerasID() {
+    public static Integer[] getCamerasID() {
         return camerasID;
     }
 
