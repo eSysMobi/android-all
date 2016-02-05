@@ -96,7 +96,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                             }
                         }
                     };
-                    startHandler.postDelayed(loadOldAccName, 10000); //TODO change to constanta
+                    startHandler.postDelayed(loadOldAccName, UNLConsts.START_OLD_PROFILE_DELAY);
                 }
             } else {
                 //in no internet connection then play saved files
@@ -152,6 +152,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_CANCELED) {
             setReadyToLoadState();  //hide loading spinner and show adding button
+            gdAuthBtn.setText("OK");
         }
         switch (requestCode) {
             case REQUEST_ACCOUNT_PICKER:

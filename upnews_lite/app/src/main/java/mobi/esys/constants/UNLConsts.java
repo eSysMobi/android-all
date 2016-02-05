@@ -49,6 +49,9 @@ public final class UNLConsts {
     public static final String CSV_SEPARATOR = ",";
     public static final int NUM_STATISTICS_FILES = 7;
 
+    //delays
+    public static long START_OLD_PROFILE_DELAY = 10000;
+
     //debug
     public static boolean ALLOW_TOAST = false;
 
