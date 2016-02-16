@@ -35,7 +35,8 @@ import mobi.esys.view.DrawProgress;
 public class InstaLoginActivity extends Activity{
     private transient Instagram instagram;
     private transient EasyTracker easyTracker;
-    private transient ImageView iv_button_next_instalogin;
+//    private transient ImageView iv_button_next_instalogin;
+    private transient Button instAuthBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,79 +69,90 @@ public class InstaLoginActivity extends Activity{
 
 
         if (instagram.getSession().getAccessToken().isEmpty() || instagram.getSession().getAccessToken() == null) {
-            setContentView(R.layout.activity_instalogin_2);
 
-//
-//interface v.2
-
-            if (ISConsts.progressSizes.drawProgress == null){
-                ISConsts.progressSizes.drawProgress = new DrawProgress(getResources().getColor(R.color.deep_gray), getResources().getColor(R.color.progress_color));
-            }
-
-            RelativeLayout rl_instalogin = (RelativeLayout) findViewById(R.id.rl_instalogin);
-
-            if (Build.VERSION.SDK_INT < 16) {
-                rl_instalogin.setBackgroundDrawable(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
-            } else {
-                rl_instalogin.setBackground(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
-            }
-
-            //iv_button_next_instalogin
-            iv_button_next_instalogin = (ImageView) findViewById(R.id.iv_button_next_instalogin);
-            iv_button_next_instalogin.setTranslationX(ISConsts.progressSizes.progressDots[3] + ISConsts.progressSizes.progressDotSize);
+//interface v.1
+            setContentView(R.layout.activity_instalogin);
+            instAuthBtn = (Button) findViewById(R.id.instAuthBtn);
             final View.OnClickListener onClickListenerNext =new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     instagram.authorize(igAuthListener);
                 }
             };
+            instAuthBtn.setOnClickListener(onClickListenerNext);
 
-            //positing tv_instalogin
-            TextView tv_instalogin = (TextView) findViewById(R.id.tv_instalogin);
-            tv_instalogin.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 2 * ISConsts.progressSizes.progressDotSize);
-
-            //iv_dot_instalogin
-            ImageView iv_dot_instalogin = (ImageView) findViewById(R.id.iv_dot_instalogin);
-            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.setMargins(ISConsts.progressSizes.progressDots[0] - ISConsts.progressSizes.progressLineSize,
-                    (int) (ISConsts.progressSizes.screenHeight / 2) - ISConsts.progressSizes.progressLineSize,
-                    0,
-                    0);
-            iv_dot_instalogin.setLayoutParams(lp);
-            iv_dot_instalogin.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
-            Log.d("TAG", "w bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getWidth());
-            Log.d("TAG", "h bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getHeight());
-            // Animation
-            Animation scale_up = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
-                    Animation.RELATIVE_TO_SELF, 0.5f,
-                    Animation.RELATIVE_TO_SELF, 0.5f);
-            scale_up.setDuration((long) (ISConsts.progressSizes.animDuration*2/3));
-            scale_up.setFillAfter(true);
-            Animation scale_down = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
-                    Animation.RELATIVE_TO_SELF, 0.5f,
-                    Animation.RELATIVE_TO_SELF, 0.5f);
-            scale_down.setDuration((long) (ISConsts.progressSizes.animDuration / 3));
-            scale_down.setStartOffset((long) (10 + ISConsts.progressSizes.animDuration * 2 / 3));
-            scale_down.setFillAfter(true);
-            AnimationSet allDot1Animation = new AnimationSet(true);
-            allDot1Animation.addAnimation(scale_up);
-            allDot1Animation.addAnimation(scale_down);
-            allDot1Animation.setFillAfter(true);
-            allDot1Animation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    iv_button_next_instalogin.setOnClickListener(onClickListenerNext);
-                }
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-            });
-            iv_dot_instalogin.startAnimation(allDot1Animation);
-
+////
+////interface v.2
+//            setContentView(R.layout.activity_instalogin_2);
 //
+//            if (ISConsts.progressSizes.drawProgress == null){
+//                ISConsts.progressSizes.drawProgress = new DrawProgress(getResources().getColor(R.color.deep_gray), getResources().getColor(R.color.progress_color));
+//            }
+//
+//            RelativeLayout rl_instalogin = (RelativeLayout) findViewById(R.id.rl_instalogin);
+//
+//            if (Build.VERSION.SDK_INT < 16) {
+//                rl_instalogin.setBackgroundDrawable(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
+//            } else {
+//                rl_instalogin.setBackground(new BitmapDrawable(getResources(), ISConsts.progressSizes.drawProgress.getScreenBackground()));
+//            }
+//
+//            //iv_button_next_instalogin
+//            iv_button_next_instalogin = (ImageView) findViewById(R.id.iv_button_next_instalogin);
+//            iv_button_next_instalogin.setTranslationX(ISConsts.progressSizes.progressDots[3] + ISConsts.progressSizes.progressDotSize);
+//            final View.OnClickListener onClickListenerNext =new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    instagram.authorize(igAuthListener);
+//                }
+//            };
+//
+//            //positing tv_instalogin
+//            TextView tv_instalogin = (TextView) findViewById(R.id.tv_instalogin);
+//            tv_instalogin.setTranslationY((int) (ISConsts.progressSizes.screenHeight / 2) + 2 * ISConsts.progressSizes.progressDotSize);
+//
+//            //iv_dot_instalogin
+//            ImageView iv_dot_instalogin = (ImageView) findViewById(R.id.iv_dot_instalogin);
+//            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//            lp.setMargins(ISConsts.progressSizes.progressDots[0] - ISConsts.progressSizes.progressLineSize,
+//                    (int) (ISConsts.progressSizes.screenHeight / 2) - ISConsts.progressSizes.progressLineSize,
+//                    0,
+//                    0);
+//            iv_dot_instalogin.setLayoutParams(lp);
+//            iv_dot_instalogin.setImageBitmap(ISConsts.progressSizes.drawProgress.getLittleDotProgress());
+//            Log.d("TAG", "w bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getWidth());
+//            Log.d("TAG", "h bitmap = " + ISConsts.progressSizes.drawProgress.getLittleDotProgress().getHeight());
+//            // Animation
+//            Animation scale_up = new ScaleAnimation(1.0f, 3.0f, 1.0f, 3.0f,
+//                    Animation.RELATIVE_TO_SELF, 0.5f,
+//                    Animation.RELATIVE_TO_SELF, 0.5f);
+//            scale_up.setDuration((long) (ISConsts.progressSizes.animDuration*2/3));
+//            scale_up.setFillAfter(true);
+//            Animation scale_down = new ScaleAnimation(1.0f, 0.8f, 1.0f, 0.8f,
+//                    Animation.RELATIVE_TO_SELF, 0.5f,
+//                    Animation.RELATIVE_TO_SELF, 0.5f);
+//            scale_down.setDuration((long) (ISConsts.progressSizes.animDuration / 3));
+//            scale_down.setStartOffset((long) (10 + ISConsts.progressSizes.animDuration * 2 / 3));
+//            scale_down.setFillAfter(true);
+//            AnimationSet allDot1Animation = new AnimationSet(true);
+//            allDot1Animation.addAnimation(scale_up);
+//            allDot1Animation.addAnimation(scale_down);
+//            allDot1Animation.setFillAfter(true);
+//            allDot1Animation.setAnimationListener(new Animation.AnimationListener() {
+//                @Override
+//                public void onAnimationStart(Animation animation) {
+//                }
+//                @Override
+//                public void onAnimationEnd(Animation animation) {
+//                    iv_button_next_instalogin.setOnClickListener(onClickListenerNext);
+//                }
+//                @Override
+//                public void onAnimationRepeat(Animation animation) {
+//                }
+//            });
+//            iv_dot_instalogin.startAnimation(allDot1Animation);
+//
+////
         } else {
             finish();
             startActivity(new Intent(InstaLoginActivity.this, InstagramHashTagActivity.class));
