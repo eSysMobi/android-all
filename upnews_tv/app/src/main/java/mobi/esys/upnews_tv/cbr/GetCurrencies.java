@@ -19,17 +19,17 @@ import java.util.Locale;
 
 import mobi.esys.upnews_tv.PlayerActivity;
 
-public class GetCurrencies extends AsyncTask<Date,Void,CurrenciesList> {
+public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
     private static final String LOG_TAG = "getCurrencies";
     private transient Context context;
     private transient Date yeasterDay;
     private transient CurrenciesList yeasterdayList;
 
+    // всегда к доллару: евро, британский фунт, японская ена, китайский юань
+    //u20ac euro
     //u0024 dollar
     //u00a3 pound
     //u00a5 cny
-    //u20ac euro
-
 
     public GetCurrencies(final Context context) {
         this.context = context;
@@ -37,29 +37,26 @@ public class GetCurrencies extends AsyncTask<Date,Void,CurrenciesList> {
 
     @Override
     protected CurrenciesList doInBackground(final Date... params) {
-
-
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
-        yeasterDay=cal.getTime();
+        yeasterDay = cal.getTime();
 
-        yeasterdayList=getCurrencyListByDate(yeasterDay);
+        yeasterdayList = getCurrencyListByDate(yeasterDay);
 
         return getCurrencyListByDate(params[0]);
     }
 
 
-    private CurrenciesList getCurrencyListByDate(final Date date){
+    private CurrenciesList getCurrencyListByDate(final Date date) {
         CurrenciesList currenciesList = null;
 
         try {
             SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-
-            String today=format.format(date);
-
+            String today = format.format(date);
             URL url = new URL("http://www.cbr.ru/scripts/XML_daily.asp?date_req=".concat(today));
-            Log.d("curr ulr",url.toString());
-            if(url!=null) {
+            //or http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml for europe
+            Log.d("curr ulr", url.toString());
+            if (url != null) {
                 Reader reader = new InputStreamReader(getInputStream(url));
 
                 Persister serializer = new Persister();
@@ -70,8 +67,6 @@ public class GetCurrencies extends AsyncTask<Date,Void,CurrenciesList> {
                     Log.e("SimpleTest", e.getMessage());
                 }
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,6 +85,6 @@ public class GetCurrencies extends AsyncTask<Date,Void,CurrenciesList> {
     @Override
     protected void onPostExecute(CurrenciesList currenciesList) {
         super.onPostExecute(currenciesList);
-        ((PlayerActivity)context).loadCurrencyDashboard(currenciesList,yeasterdayList);
+        ((PlayerActivity) context).loadCurrencyDashboard(currenciesList, yeasterdayList);
     }
 }
