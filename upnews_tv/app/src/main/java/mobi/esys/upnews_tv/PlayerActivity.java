@@ -68,6 +68,7 @@ import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -131,6 +132,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
     private transient SharedPreferences preferences;
     private boolean isStartVideo = true;
+    private transient String nextVideo = "";
 
     private transient ImageView groupIconImageView;
     private transient EasyTracker easyTracker;
@@ -354,11 +356,16 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         Log.d(TAG, "mp4 files in video folder" + mp4Files.toString());
 
         if (mp4Files.size() > 0) {
-            playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
+            nextFile();
+//            Collections.sort(mp4Files);
+//            playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
+//            if (mp4Files.size() > videoIndex+1) {
+//                nextVideo = mp4Files.get(videoIndex+1).getName();
+//            }
         } else {
             playerView.setVideoURI(embUri);
+            Log.d(TAG, "We have NO mp4 files in video folder, start default video");
         }
-
 
         playerView.start();
 
@@ -732,6 +739,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
                         //rub = "\u20bd" + " " + df.format(tVal);
                         rub = "Р " + df.format(tVal);
+                        rub = "RUB " + df.format(tVal);
                     }
                 }
 
@@ -756,6 +764,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                             isPoundUp = tVal > yVal;
 
                             pound = "\u00a3" + " " + df.format(tVal);
+                            pound = "GBP " + df.format(tVal);
                         } else if (list.currencies.get(i).getCurrCharCode().equals("CNY")) {
                             String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
                             String nominal = list.currencies.get(i).getNominal();
@@ -775,6 +784,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                             isYanUp = tVal >= yVal;
 
                             yan = "\u5143" + " " + df.format(tVal);
+                            yan = "CNY " + df.format(tVal);
                         } else if (list.currencies.get(i).getCurrCharCode().equals("JPY")) {
                             String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
                             String nominal = list.currencies.get(i).getNominal();
@@ -794,6 +804,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                             isYenaUp = tVal >= yVal;
 
                             yena = "\u00a5" + " " + df.format(tVal);
+                            yena = "JPY " + df.format(tVal);
                         } else if (list.currencies.get(i).getCurrCharCode().equals("EUR")) {
 
                             String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
@@ -814,6 +825,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                             isEuroUp = tVal >= yVal;
 
                             euro = "\u20ac" + " " + df.format(tVal);
+                            euro = "EUR " + df.format(tVal);
                         }
                     }
                     if (i == list.currencies.size() - 1) {
@@ -1092,12 +1104,22 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         File videoDir = new File(path);
         Log.d("files", Arrays.toString(folderList));
         List<File> mp4Files = FileSystemHelper.getFileListByExts(videoDir, VIDEOS_EXTS);
+        Collections.sort(mp4Files);
+        Collections.reverse(mp4Files);
+        Log.d(TAG, "mp4 files in video folder" + mp4Files.toString());
 
 //        for (File file : folderList) {
 //            if ("mp4".equals(FilenameUtils.getExtension(file.getAbsolutePath()))) {
 //                mp4Files.add(file);
 //            }
 //        }
+
+        for (int i = 0; i<mp4Files.size();i++){
+            if (mp4Files.get(i).getName().equals(nextVideo)){
+                videoIndex = i;
+            }
+        }
+        Log.d(TAG, "Play file " + videoIndex + " name " + mp4Files.get(videoIndex).getName());
 
         Log.d("mp4", mp4Files.toString());
         if (mp4Files.size() > 0) {
@@ -1107,6 +1129,11 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 playerView.start();
 
                 videoIndex++;
+                if (videoIndex < mp4Files.size()) {
+                    nextVideo = mp4Files.get(videoIndex).getName();
+                } else {
+                    nextVideo = mp4Files.get(0).getName();
+                }
 
                 easyTracker.send(MapBuilder.createEvent("playback",
                         "video_playback", "go to next video", null).build());
@@ -1114,6 +1141,10 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 videoIndex = 0;
                 playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
                 playerView.start();
+
+                if (mp4Files.size() > videoIndex+1) {
+                    nextVideo = mp4Files.get(videoIndex+1).getName();
+                }
 
                 easyTracker.send(MapBuilder.createEvent("playback",
                         "video_playback", "go to next video", null).build());

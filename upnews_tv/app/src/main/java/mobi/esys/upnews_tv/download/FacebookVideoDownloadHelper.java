@@ -67,11 +67,11 @@ public class FacebookVideoDownloadHelper {
                 Log.d(TAG, "done file: " + doneFile.getAbsolutePath());
 
                 //write from tmp file
-                boolean fileMoved = false;
+                int  attemptNum = 0;
                 try {
                     if (currentFile.length() > 0) {
                         FileUtils.moveFile(currentFile, doneFile);
-                        fileMoved = true;
+                        attemptNum++;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -81,11 +81,11 @@ public class FacebookVideoDownloadHelper {
                     }
                 }
                 //repeat if not moved
-                if (!fileMoved) {
+                if (attemptNum==0) {
                     try {
                         if (currentFile.length() > 0) {
                             FileUtils.moveFile(currentFile, doneFile);
-                            fileMoved = true;
+                            attemptNum++;
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -95,8 +95,8 @@ public class FacebookVideoDownloadHelper {
                         }
                     }
                 }
-                if (fileMoved) {
-                    Log.d(TAG, "File successfully writed");
+                if (attemptNum>0) {
+                    Log.d(TAG, "File successfully writed. Attempt " + attemptNum);
                     filesMask.add(doneFile);
                     //clear tmp file
                     if (currentFile.exists()) {
@@ -163,6 +163,10 @@ public class FacebookVideoDownloadHelper {
             enqueues.add(enqueue);
         } else {
             Log.d(TAG, "We have file " + doneFile.getName() + " Not need download.");
+            if(currentFile.exists()){
+                currentFile.delete();
+                Log.d(TAG, "Tmp file deleted");
+            }
             currentDownloadIndex++;
             if (currentDownloadIndex < fbVideos.size() - 1) {
                 getVidFromUrl(fbVideos.get(currentDownloadIndex));
