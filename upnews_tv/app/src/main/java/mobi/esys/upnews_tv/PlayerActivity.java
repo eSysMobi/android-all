@@ -1049,8 +1049,10 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     }
 
     public void getCurrencies() {
-        GetCurrencies getCurrencies = new GetCurrencies(this);
-        getCurrencies.execute(new Date());
+        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
+            GetCurrencies getCurrencies = new GetCurrencies(this);
+            getCurrencies.execute(new Date());
+        }
     }
 
     public void getGroupIconURL() {
@@ -1063,16 +1065,24 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
                         if (response != null) {
-                            JSONObject resp = response.getJSONObject();
-                            Log.d("icon url", resp.toString());
-
-
+                            JSONObject resp = null;
                             try {
+                                resp = response.getJSONObject();
+                                Log.d("icon url", resp.toString());
                                 Glide.with(PlayerActivity.this).load(Uri.parse(resp.getJSONObject("picture").getJSONObject("data").getString("url"))).override(90, 90).placeholder(R.drawable.facebook).error(R.drawable.facebook)
                                         .into(groupIconImageView);
-                            } catch (JSONException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
+                                Glide.with(PlayerActivity.this).load(R.drawable.facebook).override(90, 90).placeholder(R.drawable.facebook).error(R.drawable.facebook)
+                                        .into(groupIconImageView);
                             }
+
+//                            try {
+//                                Glide.with(PlayerActivity.this).load(Uri.parse(resp.getJSONObject("picture").getJSONObject("data").getString("url"))).override(90, 90).placeholder(R.drawable.facebook).error(R.drawable.facebook)
+//                                        .into(groupIconImageView);
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+//                            }
 
                         } else {
                             runOnUiThread(new Runnable() {
@@ -1114,8 +1124,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 //            }
 //        }
 
-        for (int i = 0; i<mp4Files.size();i++){
-            if (mp4Files.get(i).getName().equals(nextVideo)){
+        for (int i = 0; i < mp4Files.size(); i++) {
+            if (mp4Files.get(i).getName().equals(nextVideo)) {
                 videoIndex = i;
             }
         }
@@ -1142,8 +1152,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
                 playerView.start();
 
-                if (mp4Files.size() > videoIndex+1) {
-                    nextVideo = mp4Files.get(videoIndex+1).getName();
+                if (mp4Files.size() > videoIndex + 1) {
+                    nextVideo = mp4Files.get(videoIndex + 1).getName();
                 }
 
                 easyTracker.send(MapBuilder.createEvent("playback",
