@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
-            storeFile file('D:/esys-mobi/keystore/upnewslite_release.keystore')
+            storeFile file('D:/esys-mobi/keystore_lite/upnewslite_release.keystore')
             storePassword 'Qwg2L2nPm8'
             keyAlias 'upnewslite'
             keyPassword 'Qwg2L2nPm8'
@@ -15,9 +15,12 @@ android {
         minSdkVersion 11
         targetSdkVersion 23
         signingConfig signingConfigs.config
+        versionCode 3
+        versionName '2.2.0'
     }
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             signingConfig signingConfigs.config

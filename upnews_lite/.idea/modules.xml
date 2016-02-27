@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/sAXRSSReader/sAXRSSReader.iml" filepath="$PROJECT_DIR$/sAXRSSReader/sAXRSSReader.iml" />
-      <module fileurl="file://$PROJECT_DIR$/upnewslite_release.iml" filepath="$PROJECT_DIR$/upnewslite_release.iml" />
+      <module fileurl="file://$PROJECT_DIR$/upnews_lite.iml" filepath="$PROJECT_DIR$/upnews_lite.iml" />
     </modules>
   </component>
 </project>

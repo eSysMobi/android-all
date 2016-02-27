@@ -100,6 +100,7 @@ public class CameraShotTask implements Runnable {
                 intentOut.putExtra("toastText", toastText);
                 mApp.sendBroadcast(intentOut);
             }
+            Log.d("unTag_Camera", "Camera " + currentCamID + " is open");
 
             Camera.Parameters parameters = mCamera.getParameters();
 
@@ -175,6 +176,9 @@ public class CameraShotTask implements Runnable {
                             int face_count = face_detector.findFaces(background_image, faces);
                             Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
                             count = count + face_count;
+                            //clean trash
+                            background_image.recycle();
+                            background_image = null;
 
                             if (allowToast) {
                                 Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
@@ -201,9 +205,9 @@ public class CameraShotTask implements Runnable {
                         if (currentCamID < UNLApp.getCamerasID().length) {
                             getPhotoAndParse(currentCamID);
                         } else {
-                            if (count > 0) {
+                            //if (count > 0) {
                                 finalCount();
-                            }
+                            //}
                         }
                     }
                 }
@@ -217,9 +221,9 @@ public class CameraShotTask implements Runnable {
             if (currentCamID < UNLApp.getCamerasID().length) {
                 getPhotoAndParse(currentCamID);
             } else {
-                if (count > 0) {
+                //if (count > 0) {
                     finalCount();
-                }
+                //}
             }
         }
     }
@@ -242,15 +246,59 @@ public class CameraShotTask implements Runnable {
                 collection.add(stringList);
             }
             scanner.close();
+
+            //check old format
+            if (collection.get(0).size()<3){
+                collection = null;
+                throw new IllegalAccessError("Olg format statistics file delete it!");
+            } else {
+                if (!collection.get(0).get(2).equals("All shown")){
+                    collection = null;
+                    throw new IllegalAccessError("Olg format statistics file delete it!");
+                }
+            }
+
             //check video file name in the parsed data
             if (!collection.get(0).contains(mVideoName)) {
                 collection.get(0).add(mVideoName);
                 for (int i = 1; i < collection.size(); i++) {
                     collection.get(i).add("0");
                 }
+                collection.get(0).add("Shown");
+                for (int i = 1; i < collection.size(); i++) {
+                    collection.get(i).add("0");
+                }
+            }else{
+                int ind = collection.get(0).indexOf(mVideoName);
+                if(ind+1<collection.get(0).size()){
+                    if(!collection.get(0).get(ind+1).equals("Shown")){
+                        collection.get(0).add(ind+1,"Shown");
+                        for (int i = 1; i < collection.size(); i++) {
+                            collection.get(i).add(ind+1,"0");
+                        }
+                    }
+                } else{
+                    collection.get(0).add("Shown");
+                    for (int i = 1; i < collection.size(); i++) {
+                        collection.get(i).add("0");
+                    }
+                }
             }
+//            //check old format
+//            if (!collection.get(0).get(2).equals("All shown")){
+//                collection.get(0).add(2,"All shown");
+//                for (int i = 1; i < collection.size(); i++) {
+//                    collection.get(i).add(1,"0");
+//                    for (int j = 2; j < collection.get(i).size(); j++) {
+//                        collection.get(i).set(j,"0");
+//                    }
+//                }
+//            }
+
+
             //get column in the parsed data for writing info
-            int colIndex = collection.get(0).indexOf(mVideoName);
+            int colVidIndex = collection.get(0).indexOf(mVideoName);
+            int colIndex = collection.get(0).indexOf(mVideoName)+1;
             //get and parse current time
             int rowIndex = 1;
             SimpleDateFormat df = new SimpleDateFormat("k");
@@ -270,25 +318,33 @@ public class CameraShotTask implements Runnable {
             }
             //adding detected faced to the data
             //adding data to current video
+            int countVidFromData = Integer.parseInt(collection.get(rowIndex).get(colVidIndex)) + 1;
             int countFacesFromData = Integer.parseInt(collection.get(rowIndex).get(colIndex));
             countFacesFromData = countFacesFromData + count;
             ArrayList<String> tmp = collection.get(rowIndex);
+            tmp.set(colVidIndex, String.valueOf(countVidFromData));
             tmp.set(colIndex, String.valueOf(countFacesFromData));
             //adding data to all videos
-            countFacesFromData = Integer.parseInt(collection.get(rowIndex).get(1));
+            countVidFromData = Integer.parseInt(collection.get(rowIndex).get(1)) + 1;
+            countFacesFromData = Integer.parseInt(collection.get(rowIndex).get(2));
             countFacesFromData = countFacesFromData + count;
-            tmp.set(1, String.valueOf(countFacesFromData));
+            tmp.set(1, String.valueOf(countVidFromData));
+            tmp.set(2, String.valueOf(countFacesFromData));
             collection.set(rowIndex, tmp);
             //adding data to current video in all time
             int lastRow = collection.size() - 1;
+            countVidFromData = Integer.parseInt(collection.get(lastRow).get(colVidIndex)) + 1;
             countFacesFromData = Integer.parseInt(collection.get(lastRow).get(colIndex));
             countFacesFromData = countFacesFromData + count;
             ArrayList<String> tmp2 = collection.get(lastRow);
+            tmp2.set(colVidIndex, String.valueOf(countVidFromData));
             tmp2.set(colIndex, String.valueOf(countFacesFromData));
             //adding data to all videos in all time
-            countFacesFromData = Integer.parseInt(collection.get(lastRow).get(1));
+            countVidFromData = Integer.parseInt(collection.get(lastRow).get(1)) + 1;
+            countFacesFromData = Integer.parseInt(collection.get(lastRow).get(2));
             countFacesFromData = countFacesFromData + count;
-            tmp2.set(1, String.valueOf(countFacesFromData));
+            tmp2.set(1, String.valueOf(countVidFromData));
+            tmp2.set(2, String.valueOf(countFacesFromData));
             collection.set(lastRow, tmp2);
             //parse data to lines
             ArrayList<String> tmpStrings = new ArrayList<>();
@@ -408,6 +464,12 @@ public class CameraShotTask implements Runnable {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (IllegalAccessError e){
+            e.printStackTrace();
+            Log.e("unTag_Camera", "Old today statistics file! Delete it!");
+            boolean statusDel = statisticFile.delete();
+            Log.e("unTag_Camera", "Old today statistics file deleted = " + statusDel);
+            finalCount();
         }
     }
 

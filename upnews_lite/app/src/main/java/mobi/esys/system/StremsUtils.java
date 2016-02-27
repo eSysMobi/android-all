@@ -23,6 +23,7 @@ public class StremsUtils {
             }
             out.close();
             in.close();
+            buf = null;
         } catch (Exception e) {
             e.printStackTrace();
         }
