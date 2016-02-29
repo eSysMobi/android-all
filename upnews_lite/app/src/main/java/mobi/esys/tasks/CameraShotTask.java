@@ -32,7 +32,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 17.01.2016.
  */
-public class CameraShotTask implements Runnable {
+public class CameraShotTask implements Runnable{
     private int MAX_FACES = 15;
     private Context mContext;
     private String mVideoName;
@@ -43,6 +43,7 @@ public class CameraShotTask implements Runnable {
     private SurfaceHolder sHolder;
     private boolean allowToast = UNLConsts.ALLOW_TOAST;
     UNLApp mApp;
+    static Clb callbackJPEG = null; //this callback must be static, otherwise GC kill it
 
     public CameraShotTask(SurfaceHolder mHolder, Context context, String videoName, UNLApp app) {
         mContext = context;
@@ -53,6 +54,86 @@ public class CameraShotTask implements Runnable {
         sHolder = mHolder;
         mVideoName = videoName;
         mApp = app;
+    }
+
+    private class Clb implements Camera.PictureCallback{
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            Log.d("unTag_Camera", "Start JPEG callback from camera " + currentCamID);
+            String logoDirPath = UNLApp.getAppExtCachePath()
+                    + UNLConsts.VIDEO_DIR_NAME
+                    + UNLConsts.GD_STATISTICS_DIR_NAME
+                    + "/";
+            File logoDir = new File(logoDirPath);
+
+            boolean successLogoDirCheck = true;
+            if (!logoDir.exists()) {
+                successLogoDirCheck = logoDir.mkdir();
+            }
+
+            if (successLogoDirCheck) {
+                String tmpFilePath = UNLApp.getAppExtCachePath()
+                        + UNLConsts.VIDEO_DIR_NAME
+                        + UNLConsts.GD_STATISTICS_DIR_NAME    // or GD_LOGO_DIR_NAME
+                        + "/"
+                        + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
+                File tmpFileForFaceDetecting = new File(tmpFilePath);
+
+                if (tmpFileForFaceDetecting.exists()) {
+                    tmpFileForFaceDetecting.delete();
+                }
+
+                FileOutputStream fos;
+                try {
+                    fos = new FileOutputStream(tmpFileForFaceDetecting);
+                    fos.write(data);
+                    //fos.flush();
+                    fos.close();
+                    Log.d("unTag_Camera", "Photo from camera " + currentCamID + " is written on SD");
+
+                    BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
+                    bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
+                    Bitmap background_image = BitmapFactory.decodeFile(tmpFileForFaceDetecting.getAbsolutePath(), bitmap_options);
+                    FaceDetector face_detector = new FaceDetector(
+                            background_image.getWidth(), background_image.getHeight(),
+                            MAX_FACES);
+                    FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
+                    int face_count = face_detector.findFaces(background_image, faces);
+                    Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
+                    count = count + face_count;
+                    //clean trash
+                    background_image.recycle();
+                    background_image = null;
+
+                    if (allowToast) {
+                        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                        String toastText = "camera " + currentCamID + " detect " + face_count + " faces";
+                        intentOut.putExtra("toastText", toastText);
+                        mApp.sendBroadcast(intentOut);
+                    }
+
+                } catch (IOException e) {
+                    Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
+                    if (allowToast) {
+                        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                        String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
+                        intentOut.putExtra("toastText", toastText);
+                        mApp.sendBroadcast(intentOut);
+                    }
+                }
+
+                releaseCameraAndPreview();
+
+                currentCamID = currentCamID + 1;
+                if (currentCamID < UNLApp.getCamerasID().length) {
+                    getPhotoAndParse(currentCamID);
+                } else {
+                    finalCount();
+                }
+            }
+        }
     }
 
     @Override
@@ -133,87 +214,8 @@ public class CameraShotTask implements Runnable {
                 mCamera.enableShutterSound(false);
             mCamera.startPreview();
 
-            Camera.PictureCallback mCall = new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data, Camera camera) {
-                    String logoDirPath = UNLApp.getAppExtCachePath()
-                            + UNLConsts.VIDEO_DIR_NAME
-                            + UNLConsts.GD_STATISTICS_DIR_NAME
-                            + "/";
-                    File logoDir = new File(logoDirPath);
-
-                    boolean successLogoDirCheck = true;
-                    if (!logoDir.exists()) {
-                        successLogoDirCheck = logoDir.mkdir();
-                    }
-
-                    if (successLogoDirCheck) {
-                        String tmpFilePath = UNLApp.getAppExtCachePath()
-                                + UNLConsts.VIDEO_DIR_NAME
-                                + UNLConsts.GD_STATISTICS_DIR_NAME    // or GD_LOGO_DIR_NAME
-                                + "/"
-                                + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
-                        File tmpFileForFaceDetecting = new File(tmpFilePath);
-
-                        if (tmpFileForFaceDetecting.exists()) {
-                            tmpFileForFaceDetecting.delete();
-                        }
-
-                        FileOutputStream fos;
-                        try {
-                            fos = new FileOutputStream(tmpFileForFaceDetecting);
-                            fos.write(data);
-                            //fos.flush();
-                            fos.close();
-
-                            BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
-                            bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
-                            Bitmap background_image = BitmapFactory.decodeFile(tmpFileForFaceDetecting.getAbsolutePath(), bitmap_options);
-                            FaceDetector face_detector = new FaceDetector(
-                                    background_image.getWidth(), background_image.getHeight(),
-                                    MAX_FACES);
-                            FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
-                            int face_count = face_detector.findFaces(background_image, faces);
-                            Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + currentCamID + ")");
-                            count = count + face_count;
-                            //clean trash
-                            background_image.recycle();
-                            background_image = null;
-
-                            if (allowToast) {
-                                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
-                                String toastText = "camera " + currentCamID + " detect " + face_count + " faces";
-                                intentOut.putExtra("toastText", toastText);
-                                mApp.sendBroadcast(intentOut);
-                            }
-
-                        } catch (IOException e) {
-                            Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
-                            if (allowToast) {
-                                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
-                                String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
-                                intentOut.putExtra("toastText", toastText);
-                                mApp.sendBroadcast(intentOut);
-                            }
-                        }
-
-                        releaseCameraAndPreview();
-
-                        currentCamID = currentCamID + 1;
-                        if (currentCamID < UNLApp.getCamerasID().length) {
-                            getPhotoAndParse(currentCamID);
-                        } else {
-                            //if (count > 0) {
-                                finalCount();
-                            //}
-                        }
-                    }
-                }
-            };
-
-            mCamera.takePicture(null, null, mCall);
+            callbackJPEG = new Clb();
+            mCamera.takePicture(null, null, callbackJPEG);
 
         } else {
             Log.e("unTag_Camera", "Camera id " + currentCamID + " is not open. Next camera.");
@@ -221,9 +223,7 @@ public class CameraShotTask implements Runnable {
             if (currentCamID < UNLApp.getCamerasID().length) {
                 getPhotoAndParse(currentCamID);
             } else {
-                //if (count > 0) {
-                    finalCount();
-                //}
+                finalCount();
             }
         }
     }
@@ -375,85 +375,6 @@ public class CameraShotTask implements Runnable {
                 mApp.sendBroadcast(intentOut);
             }
 
-//            //ALL STATISTICS FILE
-//            //parse all statistic file
-//            Scanner scannerAll = new Scanner(new FileInputStream(allStatisticFile));
-//            ArrayList<ArrayList<String>> collectionAll = new ArrayList<>();
-//            while (scannerAll.hasNextLine()) {
-//                String line = scannerAll.nextLine();
-//                String[] myList = line.split(UNLConsts.CSV_SEPARATOR);
-//                ArrayList<String> stringList = new ArrayList<String>(Arrays.asList(myList));
-//                collectionAll.add(stringList);
-//            }
-//            scannerAll.close();
-//            //check video file name in the parsed data
-//            if (!collectionAll.get(0).contains(mVideoName)) {
-//                collectionAll.get(0).add(mVideoName);
-//                for (int i = 1; i < collectionAll.size(); i++) {
-//                    collectionAll.get(i).add("0");
-//                }
-//            }
-//            //get column in the parsed data for writing info
-//            int colIndexAll = collectionAll.get(0).indexOf(mVideoName);
-//            //get and parse current time
-//            int rowIndexAll = 1;
-//            String currTimeAll;
-//            currTimeAll = df.format(Calendar.getInstance().getTime());
-//            if (currTimeAll.length() == 1) {
-//                currTimeAll = "0" + currTimeAll;
-//            }
-//            if (currTimeAll.equals("24")) {
-//                currTimeAll = "00";
-//            }
-//            currTimeAll = currTimeAll + ":00-";
-//            for (int i = 1; i < collectionAll.size(); i++) {
-//                if (collectionAll.get(i).get(0).contains(currTimeAll)) {
-//                    rowIndexAll = i;
-//                }
-//            }
-//            //adding detected faced to the data
-//            //adding data to current video
-//            int countFacesFromDataAll = Integer.parseInt(collectionAll.get(rowIndexAll).get(colIndexAll));
-//            countFacesFromDataAll = countFacesFromDataAll + count;
-//            ArrayList<String> tmpAll = collectionAll.get(rowIndexAll);
-//            tmpAll.set(colIndexAll, String.valueOf(countFacesFromDataAll));
-//            //adding data to all videos
-//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(rowIndexAll).get(1));
-//            countFacesFromDataAll = countFacesFromDataAll + count;
-//            tmpAll.set(1, String.valueOf(countFacesFromDataAll));
-//            collectionAll.set(rowIndexAll, tmpAll);
-//            //adding data to current video in all time
-//            int lastRowAll = collectionAll.size() - 1;
-//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(lastRowAll).get(colIndexAll));
-//            countFacesFromDataAll = countFacesFromDataAll + count;
-//            ArrayList<String> tmpAll2 = collectionAll.get(lastRowAll);
-//            tmpAll2.set(colIndexAll, String.valueOf(countFacesFromDataAll));
-//            //adding data to all videos in all time
-//            countFacesFromDataAll = Integer.parseInt(collectionAll.get(lastRowAll).get(1));
-//            countFacesFromDataAll = countFacesFromDataAll + count;
-//            tmpAll2.set(1, String.valueOf(countFacesFromDataAll));
-//            collectionAll.set(lastRowAll, tmpAll2);
-//            //parse data to lines
-//            ArrayList<String> tmpStringsAll = new ArrayList<>();
-//            for (int i = 0; i < collectionAll.size(); i++) {
-//                String tmpString = collectionAll.get(i).get(0);
-//                for (int j = 1; j < collectionAll.get(i).size(); j++) {
-//                    tmpString = tmpString + UNLConsts.CSV_SEPARATOR + collectionAll.get(i).get(j);
-//                }
-//                tmpStringsAll.add(tmpString);
-//            }
-//            //write data to file
-//            FileWriter logWriterAll = new FileWriter(allStatisticFile);
-//            BufferedWriter outAll = new BufferedWriter(logWriterAll);
-//            for (int k = 0; k < tmpStringsAll.size(); k++) {
-//                if (k > 0) {
-//                    outAll.newLine();
-//                }
-//                outAll.write(tmpStringsAll.get(k));
-//            }
-//            tmpStringsAll.clear();
-//            outAll.close();
-
             //sending statistics in GD
             signalSendStatToGD();
             //or
@@ -501,8 +422,6 @@ public class CameraShotTask implements Runnable {
 //            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
-
         }
     }
-
 }
