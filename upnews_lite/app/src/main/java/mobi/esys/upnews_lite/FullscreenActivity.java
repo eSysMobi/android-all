@@ -1,6 +1,5 @@
 package mobi.esys.upnews_lite;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,14 +8,18 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -32,19 +35,18 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.playback.Playback;
+import mobi.esys.system.MarqueeTextView;
 import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.CheckAndGetLogoFromGDriveTask;
-import mobi.esys.tasks.CreateDriveFolderTask;
 import mobi.esys.tasks.RSSTask;
 import mobi.esys.tasks.SendStatisticsToGD;
 
-@SuppressLint({"NewApi", "SimpleDateFormat"})
-public class FullscreenActivity extends Activity {
+public class FullscreenActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
+    private static transient int DELAY_NAV_HIDE = 2000;
     private transient VideoView videoView;
-    private transient Playback playback;
-    private transient TextView textView;
+    private transient Playback playback = null;
+    private transient MarqueeTextView textView;
     private transient boolean isFirstRSS;
-    private transient RelativeLayout relativeLayout;
     private transient Handler handler;
     private transient Runnable runnable;
     private transient UNLApp mApp;
@@ -53,24 +55,33 @@ public class FullscreenActivity extends Activity {
     private transient ImageView mLogo;
     private transient SurfaceHolder holder;
 
+    private transient Handler handler2;
+    private transient View decorView = null;
+
 
     @Override
     protected void onCreate(Bundle stateBundle) {
         super.onCreate(stateBundle);
         setContentView(R.layout.activity_videofullscreen);
+        Log.d("unTag_FullscreenAct", "Start onCreate FullscreenActivity");
+
+        //do not off screen
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         SurfaceView surfaceView = new SurfaceView(FullscreenActivity.this);
         FrameLayout surfaceHodler = (FrameLayout) findViewById(R.id.surfaceHolder);
         surfaceHodler.addView(surfaceView);
         holder = surfaceView.getHolder();
 
-        relativeLayout = (RelativeLayout) findViewById(R.id.fullscreenLayout);
-        textView = new TextView(FullscreenActivity.this);
+        textView = (MarqueeTextView) findViewById(R.id.creepingLine);
+        textView.setSelected(true);
         mLogo = (ImageView) findViewById(R.id.logo);
+        videoView = (VideoView) findViewById(R.id.video);
 
         isFirstRSS = true;
         mApp = (UNLApp) getApplication();
 
+        //prepare RSS task handler
         handler = new Handler();
         runnable = new Runnable() {
             @Override
@@ -81,13 +92,16 @@ public class FullscreenActivity extends Activity {
             }
         };
 
-        handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
+        //prepare handler for hide Android status bar
+        if (Build.VERSION.SDK_INT >= 14) {
+                decorView = getWindow().getDecorView();
+                setUISmall();
+                handler2 = new mHandler(this);
+                decorView.setOnSystemUiVisibilityChangeListener(this);
+        }
 
-        videoView = (VideoView) findViewById(R.id.video);
 
-//        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FullscreenActivity.this, false, mApp, false);
-//        createDriveFolderTask.execute();
-
+        //prepare Logo task handler
         checkAndSetLogoFromExStorage();
 
         br = new BroadcastReceiver() {
@@ -116,7 +130,7 @@ public class FullscreenActivity extends Activity {
                         if (!nameCurrentPlayedFile.isEmpty()) {
                             Log.d("unTag_FullscreenAct", "Start face counting after ending file " + nameCurrentPlayedFile);
                             CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
-                            Thread thread = new Thread(csTask,"CameraShotTask");
+                            Thread thread = new Thread(csTask, "CameraShotTask");
                             thread.start();
                             //or
                             //CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
@@ -139,10 +153,9 @@ public class FullscreenActivity extends Activity {
         };
         // Create intent-filter for BroadcastReceiver
         intFilt = new IntentFilter(UNLConsts.BROADCAST_ACTION);
-
-        startPlayback();
     }
 
+    //check logo in device, if we have it - set, if not have - use standard
     private void checkAndSetLogoFromExStorage() {
         String logoFilePath = UNLApp.getAppExtCachePath()
                 + UNLConsts.VIDEO_DIR_NAME
@@ -165,7 +178,7 @@ public class FullscreenActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d("unTag_FullscreenAct", "Unregister Receiver in onDestroy()");
+        Log.d("unTag_FullscreenAct", "Unregister Receiver in onStop()");
         unregisterReceiver(br);
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
@@ -174,7 +187,6 @@ public class FullscreenActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-
         super.onDestroy();
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
@@ -212,6 +224,7 @@ public class FullscreenActivity extends Activity {
         } else {
             startPlayback();
         }
+        Log.d("unTag_FullscreenAct", "Start RSS handler in onRestart");
         if (handler != null && runnable != null) {
             handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
         }
@@ -230,6 +243,10 @@ public class FullscreenActivity extends Activity {
             finish();
         } else {
             startPlayback();
+            Log.d("unTag_FullscreenAct", "Start RSS handler in onResume");
+            if (handler != null && runnable != null) {
+                handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
+            }
         }
     }
 
@@ -251,43 +268,26 @@ public class FullscreenActivity extends Activity {
         renewLogo();
     }
 
-
     public void startRSS(String feed) {
+        Log.d("unTag_FullscreenAct", "Start RSS line");
         if (isFirstRSS) {
             Log.d("feed", feed);
-            textView.setBackgroundColor(getResources().getColor(R.color.rss_line));
-            textView.setTextColor(Color.WHITE);
-            RelativeLayout.LayoutParams tslp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, 80);
-            tslp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            tslp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            tslp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            textView.setGravity(Gravity.CENTER_VERTICAL);
-            textView.setLayoutParams(tslp);
-            textView.setTextSize(30);
-            textView.setPadding(20, 0, 20, 0);
-            textView.setSingleLine(true);
-            textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-            textView.setMarqueeRepeatLimit(-1);
-            textView.setHorizontallyScrolling(true);
-            textView.setFocusable(true);
-            textView.setFocusableInTouchMode(true);
-            textView.setFreezesText(true);
+            textView.setVisibility(View.VISIBLE);
+            //textView.setText(Html.fromHtml(feed), TextView.BufferType.SPANNABLE);
+            textView.setText(Html.fromHtml(feed));
+            textView.setSelected(true);
             textView.requestFocus();
-
-            textView.setText(Html.fromHtml(feed), TextView.BufferType.SPANNABLE);
-            relativeLayout.addView(textView);
             isFirstRSS = false;
-
         } else {
             textView.setText("");
-            textView.setText(Html.fromHtml(feed), TextView.BufferType.SPANNABLE);
+            textView.setText(Html.fromHtml(feed));
             textView.requestFocus();
         }
     }
 
-    public void restartCreepingLine() {
-        textView.requestFocus();
-    }
+//    public void restartCreepingLine() {
+//        textView.requestFocus();
+//    }
 
     public void recToMP(String tag, String message) {
         JSONObject props = new JSONObject();
@@ -295,6 +295,51 @@ public class FullscreenActivity extends Activity {
             props.put(tag, message);
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility);
+        if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+            handler2.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
+        }
+    }
+
+    private static class mHandler extends Handler {
+        //need check this! may be memory leak
+
+//        WeakReference<FullscreenActivity> wrActivity;
+//
+//        public mHandler(FullscreenActivity activity) {
+//            wrActivity = new WeakReference<FullscreenActivity>(activity);
+//        }
+
+        FullscreenActivity wrActivity;
+        public mHandler(FullscreenActivity activity) {
+            wrActivity = activity;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+//            FullscreenActivity activity = wrActivity.get();
+//            if (activity != null)
+//                activity.setUISmall();
+            wrActivity.setUISmall();
+        }
+    }
+
+    private void setUISmall() {
+        //not need check SDK version because checking in onCreate
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (Build.VERSION.SDK_INT >= 14) {
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
         }
     }
 

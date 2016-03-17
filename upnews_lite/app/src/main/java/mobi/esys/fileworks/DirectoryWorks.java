@@ -49,7 +49,33 @@ public class DirectoryWorks {
         if (!statisticsDir.exists()) {
             statisticsDir.mkdir();
         }
+        File rssDir = new File(videoDir.getAbsolutePath() + UNLConsts.RSS_DIR_NAME);
+        if (!rssDir.exists()) {
+            rssDir.mkdir();
+        }
     }
+
+    public File getRSSFile(){
+        File result = null;
+        File rssFile = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.RSS_DIR_NAME + UNLConsts.RSS_FILE_NAME);
+        if(rssFile.exists()){
+            result = rssFile;
+        } else{
+            try {
+                boolean fileCreated = rssFile.createNewFile();
+                if (fileCreated) {
+                    result = rssFile;
+                } else {
+                    Log.d(DIR_WORKS_TAG,"Cant create empty rss file");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(DIR_WORKS_TAG, "Cant create empty rss file. IOException.");
+            }
+        }
+        return result;
+    }
+
 
     public File[] getStatisticsFiles(){
         File[] result = null;
@@ -181,7 +207,7 @@ public class DirectoryWorks {
                     filePaths.add(file.getPath());
                 }
             }
-            Log.d(DIR_WORKS_TAG + mess, filePaths.toString());
+            Log.d(DIR_WORKS_TAG, mess + " " + filePaths.toString());
         } else {
             Log.d(DIR_WORKS_TAG, "folder don't exist");
             checkDirs();

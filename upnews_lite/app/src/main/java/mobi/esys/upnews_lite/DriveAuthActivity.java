@@ -5,9 +5,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +28,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
@@ -33,7 +36,7 @@ import mobi.esys.net.NetWork;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
 
-public class DriveAuthActivity extends Activity implements View.OnClickListener {
+public class DriveAuthActivity extends Activity implements View.OnClickListener, View.OnSystemUiVisibilityChangeListener {
     private transient SharedPreferences prefs;
     private transient GoogleAccountCredential credential;
     private transient static final int REQUEST_ACCOUNT_PICKER = 101;
@@ -51,6 +54,9 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
 
     private transient boolean externalStorageIsAvailable = false;
     private transient boolean buttonPressed = false;
+
+    private transient Handler handler;
+    private transient View decorView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +77,13 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         gdAuthBtn = (Button) findViewById(R.id.gdAuthBtn);
 
         gdAuthBtn.setOnClickListener(this);
+
+        if (Build.VERSION.SDK_INT >= 14) {
+            decorView = getWindow().getDecorView();
+            setUISmall();
+            handler = new mHandler(this);
+            decorView.setOnSystemUiVisibilityChangeListener(this);
+        }
 
         if (externalStorageIsAvailable) {
             if (NetWork.isNetworkAvailable(mApp)) {
@@ -271,6 +284,10 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
             if (!statisticsDir.exists()) {
                 statisticsDir.mkdir();
             }
+            File rssDir = new File(videoDir.getAbsolutePath() + UNLConsts.RSS_DIR_NAME);
+            if (!rssDir.exists()) {
+                rssDir.mkdir();
+            }
         }
     }
 
@@ -297,4 +314,32 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         }
     }
 
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        Log.d("unTag_DriveAuthActivity", "onSystemUiVisibilityChange " + visibility);
+        if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+            handler.sendEmptyMessageDelayed(32, 2000);
+        }
+    }
+
+    private static class mHandler extends Handler {
+
+        WeakReference<DriveAuthActivity> wrActivity;
+
+        public mHandler(DriveAuthActivity activity) {
+            wrActivity = new WeakReference<DriveAuthActivity>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            DriveAuthActivity activity = wrActivity.get();
+            if (activity != null)
+                activity.setUISmall();
+        }
+    }
+
+    private void setUISmall() {
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+    }
 }

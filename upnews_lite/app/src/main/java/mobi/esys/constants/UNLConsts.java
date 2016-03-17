@@ -16,6 +16,9 @@ public final class UNLConsts {
     public static final String GD_LOGO_FILE_TITLE = "upnews_logo_w2.png";
     public static final String GD_LOGO_FILE_MIME_TYPE = "image/png";
     public static final String GD_FOLDER_QUERY = "'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed=false";
+    public static final String RSS_DIR_NAME = "/rss/";
+    public static final String GD_RSS_DIR_NAME = "rss";
+    public static final String RSS_FILE_NAME = "rss.txt";
     public static final String STATISTICS_TEMP_PHOTO_FILE_NAME = "tmp.jpg";
     public static final String STATISTICS_DIR_NAME = "/statistics/";
     public static final String GD_STATISTICS_DIR_NAME = "Statistics";
@@ -23,6 +26,9 @@ public final class UNLConsts {
     public static final String STATISTICS_MIME_TYPE = "text/csv";
 
     public static final String PREFIX_USER_VIDEOFILES = "dd";
+
+    //RSS constants
+    public static final int RSS_SIZE = 128;
 
     //logo constants
     public static final String[] UNL_ACCEPTED_FILE_EXTS = {"mp4", "avi"};
@@ -40,9 +46,10 @@ public final class UNLConsts {
     //time constants
     public final static int APP_START_DELAY = 10000;
     public final static int RSS_REFRESH_INTERVAL = 1000 * 60 * 5;
+    //public final static int RSS_REFRESH_INTERVAL = 1000 * 30;
     public final static int RSS_TASK_START_DELAY = 15000;
 
-    //permissionns constants
+    //permissions constants
     public final static int PERMISSIONS_REQUEST = 330;
 
     //statistics constants

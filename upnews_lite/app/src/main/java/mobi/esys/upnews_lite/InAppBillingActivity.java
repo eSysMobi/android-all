@@ -154,7 +154,7 @@ public class InAppBillingActivity extends Activity {
             Log.d("buy", "It's debug version. Not need to buy!");
             buyOK = true;
             //allow show toast
-            UNLConsts.ALLOW_TOAST = true;
+            //UNLConsts.ALLOW_TOAST = true;
         } else {
             bindService(new Intent(
                             "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),

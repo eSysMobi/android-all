@@ -1,37 +1,45 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.data.GDFile;
+import mobi.esys.fileworks.DirectoryWorks;
+import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
-import mobi.esys.system.StremsUtils;
 import mobi.esys.server.UNLServer;
+import mobi.esys.upnews_lite.FirstVideoActivity;
+import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
-/**
- * Created by Артем on 26.02.2015.
- */
-public class RSSTask extends AsyncTask<Void, Void, String> {
-    private transient final SharedPreferences prefs;
+public class RSSTask extends AsyncTask<Void, Void, URL> {
     private transient Context mContext;
     private transient String mActName;
     private transient UNLServer server;
     private transient Drive drive;
     private transient UNLApp mApp;
+    private transient String rssString = "";
+
+    private transient String TAG = "unTag_RSSTask";
 
     public RSSTask(Context context, String actName, UNLApp app) {
         mApp = app;
-        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         mContext = context;
         mActName = actName;
         server = new UNLServer(app);
@@ -39,69 +47,127 @@ public class RSSTask extends AsyncTask<Void, Void, String> {
 
     }
 
-    /**
-     * Override this method to perform a computation on a background thread. The
-     * specified parameters are the parameters passed to {@link #execute}
-     * by the caller of this task.
-     * <p/>
-     * This method can call {@link #publishProgress} to publish updates
-     * on the UI thread.
-     *
-     * @param params The parameters of the task.
-     * @return A result, defined by the subclass of this task.
-     * @see #onPreExecute()
-     * @see #onPostExecute
-     * @see #publishProgress
-     */
     @Override
-    protected String doInBackground(Void... params) {
-        String rssURL = "";
-        if (NetWork.isNetworkAvailable(mApp)) {
-            server.getMD5FromServer();
-            GDFile gdFile = server.getGdRSS();
-            try {
-                if (gdFile != null && gdFile.getGdFileInst().getDownloadUrl() != null) {
-                    com.google.api.client.http.HttpResponse resp = drive
-                            .getRequestFactory()
-                            .buildGetRequest(
-                                    new GenericUrl(gdFile.getGdFileInst().getDownloadUrl()))
-                            .execute();
-                    String cont = StremsUtils.convertStreamToString(resp.getContent());
+    protected URL doInBackground(Void... params) {
+        URL rssURL = null;
+        DirectoryWorks dw = new DirectoryWorks(UNLConsts.RSS_DIR_NAME);
+        File localRssFile = dw.getRSSFile();
 
-                    String[] lines = cont.split("\\n");
-                    if (lines.length >= 2) {
-                        rssURL = lines[1];
+        //check inet and get MD5 from gd RSS-file
+        if (NetWork.isNetworkAvailable(mApp)) {
+            GDFile gdRSS = server.getGdRSS();
+            String gdRSSMD5 = gdRSS.getGdFileMD5();
+
+            FileWorks fw = new FileWorks(localRssFile);
+            String localMD5 = fw.getFileMD5();
+
+            //check MD5 from local and gd RSS-files
+            if (!localMD5.isEmpty() && localMD5.equals(gdRSSMD5)) {
+                Log.d(TAG,"Local and GD rss.txt is identical");
+                //all ok
+            } else {
+                //need download gdRSS to the local file
+                Log.d(TAG,"Local and GD rss.txt NOT identical. Replace local...");
+                try {
+                    localRssFile.delete();
+                    localRssFile.createNewFile();   //TODO is this really need?
+                    if (gdRSS != null && gdRSS.getGdFileInst().getDownloadUrl() != null) {
+                        com.google.api.client.http.HttpResponse resp = drive
+                                .getRequestFactory()
+                                .buildGetRequest(
+                                        new GenericUrl(gdRSS.getGdFileInst().getDownloadUrl()))
+                                .execute();
+                        InputStream is = resp.getContent();
+                        OutputStream output = new FileOutputStream(localRssFile);
+                        try {
+                            byte[] buffer = new byte[4 * 1024]; // or other buffer size
+                            int read;
+                            while ((read = is.read(buffer)) != -1) {
+                                output.write(buffer, 0, read);
+                            }
+                            output.flush();
+                        } catch (Exception e) {
+                            //Fail.
+                            cancel(true);
+                            e.printStackTrace();
+                        } finally {
+                            output.close();
+                            is.close();
+                            resp.disconnect();
+                        }
                     }
-                } else {
+                } catch (IOException e) {
+                    e.printStackTrace();
                     cancel(true);
                 }
-            } catch (IOException e) {
-                cancel(true);
-                e.printStackTrace();
             }
-        } else {
+        }else {
+            Log.d(TAG,"No inet. Can't check GD rss.txt, use local version.");
+        }
+        //read local file
+        try {
+            FileReader fileReader = new FileReader(localRssFile);
+            BufferedReader br = new BufferedReader(fileReader);
+            String line = null;
+            StringBuilder bigLine = new StringBuilder();
+            int countLines = -1;
+            while ((countLines < UNLConsts.RSS_SIZE) && ((line = br.readLine()) != null)) {
+                countLines++;
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                //check if this line is url
+                if (countLines < 3) {
+                    if (countLines == 0) {
+                        if (line.startsWith("\uFEFF") || line.startsWith("#"))
+                            continue;
+                    }
+                    try {
+                        rssURL = new URL(line);
+                        break;
+                    } catch (MalformedURLException e) {
+                        // this is not url
+                    }
+                }
+                bigLine.append(line).append(" ").append(" <font color='red'> | </font> ").append(" ");
+            }
+            rssString = bigLine.toString();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            cancel(true);
+        } catch (IOException e) {
+            e.printStackTrace();
             cancel(true);
         }
+
         return rssURL;
     }
 
 
     @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-        if (s != null && !s.isEmpty()) {
-            try {
-                URL url = new URL(s);
-                RSSFeedTask rssFeedTask = new RSSFeedTask(mContext, mActName, mApp);
-                rssFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+    protected void onPostExecute(URL rssURL) {
+        super.onPostExecute(rssURL);
+
+        if (rssURL != null) {
+            //we have url - call RSSFeedTask
+            Log.d(TAG,"URL in rss.txt download XML in RSSFeedTask");
+            RSSFeedTask rssFeedTask = new RSSFeedTask(mContext, mActName, mApp);
+            rssFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rssURL);
+        } else {
+            //we have line - show rss in activity
+            Log.d(TAG,"Strings in rss.txt. Show it.");
+            if (!rssString.isEmpty()) {
+                if ("first".equals(mActName)) {
+                    ((FirstVideoActivity) mContext).startRSS(rssString);
+                    ((FirstVideoActivity) mContext).recToMP("rss_start", "Start rss feed");
+                } else {
+                    ((FullscreenActivity) mContext).startRSS(rssString);
+                    ((FullscreenActivity) mContext).recToMP("rss_start", "Start rss feed");
+
+                }
             }
-
         }
-
-
     }
-
-
 }

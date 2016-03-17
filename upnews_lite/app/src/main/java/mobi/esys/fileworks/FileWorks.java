@@ -23,6 +23,10 @@ public class FileWorks {
         this.file = new File(filePath);
     }
 
+    public FileWorks(File incomingFile) {
+        super();
+        this.file = incomingFile;
+    }
 
     private static byte[] createChecksum(String filename) {
         InputStream fis;

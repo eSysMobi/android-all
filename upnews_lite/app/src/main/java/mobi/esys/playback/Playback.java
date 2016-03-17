@@ -15,8 +15,9 @@ import android.widget.SeekBar;
 import android.widget.VideoView;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mobi.esys.constants.UNLConsts;
@@ -34,21 +35,24 @@ public class Playback {
     private transient VideoView mVideo;
     private static final String TAG = "unTag_Playback";
     private transient String[] files;
-    private transient String[] ulrs = {""};
     private transient String nameCurrentPlayedFile = "";
-    private transient int serverIndex = 0;
+    private transient int videofileIndex = 0;
     private transient SharedPreferences prefs;
     private transient Set<String> md5sApp;
     private transient UNLApp mApp;
     private transient DownloadVideoTask downloadVideoTask;
     private transient boolean isFirstSession = true;
 
+    private transient DirectoryWorks directoryWorks;
+
     //127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k debug
     //127578844442-h41s9f3md1ni2soa7e3t3rpuqrukkd1u release
 
     public Playback(Context context, UNLApp app) {
         super();
+        Log.d(TAG, "New playback");
         mController = new MediaController(context);
+        //mController.setPadding(0, 0, 0, 50);  //if need up controls
         mVideo = ((FullscreenActivity) context).getVideoView();
         mVideo.setMediaController(mController);
         mVideo.requestFocus();
@@ -67,32 +71,37 @@ public class Playback {
         FileWorks fileWorks = new FileWorks(filePath);
         if (file.exists() && md5sApp.contains(fileWorks.getFileMD5())) {
             UNLApp.setCurPlayFile(filePath);
+//            mController.setFocusable(false);
+//            mController.setSelected(false);
+//            mController.setFocusableInTouchMode(false);
+
             mVideo.setVideoURI(Uri.parse(filePath));
             mVideo.start();
         } else {
-            nextTrack(files);
+            nextTrack();
         }
     }
 
     public void playFolder() {
         downloadVideoTask = new DownloadVideoTask(mApp, mContext, "full");
         downloadVideoTask.execute();
-        DirectoryWorks directoryWorks = new DirectoryWorks(
+        directoryWorks = new DirectoryWorks(
                 UNLConsts.VIDEO_DIR_NAME +
                         UNLConsts.GD_STORAGE_DIR_NAME +
                         "/");
         files = directoryWorks.getDirFileList("play folder");
-        this.mVideo.setOnErrorListener(new OnErrorListener() {
-
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                nextTrack(files);
-                return true;
+        boolean haveVideoFile = false;
+        for (int i = 0; i < files.length; i++) {
+            for (int j = 0; j < UNLConsts.UNL_ACCEPTED_FILE_EXTS.length; j++) {
+                if (files[i].contains(UNLConsts.UNL_ACCEPTED_FILE_EXTS[j])) {
+                    haveVideoFile = true;
+                    break;
+                }
             }
-        });
-        if (files.length > 0) {
+        }
+        if (haveVideoFile) {
             //playFile(files[0]);
-            nextTrack(files);
+            nextTrack();
             mVideo.setOnCompletionListener(new OnCompletionListener() {
 
                 @Override
@@ -100,9 +109,8 @@ public class Playback {
 
                     signalDetectFaces();
 
-                    nextTrack(files);
+                    nextTrack();
                     restartDownload();
-                    ((FullscreenActivity) mContext).restartCreepingLine();
                 }
 
             });
@@ -111,7 +119,7 @@ public class Playback {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     Log.d(TAG, "MediaPlayer error " + String.valueOf(what) + ":" + String.valueOf(extra));
-                    nextTrack(files);
+                    nextTrack();
                     return false;
                 }
             });
@@ -132,16 +140,12 @@ public class Playback {
                                 }
                             }
                         }
-
                     }
-
-                    ((FullscreenActivity) mContext).restartCreepingLine();
                 }
             });
         } else {
             Log.d(TAG, "File list is empty");
-            mContext.startActivity(new Intent(mContext,
-                    FirstVideoActivity.class));
+            mContext.startActivity(new Intent(mContext, FirstVideoActivity.class));
             ((Activity) mContext).finish();
         }
 
@@ -163,119 +167,61 @@ public class Playback {
         mApp.sendBroadcast(intentOut);
     }
 
-    private void nextTrack(final String[] files) {
+    private void nextTrack() {
+        files = directoryWorks.getDirFileList("play folder");
+        //get only videofiles
+        List<String> videoFiles = new ArrayList<>();
+        for (int i = 0; i < files.length; i++) {
+            for (int j = 0; j < UNLConsts.UNL_ACCEPTED_FILE_EXTS.length; j++) {
+                if (files[i].contains(UNLConsts.UNL_ACCEPTED_FILE_EXTS[j])) {
+                    videoFiles.add(files[i]);
+                    //break;    //is this ended both cycles?
+                }
+            }
+        }
 
-        String[] listFiles = {files[0]};
-//        Log.d("log_tag", "Send signal checking logo");
-//        signalCheckNewLogo();
+        Log.d(TAG, "Video files on device (" + videoFiles.size() + "): " + videoFiles.toString());
+        if (videoFiles.size() > 0) {
 
-        if (!prefs.getString("urls", "").replace("[", "").replace("]", "").equals("")) {
-            Log.d(TAG, "urls string " +
-                    prefs.getString("urls", "")
-                            .replace("[", "").replace("]", ""));
-
-            ulrs = prefs.getString("urls", "")
-                    .replace("[", "").replace("]", "").split(",");
-
-            if (files.length > 0) {
-                listFiles = new String[ulrs.length];
+            //check and restored lastPlayedFileIndex
+            if (isFirstSession) {
                 int lastPlayedFileIndex = 0;
-                String lastPlayedFileName = prefs.getString("lastPlayedFileName","");
-                for (int i = 0; i < listFiles.length; i++) {
-                    ulrs[i] = ulrs[i].trim();
-                    listFiles[i] = UNLApp.getAppExtCachePath()
-                            + UNLConsts.VIDEO_DIR_NAME
-                            + UNLConsts.GD_STORAGE_DIR_NAME
-                            + "/"
-                            + ulrs[i];
-//                            .substring(ulrs[i].lastIndexOf('/') + 1,
-//                                    ulrs[i].length()).replace("[", "")
-//                            .replace("]", "");
-                    if(ulrs[i].equals(lastPlayedFileName)){
-                        lastPlayedFileIndex=i;
+                String lastPlayedFileName = prefs.getString("lastPlayedFileName", "");
+                for (int i = 0; i < videoFiles.size(); i++) {
+                    if (videoFiles.get(i).contains(lastPlayedFileName)) {
+                        lastPlayedFileIndex = i;
+                        break;
                     }
                 }
-                if (isFirstSession) {
-                    isFirstSession = false;
-                    serverIndex = lastPlayedFileIndex;
+                isFirstSession = false;
+                videofileIndex = lastPlayedFileIndex;
+            }
+            if (videofileIndex >= videoFiles.size()) {
+                videofileIndex = 0;
+            }
+
+            File fs = new File(videoFiles.get(videofileIndex));
+            Log.d(TAG, "next file: " + fs.getName());
+            if(fs.exists()){
+                playFile(videoFiles.get(videofileIndex));
+                videofileIndex++;
+                if (videofileIndex >= videoFiles.size()) {
+                    videofileIndex = 0;
                 }
-                if (serverIndex >= listFiles.length) {
-                    serverIndex = 0;
-                }
-
-                Log.d(TAG, "urls next " + Arrays.asList(listFiles).toString());
-                File fs = new File(listFiles[serverIndex]);
-                Log.d(TAG, "next file: " + fs.getAbsolutePath());
-                String currDownFile = prefs.getString("currDownFile", "");
-                Log.d(TAG, "current download " + currDownFile);
-                if (fs.exists()) {
-                    if (!currDownFile.equals(fs.getAbsolutePath())) {
-                        FileWorks fileWorks = new FileWorks(fs.getAbsolutePath());
-
-                        DirectoryWorks directoryWorks = new DirectoryWorks(
-                                UNLConsts.VIDEO_DIR_NAME +
-                                        UNLConsts.GD_STORAGE_DIR_NAME +
-                                        "/");
-                        String[] refreshFiles = directoryWorks.getDirFileList("folder");
-                        Log.d(TAG, "files " + Arrays.asList(refreshFiles).toString());
-                        if (!UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
-                            if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(refreshFiles).contains(fs.getAbsolutePath())) {
-
-                                if (serverIndex >= listFiles.length - 1) {
-                                    Log.d(TAG, "File index " + String.valueOf(serverIndex));
-                                    Log.d(TAG, "Played files counts is " + String.valueOf(listFiles.length));
-                                    nameCurrentPlayedFile = fs.getName();
-                                    playFile(listFiles[serverIndex]);
-                                    serverIndex = 0;
-                                } else {
-                                    nameCurrentPlayedFile = fs.getName();
-                                    playFile(listFiles[serverIndex]);
-                                    Log.d(TAG, "Played files counts is " + String.valueOf(listFiles.length));
-                                    serverIndex++;
-                                }
-                                //save lastPlayedFileName
-                                SharedPreferences.Editor editor = prefs.edit();
-                                editor.putString("lastPlayedFileName", nameCurrentPlayedFile);
-                                editor.apply();
-                            } else {
-                                if (serverIndex >= listFiles.length - 1) {
-                                    serverIndex = 0;
-                                } else {
-                                    serverIndex++;
-                                }
-                                nextTrack(refreshFiles);
-                            }
-                        } else {
-                            if (serverIndex >= listFiles.length - 1) {
-                                serverIndex = 0;
-                            } else {
-                                serverIndex++;
-                            }
-                            nextTrack(refreshFiles);
-                        }
-                    } else {
-                        if (serverIndex >= listFiles.length - 1) {
-                            serverIndex = 0;
-                        } else {
-                            serverIndex++;
-                        }
-                        nextTrack(files);
-                    }
-
-                } else {
-                    if (serverIndex >= listFiles.length - 1) {
-                        serverIndex = 0;
-                    } else {
-                        serverIndex++;
-                    }
-                    nextTrack(files);
-                }
+                //save lastPlayedFileName
+                nameCurrentPlayedFile = fs.getName();
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("lastPlayedFileName", nameCurrentPlayedFile);
+                editor.apply();
+            }else{
+                Log.d(TAG, "File not exists!");
+                videofileIndex++;
+                nextTrack();
             }
         } else {
             mContext.startActivity(new Intent(mContext, FirstVideoActivity.class));
             ((Activity) mContext).finish();
         }
-
     }
 
 
@@ -294,7 +240,7 @@ public class Playback {
 
     public void restartPlayback() {
         playFile(files[0]);
-        serverIndex = 0;
+        videofileIndex = 0;
     }
 
 }
