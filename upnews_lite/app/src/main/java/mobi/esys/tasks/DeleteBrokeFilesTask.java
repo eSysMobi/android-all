@@ -1,6 +1,7 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -20,21 +21,18 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
     private transient Set<String> md5set;
     private transient UNLApp mApp;
     private transient String mActName;
-    private transient Context mContext;
     private static final String TAG = "unTag_DeleteBrokeFiles";
 
 
-    public DeleteBrokeFilesTask(UNLApp app, Context context, String actName) {
+    public DeleteBrokeFilesTask(UNLApp app, String actName) {
         mApp = app;
         mActName = actName;
-        mContext = context;
     }
 
-    public DeleteBrokeFilesTask(UNLApp app, Context context, Set<String> serverMD5, String actName) {
+    public DeleteBrokeFilesTask(UNLApp app, Set<String> serverMD5, String actName) {
         mApp = app;
         md5set = serverMD5;
         mActName = actName;
-        mContext = context;
     }
 
     @Override
@@ -84,10 +82,17 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(aVoid);
 
         if ("first".equals(mActName)) {
-            ((FirstVideoActivity) mContext).recToMP("video_deleting", "Video delete has been ended");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "video_deleting");
+            intentOut.putExtra("recToMP_message", "Video delete has been ended");
+            mApp.sendBroadcast(intentOut);
         } else {
-            ((FullscreenActivity) mContext).recToMP("video_deleting", "Video delete has been ended");
-
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "video_deleting");
+            intentOut.putExtra("recToMP_message", "Video delete has been ended");
+            mApp.sendBroadcast(intentOut);
         }
     }
 
@@ -96,10 +101,17 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
         super.onCancelled();
 
         if ("first".equals(mActName)) {
-            ((FirstVideoActivity) mContext).recToMP("video_deleting", "Video delete has been canceled");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "video_deleting");
+            intentOut.putExtra("recToMP_message", "Video delete has been canceled");
+            mApp.sendBroadcast(intentOut);
         } else {
-            ((FullscreenActivity) mContext).recToMP("video_deleting", "Video delete has been canceled");
-
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "video_deleting");
+            intentOut.putExtra("recToMP_message", "Video delete has been canceled");
+            mApp.sendBroadcast(intentOut);
         }
     }
 }

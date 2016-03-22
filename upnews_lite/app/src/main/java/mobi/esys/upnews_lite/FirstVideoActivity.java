@@ -1,25 +1,25 @@
 package mobi.esys.upnews_lite;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import org.json.JSONException;
@@ -32,24 +32,29 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.system.MarqueeTextView;
-import mobi.esys.tasks.CreateDriveFolderTask;
+import mobi.esys.taskmanager.TaskManager;
+import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.DownloadVideoTask;
-import mobi.esys.tasks.RSSTask;
+import mobi.esys.tasks.SendStatisticsToGD;
 
 public class FirstVideoActivity extends Activity {
     private transient VideoView video;
     private transient String uriPath;
     private transient MediaController controller;
+
     private transient SharedPreferences prefs;
-//    private transient boolean isDown;
     private transient Set<String> md5sApp;
-    private transient DownloadVideoTask downloadVideoTask;
-    private transient Handler handler;
-    private transient Runnable runnable;
+
     private transient boolean isFirstRSS;
     private transient MarqueeTextView textView;
-    private transient UNLApp mApp;
 
+    private transient ImageView mLogo;
+
+    private transient UNLApp mApp;
+    private transient TaskManager tm = null;
+
+    private transient BroadcastReceiver brFirst;
+    private transient IntentFilter intFilt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,7 @@ public class FirstVideoActivity extends Activity {
         md5sApp = prefs.getStringSet("md5sApp", defSet);
 
         setContentView(R.layout.activity_firstvideo);
+        mLogo = (ImageView) findViewById(R.id.logo_first);
         textView = (MarqueeTextView) findViewById(R.id.creepingLine_first);
         textView.setSelected(true);
 
@@ -94,15 +100,14 @@ public class FirstVideoActivity extends Activity {
         Log.d("video", uriPath);
         play();
 
-
         video.setOnCompletionListener(new OnCompletionListener() {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
                 DirectoryWorks directoryWorks = new DirectoryWorks(
                         UNLConsts.VIDEO_DIR_NAME +
-                        UNLConsts.GD_STORAGE_DIR_NAME +
-                        "/");
+                                UNLConsts.GD_STORAGE_DIR_NAME +
+                                "/");
                 Set<String> defSet = new HashSet<>();
                 md5sApp = prefs.getStringSet("md5sApp", defSet);
                 Log.d("unTag_FirstScreenAct", "md5sApp: " + md5sApp.toString());
@@ -124,36 +129,10 @@ public class FirstVideoActivity extends Activity {
                         }
                     }
                 }
-                if(!haveVideoFile){
+                if (!haveVideoFile) {
                     play();
-                    restartDownload();
+                    restartTasks();
                 }
-
-
-//                if (directoryWorks.getDirFileList("first").length == 0
-//                        && md5sApp.size() == 0) {
-//                    play();
-//                    restartDownload();
-//                } else {
-//                    if (directoryWorks.getDirFileList("first").length > 0) {
-//                        FileWorks fileWorks = new FileWorks(directoryWorks
-//                                .getDirFileList("first")[0]);
-//                        stopDownload();
-//                        if (md5sApp.contains(fileWorks.getFileMD5())) {
-//                            startActivity(new Intent(FirstVideoActivity.this,
-//                                    FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-//                            finish();
-//                        } else {
-//                            play();
-//                            restartDownload();
-//                        }
-//                    } else {
-//                        play();
-//                        restartDownload();
-//
-//                    }
-//                    //textView.requestFocus();
-//                }
 
             }
         });
@@ -163,7 +142,6 @@ public class FirstVideoActivity extends Activity {
             public void onPrepared(MediaPlayer mp) {
                 controller.show();
                 LinearLayout ll = (LinearLayout) controller.getChildAt(0);
-
 
                 for (int i = 0; i < ll.getChildCount(); i++) {
 
@@ -179,7 +157,6 @@ public class FirstVideoActivity extends Activity {
                     }
 
                 }
-                //textView.requestFocus();
             }
         });
 
@@ -191,69 +168,54 @@ public class FirstVideoActivity extends Activity {
             }
         });
 
-        downloadVideoTask = new DownloadVideoTask(mApp, FirstVideoActivity.this, "first");
-        downloadVideoTask.execute();
 
-        handler = new Handler();
-        runnable = new Runnable() {
+        //prepare Logo task handler
+        checkAndSetLogoFromExStorage();
+
+        brFirst = new BroadcastReceiver() {
             @Override
-            public void run() {
-                RSSTask rssTask = new RSSTask(FirstVideoActivity.this, "first", mApp);
-                rssTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                handler.postDelayed(this, UNLConsts.RSS_REFRESH_INTERVAL);
+            public void onReceive(Context context, Intent intent) {
+                Log.d("unTag_FirstScreenAct", "Receive signal from BroadcastReceiver " + intent.getByteExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK));
+                switch (intent.getByteExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK)) {
+                    case UNLConsts.GET_LOGO_STATUS_NOT_OK:
+                        Log.d("unTag_FirstScreenAct", "Receive logo is fail");
+                        break;
+                    case UNLConsts.GET_LOGO_STATUS_OK:
+                        Log.d("unTag_FirstScreenAct", "Receive logo is success");
+                        checkAndSetLogoFromExStorage();
+                        break;
+                    case UNLConsts.SIGNAL_TOAST:
+                        if (UNLConsts.ALLOW_TOAST) {
+                            Toast.makeText(FirstVideoActivity.this, intent.getStringExtra("toastText"), Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    case UNLConsts.SIGNAL_START_RSS:
+                        startRSS(intent.getStringExtra("rssToShow"));
+                        break;
+                    case UNLConsts.SIGNAL_REC_TO_MP:
+                        recToMP(intent.getStringExtra("recToMP_tag"),intent.getStringExtra("recToMP_message"));
+                        break;
+                }
             }
         };
+        // Create intent-filter for BroadcastReceiver
+        intFilt = new IntentFilter(UNLConsts.BROADCAST_ACTION_FIRST);
 
-        //handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
-
-
-    }
-
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        video.pause();
+        tm = TaskManager.getInstance();
+        tm.init(mApp, "first");
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (handler != null && runnable != null) {
-            handler.removeCallbacks(runnable);
-        }
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        video.pause();
-        if (handler != null && runnable != null) {
-            handler.removeCallbacks(runnable);
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-        if (handler != null && runnable != null) {
-            handler.removeCallbacks(runnable);
-        }
-        finish();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        if (!video.isPlaying()) {
-            video.resume();
-        }
-        if (handler != null && runnable != null) {
-            Log.d("unTag_FirstScreenAct", "Start RSS handler in onRestart");
-            handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
-        }
+    protected void onStart() {
+        super.onStart();
+        Log.d("unTag_FirstScreenAct", "Register Receiver");
+        registerReceiver(brFirst, intFilt);
+        tm.setNeedLogo(true);
+        tm.setNeedRss(true);
+        tm.needRssNOW();
+        tm.setNeedDown(true);
+        tm.setNeedSendStat(false);
+        tm.startAllTask();
     }
 
     @Override
@@ -262,17 +224,54 @@ public class FirstVideoActivity extends Activity {
         if (!video.isPlaying()) {
             video.resume();
         }
-        if (handler != null && runnable != null) {
-            Log.d("unTag_FirstScreenAct", "Start RSS handler in onResume");
-            handler.postDelayed(runnable, UNLConsts.RSS_TASK_START_DELAY);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (!video.isPlaying()) {
+            video.resume();
         }
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onPause() {
+        super.onPause();
+        video.pause();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        video.pause();
+        Log.d("unTag_FirstScreenAct", "Unregister Receiver in onStop()");
+        unregisterReceiver(brFirst);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
+    //check logo in device, if we have it - set, if not have - use standard
+    private void checkAndSetLogoFromExStorage() {
+        String logoFilePath = UNLApp.getAppExtCachePath()
+                + UNLConsts.VIDEO_DIR_NAME
+                + UNLConsts.GD_LOGO_DIR_NAME
+                + "/"
+                + UNLConsts.GD_LOGO_FILE_TITLE;
+        FileWorks fw = new FileWorks(logoFilePath);
+        Bitmap logoFromFile = fw.getLogoFromExternalStorage();
+        if (logoFromFile != null) {
+            mLogo.setImageBitmap(logoFromFile);
+        }
+    }
 
     public void startRSS(String feed) {
         if (isFirstRSS) {
@@ -295,17 +294,9 @@ public class FirstVideoActivity extends Activity {
         video.start();
     }
 
-    public void restartDownload() {
-//        if (!isDown) {
-        if(!UNLApp.getIsDownloadTaskRunning()){
-            downloadVideoTask.cancel(true);
-            downloadVideoTask = new DownloadVideoTask(mApp, FirstVideoActivity.this, "first");
-            downloadVideoTask.execute();
-        }
-    }
-
-    public void stopDownload() {
-        downloadVideoTask.cancel(true);
+    public void restartTasks() {
+        tm.setNeedLogo(false);
+        tm.startAllTask();
     }
 
     public void recToMP(String tag, String message) {

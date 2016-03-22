@@ -1,10 +1,13 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 
 import java.net.URL;
 
+import mobi.esys.constants.UNLConsts;
 import mobi.esys.net.NetWork;
 import mobi.esys.rss.RSS;
 import mobi.esys.upnews_lite.FirstVideoActivity;
@@ -17,12 +20,12 @@ import mobi.esys.upnews_lite.UNLApp;
 public class RSSFeedTask extends AsyncTask<URL, Void, String> {
     private transient String mActName;
     private transient UNLApp mApp;
-    private transient Context mContext;
+    private transient Handler handler;
 
-    public RSSFeedTask(Context context, String actName, UNLApp app) {
-        mContext = context;
-        mActName = actName;
+    public RSSFeedTask(UNLApp app, Handler h, String actName) {
         mApp = app;
+        handler = h;
+        mActName = actName;
     }
 
     /**
@@ -55,16 +58,19 @@ public class RSSFeedTask extends AsyncTask<URL, Void, String> {
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         if (s != null && !s.isEmpty()) {
-
             if ("first".equals(mActName)) {
-                ((FirstVideoActivity) mContext).startRSS(s);
-                ((FirstVideoActivity) mContext).recToMP("rss_start", "Start rss feed");
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
+                intentOut.putExtra("rssToShow", s);
+                mApp.sendBroadcast(intentOut);
             } else {
-                ((FullscreenActivity) mContext).startRSS(s);
-                ((FullscreenActivity) mContext).recToMP("rss_start", "Start rss feed");
-
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
+                intentOut.putExtra("rssToShow", s);
+                mApp.sendBroadcast(intentOut);
             }
         }
+        handler.sendEmptyMessage(42);
     }
 
 

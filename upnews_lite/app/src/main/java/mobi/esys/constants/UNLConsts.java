@@ -37,17 +37,16 @@ public final class UNLConsts {
     public static final byte GET_LOGO_STATUS_NOT_OK = 101;
     public static final byte STATUS_NEED_CHECK_LOGO = 102;
     public static final String BROADCAST_ACTION = "com.moby.esys.backbroadcast";
+    public static final String BROADCAST_ACTION_FIRST = "com.moby.esys.backbroadcast.first";
 
     //signals
     public static final byte SIGNAL_TOAST = 90;
     public static final byte SIGNAL_CAMERASHOT = 80;
-    public static final byte SIGNAL_SEND_STATDATA_TO_GD = 70;
+    public static final byte SIGNAL_START_RSS = 60;
+    public static final byte SIGNAL_REC_TO_MP = 50;
 
     //time constants
     public final static int APP_START_DELAY = 10000;
-    public final static int RSS_REFRESH_INTERVAL = 1000 * 60 * 5;
-    //public final static int RSS_REFRESH_INTERVAL = 1000 * 30;
-    public final static int RSS_TASK_START_DELAY = 15000;
 
     //permissions constants
     public final static int PERMISSIONS_REQUEST = 330;

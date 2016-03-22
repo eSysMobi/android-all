@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -40,8 +41,7 @@ import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
-    private transient Context context;
-    private transient SharedPreferences prefs;
+    private transient Handler handler;
     private transient List<GDFile> gdFiles;
     private transient static FileOutputStream output;
     private transient Set<String> serverMD5;
@@ -50,17 +50,16 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient List<String> folderMD5;
     private transient Drive drive;
     private transient UNLApp mApp;
-    private transient UNLServer server;
     private transient String actName;
     private transient DirectoryWorks directoryWorks;
 
-    public DownloadVideoTask(UNLApp app, Context context, String actName) {
+    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, Set<String> incServerMD5, String actName) {
         downCount = 0;
         mApp = app;
-        this.context = context;
-        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
+        handler = incHandler;
         drive = app.getDriveService();
-        server = new UNLServer(app);
+        this.serverMD5 = incServerMD5;
+        this.gdFiles = incGDFiles;
         this.actName = actName;
     }
 
@@ -70,12 +69,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             if (!UNLApp.getIsDeleting()) {
                 UNLApp.setIsDownloadTaskRunning(true);
                 if (NetWork.isNetworkAvailable(mApp)) {
-                    serverMD5 = server.getMD5FromServer();
                     if (serverMD5.size() != 0) {
-
-
-
-                        gdFiles = server.getGdFiles();
                         directoryWorks = new DirectoryWorks(
                                 UNLConsts.VIDEO_DIR_NAME +
                                         UNLConsts.GD_STORAGE_DIR_NAME +
@@ -127,8 +121,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                     } else {
                         Log.d("unTag_down", "We have empty file-list from GoogleDrive");
                         cancel(true);
-                        server = null;
-                        serverMD5 = null;
                     }
                 } else {
                     Log.d("unTag_down", "Cancel download task because we have no Internet");
@@ -164,9 +156,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 + "/";
                         String path = file.getTitle().substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
                         java.io.File downFile = new java.io.File(root_dir, path);
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putString("currDownFile", downFile.getAbsolutePath());
-                        editor.apply();
                         FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
                         Log.d("unTag_down", downFile.getAbsolutePath());
                         //if file do not exists on SD
@@ -264,12 +253,19 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             }
         } else {
             cancel(true);
-            ((Activity) context).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(context, context.getResources().getString(R.string.empty_space), Toast.LENGTH_LONG);
-                }
-            });
+            Log.d("unTag_down", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
+
+            if ("first".equals(actName)) {
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                intentOut.putExtra("toastText", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
+                mApp.sendBroadcast(intentOut);
+            } else {
+                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                intentOut.putExtra("toastText", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
+                mApp.sendBroadcast(intentOut);
+            }
         }
     }
 
@@ -280,13 +276,21 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
         stopDownload();
 
         if ("first".equals(actName)) {
-            ((FirstVideoActivity) context).recToMP("download_done", "Download ends fine");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "download_done");
+            intentOut.putExtra("recToMP_message", "Download ends fine");
+            mApp.sendBroadcast(intentOut);
         } else {
-            ((FullscreenActivity) context).recToMP("download_done", "Download ends fine");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "download_done");
+            intentOut.putExtra("recToMP_message", "Download ends fine");
+            mApp.sendBroadcast(intentOut);
         }
 
         if (!UNLApp.getIsDeleting() && serverMD5 != null) {
-            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, context, serverMD5, actName);
+            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, serverMD5, actName);
             brokeFilesTask.execute();
         }
     }
@@ -297,14 +301,23 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
         stopDownload();
 
         if ("first".equals(actName)) {
-            ((FirstVideoActivity) context).recToMP("download_error", "Download canceled");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "download_error");
+            intentOut.putExtra("recToMP_message", "Download canceled");
+            mApp.sendBroadcast(intentOut);
         } else {
-            ((FullscreenActivity) context).recToMP("download_error", "Download canceled");
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
+            intentOut.putExtra("recToMP_tag", "download_error");
+            intentOut.putExtra("recToMP_message", "Download canceled");
+            mApp.sendBroadcast(intentOut);
         }
     }
 
     private void stopDownload() {
         UNLApp.setIsDownloadTaskRunning(false);
+        handler.sendEmptyMessage(42);
     }
 
     public static void append(java.io.File file, byte[] bytes) throws Exception {

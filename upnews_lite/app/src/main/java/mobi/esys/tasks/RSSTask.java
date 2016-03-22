@@ -1,7 +1,9 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.api.client.http.GenericUrl;
@@ -29,22 +31,21 @@ import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class RSSTask extends AsyncTask<Void, Void, URL> {
-    private transient Context mContext;
     private transient String mActName;
-    private transient UNLServer server;
     private transient Drive drive;
     private transient UNLApp mApp;
     private transient String rssString = "";
+    private transient Handler handler;
+    private transient GDFile gdRSS;
 
     private transient String TAG = "unTag_RSSTask";
 
-    public RSSTask(Context context, String actName, UNLApp app) {
+    public RSSTask(UNLApp app, Handler h, GDFile incGdRSS, String actName) {
         mApp = app;
-        mContext = context;
+        gdRSS = incGdRSS;
+        handler = h;
         mActName = actName;
-        server = new UNLServer(app);
         drive = app.getDriveService();
-
     }
 
     @Override
@@ -54,20 +55,18 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
         File localRssFile = dw.getRSSFile();
 
         //check inet and get MD5 from gd RSS-file
-        if (NetWork.isNetworkAvailable(mApp)) {
-            GDFile gdRSS = server.getGdRSS();
-            String gdRSSMD5 = gdRSS.getGdFileMD5();
-
+        String gdRSSMD5 = gdRSS.getGdFileMD5();
+        if (NetWork.isNetworkAvailable(mApp) && !gdRSSMD5.equals("empty")) {
             FileWorks fw = new FileWorks(localRssFile);
             String localMD5 = fw.getFileMD5();
 
             //check MD5 from local and gd RSS-files
             if (!localMD5.isEmpty() && localMD5.equals(gdRSSMD5)) {
-                Log.d(TAG,"Local and GD rss.txt is identical");
+                Log.d(TAG, "Local and GD rss.txt is identical");
                 //all ok
             } else {
                 //need download gdRSS to the local file
-                Log.d(TAG,"Local and GD rss.txt NOT identical. Replace local...");
+                Log.d(TAG, "Local and GD rss.txt NOT identical. Replace local...");
                 try {
                     localRssFile.delete();
                     localRssFile.createNewFile();   //TODO is this really need?
@@ -101,8 +100,8 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
                     cancel(true);
                 }
             }
-        }else {
-            Log.d(TAG,"No inet. Can't check GD rss.txt, use local version.");
+        } else {
+            Log.d(TAG, "No inet. Can't check GD rss.txt, use local version.");
         }
         //read local file
         try {
@@ -152,22 +151,26 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
 
         if (rssURL != null) {
             //we have url - call RSSFeedTask
-            Log.d(TAG,"URL in rss.txt download XML in RSSFeedTask");
-            RSSFeedTask rssFeedTask = new RSSFeedTask(mContext, mActName, mApp);
+            Log.d(TAG, "URL in rss.txt download XML in RSSFeedTask");
+            RSSFeedTask rssFeedTask = new RSSFeedTask(mApp, handler, mActName);
             rssFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rssURL);
         } else {
             //we have line - show rss in activity
-            Log.d(TAG,"Strings in rss.txt. Show it.");
+            Log.d(TAG, "Strings in rss.txt. Show it.");
             if (!rssString.isEmpty()) {
                 if ("first".equals(mActName)) {
-                    ((FirstVideoActivity) mContext).startRSS(rssString);
-                    ((FirstVideoActivity) mContext).recToMP("rss_start", "Start rss feed");
+                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
+                    intentOut.putExtra("rssToShow", rssString);
+                    mApp.sendBroadcast(intentOut);
                 } else {
-                    ((FullscreenActivity) mContext).startRSS(rssString);
-                    ((FullscreenActivity) mContext).recToMP("rss_start", "Start rss feed");
-
+                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
+                    intentOut.putExtra("rssToShow", rssString);
+                    mApp.sendBroadcast(intentOut);
                 }
             }
+            handler.sendEmptyMessage(42);
         }
     }
 }

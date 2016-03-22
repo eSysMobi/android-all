@@ -23,6 +23,7 @@ import java.util.Set;
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
+import mobi.esys.taskmanager.TaskManager;
 import mobi.esys.tasks.DownloadVideoTask;
 import mobi.esys.upnews_lite.FirstVideoActivity;
 import mobi.esys.upnews_lite.FullscreenActivity;
@@ -45,12 +46,15 @@ public class Playback {
 
     private transient DirectoryWorks directoryWorks;
 
+    private transient TaskManager tm;
+
     //127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k debug
     //127578844442-h41s9f3md1ni2soa7e3t3rpuqrukkd1u release
 
     public Playback(Context context, UNLApp app) {
         super();
         Log.d(TAG, "New playback");
+        tm = TaskManager.getInstance();
         mController = new MediaController(context);
         //mController.setPadding(0, 0, 0, 50);  //if need up controls
         mVideo = ((FullscreenActivity) context).getVideoView();
@@ -83,8 +87,6 @@ public class Playback {
     }
 
     public void playFolder() {
-        downloadVideoTask = new DownloadVideoTask(mApp, mContext, "full");
-        downloadVideoTask.execute();
         directoryWorks = new DirectoryWorks(
                 UNLConsts.VIDEO_DIR_NAME +
                         UNLConsts.GD_STORAGE_DIR_NAME +
@@ -110,7 +112,7 @@ public class Playback {
                     signalDetectFaces();
 
                     nextTrack();
-                    restartDownload();
+                    restartTasks();
                 }
 
             });
@@ -225,16 +227,12 @@ public class Playback {
     }
 
 
-    public void restartDownload() {
-        if (!UNLApp.getIsDownloadTaskRunning()) {
-            downloadVideoTask.cancel(true);
-            downloadVideoTask = new DownloadVideoTask(mApp, mContext, "full");
-            downloadVideoTask.execute();
-        }
-    }
-
-    public void stopDownload() {
-        downloadVideoTask.cancel(true);
+    public void restartTasks() {
+        tm.setNeedLogo(false);
+        tm.setNeedRss(true);
+        tm.setNeedDown(true);
+        tm.setNeedSendStat(true);
+        tm.startAllTask();
     }
 
 

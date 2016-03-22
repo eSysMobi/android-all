@@ -1,6 +1,7 @@
 package mobi.esys.tasks;
 
 import android.content.Intent;
+import android.os.Handler;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
@@ -22,12 +23,17 @@ import mobi.esys.upnews_lite.UNLApp;
  */
 public class CheckAndGetLogoFromGDriveTask extends Thread {
     private UNLApp app;
-    private UNLServer server;
+    private GDFile newRemoteLogo;
     private transient Drive drive;
+    private Handler handler;
+    private String actName;
 
-    public CheckAndGetLogoFromGDriveTask(UNLApp incomingApp) {
+    public CheckAndGetLogoFromGDriveTask(UNLApp incomingApp, Handler incHandler, GDFile remoteLogo, String source) {
         app = incomingApp;
-        drive = app.getDriveService();
+        drive = UNLApp.getDriveService();
+        handler = incHandler;
+        newRemoteLogo = remoteLogo;
+        actName = source;
     }
 
 
@@ -35,9 +41,6 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
     public void run() {
 
         if (NetWork.isNetworkAvailable(app)) {
-            server = new UNLServer(app);
-
-            GDFile newRemoteLogo = server.getGdLogo();
 
 //            String newMD5 = newRemoteLogo.getGdFileMD5();
 
@@ -148,18 +151,35 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
                 //Fail. In Google Drive SUDDENLY no logo file, or it corrupt
                 signalUseStandardLogo();
             }
+        }else {
+            //Fail. We have no inet
+            signalUseStandardLogo();
         }
     }
 
     private void signalUseNewLogo() {
-        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
-        app.sendBroadcast(intentOut);
+        if ("first".equals(actName)) {
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
+            app.sendBroadcast(intentOut);
+        } else {
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
+            app.sendBroadcast(intentOut);
+        }
+        handler.sendEmptyMessage(42);
     }
 
     private void signalUseStandardLogo() {
-        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
-        app.sendBroadcast(intentOut);
+        if ("first".equals(actName)) {
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
+            app.sendBroadcast(intentOut);
+        } else {
+            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
+            app.sendBroadcast(intentOut);
+        }
+        handler.sendEmptyMessage(42);
     }
 }

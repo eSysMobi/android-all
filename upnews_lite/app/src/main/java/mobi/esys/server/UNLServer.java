@@ -59,7 +59,7 @@ public class UNLServer {
 //        saveURLS();
         try {
             printFilesInFolder(folderId);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -185,7 +185,7 @@ public class UNLServer {
 
 
     private void printFilesInFolder(String folderId)
-            throws IOException {
+            throws IOException, NullPointerException {
         Log.d(TAG, "print google drive folder");
         Children.List request = drive.children().list(folderId);
 
@@ -241,11 +241,11 @@ public class UNLServer {
     }
 
     public GDFile getGdRSS() {
-        try {
-            printFilesInFolder(folderId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            printFilesInFolder(folderId);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         GDFile rss = new GDFile("1", "empty",
                 "empty", String.valueOf(0), "empty", "empty", new File());
         if (gdRSS != null) {
@@ -255,11 +255,11 @@ public class UNLServer {
     }
 
     public GDFile getGdLogo() {
-        try {
-            printFilesInFolder(folderId);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            printFilesInFolder(folderId);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         GDFile logo = new GDFile("1", "empty",
                 "empty", String.valueOf(0), "empty", "empty", new File());
         if (gdLogo != null) {

@@ -3,6 +3,7 @@ package mobi.esys.tasks;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.api.client.http.FileContent;
@@ -25,6 +26,7 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.system.StremsUtils;
+import mobi.esys.taskmanager.TaskManager;
 import mobi.esys.upnews_lite.UNLApp;
 
 /**
@@ -38,9 +40,11 @@ public class SendStatisticsToGD implements Runnable {
     private transient Drive drive;
     private transient UNLApp mApp;
     private String statisticsGDDirID;
+    private Handler handler;
 
-    public SendStatisticsToGD(UNLApp app) {
+    public SendStatisticsToGD(UNLApp app, Handler incHandler) {
         mApp = app;
+        handler = incHandler;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         statisticsGDDirID = prefs.getString("deviceFolderIdStatistics", "");
         drive = app.getDriveService();
@@ -133,12 +137,19 @@ public class SendStatisticsToGD implements Runnable {
                     if (tmpFile.exists()) {
                         tmpFile.delete();
                     }
+                    sendEndingSignal();
                 }
             } else {
                 Log.d(TAG, "We have no statistics id folder");
+                sendEndingSignal();
             }
         } else {
             Log.d(TAG, "Internet is offline");
+            sendEndingSignal();
         }
+    }
+
+    private void sendEndingSignal(){
+        handler.sendEmptyMessage(42);
     }
 }

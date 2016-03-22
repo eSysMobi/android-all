@@ -284,17 +284,6 @@ public class CameraShotTask implements Runnable{
                     }
                 }
             }
-//            //check old format
-//            if (!collection.get(0).get(2).equals("All shown")){
-//                collection.get(0).add(2,"All shown");
-//                for (int i = 1; i < collection.size(); i++) {
-//                    collection.get(i).add(1,"0");
-//                    for (int j = 2; j < collection.get(i).size(); j++) {
-//                        collection.get(i).set(j,"0");
-//                    }
-//                }
-//            }
-
 
             //get column in the parsed data for writing info
             int colVidIndex = collection.get(0).indexOf(mVideoName);
@@ -375,12 +364,6 @@ public class CameraShotTask implements Runnable{
                 mApp.sendBroadcast(intentOut);
             }
 
-            //sending statistics in GD
-            signalSendStatToGD();
-            //or
-//            SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp);
-//            sstGD.start();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -392,14 +375,6 @@ public class CameraShotTask implements Runnable{
             Log.e("unTag_Camera", "Old today statistics file deleted = " + statusDel);
             finalCount();
         }
-    }
-
-    //if need send statistics to GD
-    private void signalSendStatToGD() {
-        Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-        intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_SEND_STATDATA_TO_GD);
-        intentOut.putExtra("source", "CameraShotTask");
-        mApp.sendBroadcast(intentOut);
     }
 
     private boolean safeCameraOpen(int id) {
