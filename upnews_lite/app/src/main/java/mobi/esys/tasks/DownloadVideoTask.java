@@ -44,7 +44,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient Handler handler;
     private transient List<GDFile> gdFiles;
     private transient static FileOutputStream output;
-    private transient Set<String> serverMD5;
+    private transient List<String> serverMD5;
     private transient int downCount;
     private transient List<GDFile> listWithoutDuplicates;
     private transient List<String> folderMD5;
@@ -53,14 +53,16 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient String actName;
     private transient DirectoryWorks directoryWorks;
 
-    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, Set<String> incServerMD5, String actName) {
+    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5, String actName) {
         downCount = 0;
         mApp = app;
         handler = incHandler;
         drive = app.getDriveService();
-        this.serverMD5 = incServerMD5;
         this.gdFiles = incGDFiles;
         this.actName = actName;
+        serverMD5 = new ArrayList<>();
+        String[] md5sAppArray = incServerMD5.split(",");
+        serverMD5 = Arrays.asList(md5sAppArray);
     }
 
     @Override
@@ -104,11 +106,14 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                         Log.d("unTag_files", listWithoutDuplicates.toString());
 
                         folderMD5 = directoryWorks.getMD5Sums();
-                        if (folderMD5.containsAll(serverMD5)
-                                && folderMD5.size() == serverMD5.size()) {
+                        Set<String> tmpSet = new HashSet<String>();
+                        tmpSet.addAll(serverMD5);
+                        if (folderMD5.containsAll(tmpSet) && folderMD5.size() == tmpSet.size()) {
                             Log.d("unTag_down", "Not need down file, all files already exists. Cancel download task");
+                            tmpSet = null;
                             cancel(true);
                         } else {
+                            tmpSet = null;
                             while (downCount < listWithoutDuplicates.size() && !isCancelled()) {
                                 try {
                                     downloadFile(drive, listWithoutDuplicates.get(downCount).getGdFileInst());

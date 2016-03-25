@@ -130,6 +130,9 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
                     DriveAuthActivity.this.finish();
                 }
             }
+        } else {
+            Log.d("unTag_DriveAuthActivity", "External storage is not available");
+            Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
         }
     }
 

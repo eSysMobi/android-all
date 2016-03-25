@@ -1,6 +1,5 @@
 package mobi.esys.tasks;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -13,12 +12,10 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.server.UNLServer;
-import mobi.esys.upnews_lite.FirstVideoActivity;
-import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
-    private transient Set<String> md5set;
+    private transient List<String> md5set;
     private transient UNLApp mApp;
     private transient String mActName;
     private static final String TAG = "unTag_DeleteBrokeFiles";
@@ -29,7 +26,7 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
         mActName = actName;
     }
 
-    public DeleteBrokeFilesTask(UNLApp app, Set<String> serverMD5, String actName) {
+    public DeleteBrokeFilesTask(UNLApp app, List<String> serverMD5, String actName) {
         mApp = app;
         md5set = serverMD5;
         mActName = actName;
@@ -47,10 +44,10 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
                 String[] folderFiles = directoryWorks.getDirFileList("del");
                 List<String> folderMD5s = directoryWorks.getMD5Sums();
                 List<String> maskList = new ArrayList<>();  //masklist with names
-                if (md5set==null) {
-                    UNLServer server = new UNLServer(mApp);
-                    md5set = server.getMD5FromServer();
-                }
+                //if (md5set==null) {
+                //    UNLServer server = new UNLServer(mApp);
+                //    md5set = server.getMD5FromServer();
+                //}
                 List<String> md5sList = new ArrayList<String>();
                 md5sList.addAll(md5set);
                 Log.d(TAG, "md5 list " + md5sList.toString());
@@ -67,7 +64,7 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
                 }
                 Log.d(TAG, "mask list task " + maskList.toString());
                 UNLApp.setIsDeleting(true);
-                directoryWorks.deleteFilesFromDir(maskList, mApp.getApplicationContext());
+                directoryWorks.deleteFilesFromDir(maskList);
             } else {
                 cancel(true);
             }

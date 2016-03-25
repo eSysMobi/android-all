@@ -25,6 +25,7 @@ import android.widget.VideoView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ public class FirstVideoActivity extends Activity {
     private transient MediaController controller;
 
     private transient SharedPreferences prefs;
-    private transient Set<String> md5sApp;
+    private transient String md5sApp;
 
     private transient boolean isFirstRSS;
     private transient MarqueeTextView textView;
@@ -72,8 +73,6 @@ public class FirstVideoActivity extends Activity {
 
 //        isDown = prefs.getBoolean("isDownload", true);
         uriPath = "";
-        Set<String> defSet = new HashSet<>();
-        md5sApp = prefs.getStringSet("md5sApp", defSet);
 
         setContentView(R.layout.activity_firstvideo);
         mLogo = (ImageView) findViewById(R.id.logo_first);
@@ -108,26 +107,21 @@ public class FirstVideoActivity extends Activity {
                         UNLConsts.VIDEO_DIR_NAME +
                                 UNLConsts.GD_STORAGE_DIR_NAME +
                                 "/");
-                Set<String> defSet = new HashSet<>();
-                md5sApp = prefs.getStringSet("md5sApp", defSet);
+                md5sApp = prefs.getString("md5sApp", "");
                 Log.d("unTag_FirstScreenAct", "md5sApp: " + md5sApp.toString());
 
                 String[] files = directoryWorks.getDirFileList("first");
                 boolean haveVideoFile = false;
                 for (int i = 0; i < files.length; i++) {
-                    for (int j = 0; j < UNLConsts.UNL_ACCEPTED_FILE_EXTS.length; j++) {
-                        if (files[i].contains(UNLConsts.UNL_ACCEPTED_FILE_EXTS[j])) {
-                            FileWorks fileWorks = new FileWorks(files[i]);
-                            if (md5sApp.contains(fileWorks.getFileMD5())) {
-                                startActivity(new Intent(FirstVideoActivity.this,
-                                        FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-                                finish();
-                            }
-                            //stopDownload();
-                            haveVideoFile = true;
-                            break;
-                        }
+                    FileWorks fileWorks = new FileWorks(files[i]);
+                    if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
+                        startActivity(new Intent(FirstVideoActivity.this,
+                                FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+                        finish();
+                        haveVideoFile = true;
+                        break;
                     }
+                    //stopDownload();
                 }
                 if (!haveVideoFile) {
                     play();
@@ -193,7 +187,7 @@ public class FirstVideoActivity extends Activity {
                         startRSS(intent.getStringExtra("rssToShow"));
                         break;
                     case UNLConsts.SIGNAL_REC_TO_MP:
-                        recToMP(intent.getStringExtra("recToMP_tag"),intent.getStringExtra("recToMP_message"));
+                        recToMP(intent.getStringExtra("recToMP_tag"), intent.getStringExtra("recToMP_message"));
                         break;
                 }
             }

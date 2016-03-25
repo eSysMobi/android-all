@@ -216,7 +216,7 @@ public class DirectoryWorks {
         return filePaths.toArray(new String[filePaths.size()]);
     }
 
-    public void deleteFilesFromDir(List<String> maskList, Context context) {
+    public void deleteFilesFromDir(List<String> maskList) {
         File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
         Log.d(DIR_WORKS_TAG, "deleteFilesFromDir Deleting " + maskList.size() + " files");
         Log.d(DIR_WORKS_TAG, UNLApp.getAppExtCachePath().concat(this.directoryPath));
@@ -227,14 +227,13 @@ public class DirectoryWorks {
 
             //check maskList
             if (maskList.size() == 1 && maskList.get(0).equals("unLiteDelAll")) {
-                //delete all files in videodirectory excluded user files (with prefix dd)
+                //delete all files in video directory excluded user files (with prefix dd)
                 for (int i = 0; i < files.length; i++) {
                     if (!files[i].getName().startsWith(UNLConsts.PREFIX_USER_VIDEOFILES)) {
                         files[i].delete();
                     }
                 }
             } else {
-
                 for (int i = 0; i < files.length; i++) {
                     if (maskList.contains(files[i].getAbsolutePath())) {
 
@@ -243,7 +242,7 @@ public class DirectoryWorks {
 
                         long diff = today.getTimeInMillis() - modDate.getTime();
                         long days = diff / (24 * 60 * 60 * 1000);
-                        if ((files[i].exists() && !files[i].getAbsolutePath().equals(UNLApp.getCurPlayFile()))
+                        if ((files[i].exists() && !files[i].getPath().equals(UNLApp.getCurPlayFile()))
                                 ||
                                 (getFileExtension(files[i].getName()).equals(UNLConsts.TEMP_FILE_EXT) && days > 14)
                                 ) {
@@ -252,11 +251,11 @@ public class DirectoryWorks {
                     }
                 }
             }
-            UNLApp.setIsDeleting(false);
         } else {
             Log.d(DIR_WORKS_TAG, "Folder don't exists");
             checkDirs();
         }
+        UNLApp.setIsDeleting(false);
     }
 
     public List<String> getMD5Sums() {

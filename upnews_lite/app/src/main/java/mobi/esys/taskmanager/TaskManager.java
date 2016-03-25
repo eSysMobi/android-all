@@ -41,7 +41,7 @@ public class TaskManager extends Handler {
     private UNLApp mApp = null;
     private transient UNLServer server = null;
     private transient List<GDFile> gdFiles = null;
-    private transient Set<String> serverMD5 = null;
+    private transient String serverMD5 = null;
 
     private byte rssCurrCount = 0;
     private byte rssMaxCount = 20;
