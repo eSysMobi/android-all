@@ -194,8 +194,7 @@ public class UNLServer {
                 for (ChildReference child : children.getItems()) {
 
                     File file = drive.files().get(child.getId()).execute();
-                    if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
-                            .contains(file.getFileExtension())) {
+                    if (!file.getExplicitlyTrashed() && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(file.getFileExtension())) {
                         gdFiles.add(new GDFile(file.getId(),
                                 file.getTitle(),
                                 file.getDownloadUrl(),
@@ -204,7 +203,7 @@ public class UNLServer {
                                 file.getMd5Checksum(), file));
                     }
 
-                    if ("rss.txt".equals(file.getTitle()) && !file.getExplicitlyTrashed()) {
+                    if (!file.getExplicitlyTrashed() && UNLConsts.GD_RSS_FILE_TITLE.equals(file.getTitle())) {
                         gdRSS = new GDFile(file.getId(),
                                 file.getTitle(),
                                 file.getWebContentLink(),
@@ -214,7 +213,7 @@ public class UNLServer {
                                 file);
                     }
 
-                    if (UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle()) && !file.getExplicitlyTrashed()) {
+                    if (!file.getExplicitlyTrashed() && UNLConsts.GD_LOGO_FILE_TITLE.equals(file.getTitle())) {
                         gdLogo = new GDFile(file.getId(),
                                 file.getTitle(),
                                 file.getWebContentLink(),

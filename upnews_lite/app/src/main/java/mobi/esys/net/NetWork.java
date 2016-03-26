@@ -31,7 +31,9 @@ public class NetWork {
         boolean dataOnWifiOnly = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(
                         "data_wifi_only", true);
+        //WARNING
         //dataOnWifiOnly = false; //for emulator
+        //WARNING
         if ((!dataOnWifiOnly && (mobile.equals(NetworkInfo.State.CONNECTED) ||
                 wifi.equals(NetworkInfo.State.CONNECTED)))
                 || (dataOnWifiOnly && wifi.equals(NetworkInfo.State.CONNECTED))) {

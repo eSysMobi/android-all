@@ -38,7 +38,7 @@ import mobi.esys.upnews_lite.UNLApp;
 public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
     private transient SharedPreferences prefs;
     private transient Context mContext;
-    private transient boolean isAuthSuccess;
+    private transient boolean isAuthSuccess = false;
     private transient boolean mStartVideoOnSuccess;
     private static final String RSS_TITLE = UNLConsts.GD_RSS_FILE_TITLE;
     private static final String RSS_MIME_TYPE = UNLConsts.GD_RSS_FILE_MIME_TYPE;
@@ -53,7 +53,6 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
     public CreateDriveFolderTask(Context context, boolean isStartVideoOnSuccess, UNLApp app, boolean isShowPD) {
         mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
-        isAuthSuccess = true;
         mStartVideoOnSuccess = isStartVideoOnSuccess;
         drive = app.getDriveService();
         mIsShowPD = mIsShowPD;
@@ -74,8 +73,6 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
-        if (!UNLApp.getIsCreatingDriveFolder()) {
-            UNLApp.setIsCreatingDriveFolder(true);
             if (NetWork.isNetworkAvailable(mApp) ) {
                 Log.d(TAG, "create folder");
                 try {
@@ -154,7 +151,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         Log.d(TAG, "ID unlFolderStatistics in GD" + unlFolderStatistics.getId());
 
                         //create upnews lite statistics folder in GD
-                        String serialNumber = Build.SERIAL;
+                        String serialNumber = UNLApp.getFullDeviceIdForStatistic();     //old version   Build.SERIAL;
                         File bodyDiveceStatistics = new File();
                         bodyDiveceStatistics.setTitle(serialNumber);
                         bodyDiveceStatistics.setMimeType("application/vnd.google-apps.folder");
@@ -250,7 +247,7 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         }
 
                         //Check upnews lite statistics folder in GD
-                        String serialNumber = Build.SERIAL;
+                        String serialNumber = UNLApp.getFullDeviceIdForStatistic(); //old version   Build.SERIAL;
                         String unlFolderDeviceStatisticsID = "";
                         if (unlFolderStatisticsID.isEmpty()){
                             File bodyStatistics = new File();
@@ -277,11 +274,11 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
 
                         //Check upnews lite device statistics folder in GD
                         if (unlFolderDeviceStatisticsID.isEmpty()){
-                            File bodyDiveiceStatistics = new File();
-                            bodyDiveiceStatistics.setTitle(serialNumber);
-                            bodyDiveiceStatistics.setMimeType("application/vnd.google-apps.folder");
-                            bodyDiveiceStatistics.setParents(Arrays.asList(new ParentReference().setId(unlFolderStatisticsID)));
-                            File deviceFolderIdStatistics = drive.files().insert(bodyDiveiceStatistics).execute();
+                            File bodyDeviceStatistics = new File();
+                            bodyDeviceStatistics.setTitle(serialNumber);
+                            bodyDeviceStatistics.setMimeType("application/vnd.google-apps.folder");
+                            bodyDeviceStatistics.setParents(Arrays.asList(new ParentReference().setId(unlFolderStatisticsID)));
+                            File deviceFolderIdStatistics = drive.files().insert(bodyDeviceStatistics).execute();
                             Log.d(TAG, "ID unlFolderStatistics in GD" + deviceFolderIdStatistics.getId());
                             editor.putString("deviceFolderIdStatistics", deviceFolderIdStatistics.getId());
                         } else {
@@ -310,20 +307,14 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         ((DriveAuthActivity) mContext).catchUSERException(e
                                 .getIntent());
                     }
-
                 } catch (IOException e) {
                     Log.d(TAG, "Error: " + e.getLocalizedMessage());
                 }
             } else{
-                isAuthSuccess = false;
+                Log.d(TAG, "We have no Inet");
             }
-        } else {
-            isAuthSuccess = false;
-        }
-
         return null;
     }
-
 
     @Override
     protected void onPostExecute(Void result) {
@@ -355,8 +346,11 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                 pd.dismiss();
             }
         }
-
     }
 
-
+    @Override
+    protected void onCancelled() {
+        UNLApp.setIsCreatingDriveFolder(false);
+        super.onCancelled();
+    }
 }

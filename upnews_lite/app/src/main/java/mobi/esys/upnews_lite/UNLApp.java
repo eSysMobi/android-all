@@ -19,8 +19,18 @@ public class UNLApp extends Application {
     private static AtomicBoolean isDeleting;
     private static AtomicBoolean isCamerasWorking;
     private static String curPlayFile;
+    private static String fullDeviceIdForStatistic;
     private static String appExtCachePath;
     private static Integer[] camerasID = null;
+
+    public static void setFullDeviceIdForStatistic(String incDeviceId) {
+        Log.d("unTag_UNLApp", "Set fullDeviceIdForStatistic " + incDeviceId);
+        fullDeviceIdForStatistic = incDeviceId;
+    }
+
+    public static String getFullDeviceIdForStatistic() {
+        return fullDeviceIdForStatistic;
+    }
 
     public static void setIsCamerasWorking(boolean state) {
         UNLApp.isCamerasWorking.set(state);
@@ -72,11 +82,11 @@ public class UNLApp extends Application {
         return isDeleting.get();
     }
 
-    public static synchronized void setCurPlayFile(String incCrPlayFile) {
+    public static void setCurPlayFile(String incCrPlayFile) {
         curPlayFile = incCrPlayFile;
     }
 
-    public static synchronized String getCurPlayFile() {
+    public static String getCurPlayFile() {
         return curPlayFile;
     }
 

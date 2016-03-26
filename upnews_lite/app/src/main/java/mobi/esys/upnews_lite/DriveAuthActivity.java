@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -259,8 +260,11 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
     }
 
     private void createFolderInDriveIfDontExists() {
-        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(DriveAuthActivity.this, true, mApp, true);
-        createDriveFolderTask.execute();
+        if (!UNLApp.getIsCreatingDriveFolder()) {
+            UNLApp.setIsCreatingDriveFolder(true);
+            CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(DriveAuthActivity.this, true, mApp, true);
+            createDriveFolderTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     private void createFolderIfNotExist() {

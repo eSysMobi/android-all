@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
@@ -148,6 +149,13 @@ public class InAppBillingActivity extends Activity {
             }
         }
 
+        //call checking version
+        //checkVersion();
+
+        //setting full device id
+        UNLApp.setFullDeviceIdForStatistic(getDeviceId());
+
+        //call checking permissions
         checkPermision();
 
         if (BuildConfig.DEBUG) {
@@ -161,6 +169,34 @@ public class InAppBillingActivity extends Activity {
                     billingServiceConn, BIND_AUTO_CREATE);
         }
         allOK();
+    }
+
+    private static String getDeviceId() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        String serial = Build.SERIAL;
+        if (model.startsWith(manufacturer)) {
+            return model + "-" + serial;
+        }
+        return manufacturer + " " + model + "-" + serial;
+    }
+
+    private void checkVersion() {
+        UNLApp mApp = (UNLApp) getApplication();
+        int versionCode = BuildConfig.VERSION_CODE;
+        SharedPreferences prefs = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE);
+        if(prefs.getInt("lastAppVersion",0)!=versionCode){
+            //clear all saved data
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("lastAppVersion", versionCode);
+            editor.putString("accName", "");  //may be not need clear
+            editor.putString("lastPlayedFileMD5", "");
+            editor.putString("md5sApp", "");
+            editor.putString("folderId", "");
+            editor.putString("deviceFolderIdStatistics", "");
+
+            editor.apply();
+        }
     }
 
     void allOK() {

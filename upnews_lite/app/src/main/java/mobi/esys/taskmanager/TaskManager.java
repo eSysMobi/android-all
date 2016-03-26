@@ -173,7 +173,7 @@ public class TaskManager extends Handler {
                     downloadVideoTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case 4:
-                    Log.d(TAG, "Start task 4 (SEND STATISTICS0");
+                    Log.d(TAG, "Start task 4 (SEND STATISTICS)");
                     SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp, this);
                     Thread thread = new Thread(sstGD, "SendStatisticsToGD");
                     thread.start();

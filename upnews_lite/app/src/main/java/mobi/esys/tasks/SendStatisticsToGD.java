@@ -59,7 +59,7 @@ public class SendStatisticsToGD implements Runnable {
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                 String dateToday = df.format(Calendar.getInstance().getTime());
                 String todayStatFileName = dateToday + ".csv";
-                String serialNumber = Build.SERIAL;
+                String serialNumber = UNLApp.getFullDeviceIdForStatistic(); //old version   Build.SERIAL;
 
                 java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "tmp.tmp");
                 try {

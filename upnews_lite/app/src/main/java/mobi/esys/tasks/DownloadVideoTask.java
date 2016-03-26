@@ -159,8 +159,18 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 + UNLConsts.VIDEO_DIR_NAME
                                 + UNLConsts.GD_STORAGE_DIR_NAME
                                 + "/";
-                        String path = file.getTitle().substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
-                        java.io.File downFile = new java.io.File(root_dir, path);
+                        String fileName = file.getTitle().substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
+
+                        //checking duplicate name in different files
+                        String fileNameMP4 = file.getTitle();
+                        java.io.File checkingFile = new java.io.File(root_dir, fileNameMP4);
+                        if(checkingFile.exists()){
+                            Log.d("unTag_down", "Another file with name " + fileName + " already exists. Rename new file.");
+                            fileName = "copy_" + fileName;
+                        }
+                        checkingFile = null;
+
+                        java.io.File downFile = new java.io.File(root_dir, fileName);
                         FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
                         Log.d("unTag_down", downFile.getAbsolutePath());
                         //if file do not exists on SD
@@ -250,7 +260,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                     downCount++;
                     return;
                 }
-
             } else {
                 Log.d("unTag_down", "File already exists, not need down.");
                 downCount++;

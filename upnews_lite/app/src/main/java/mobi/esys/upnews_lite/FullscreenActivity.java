@@ -285,12 +285,12 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (Build.VERSION.SDK_INT >= 14) {
-            setUISmall();
-        }
-    }
+//    @Override
+//    public void onWindowFocusChanged(boolean hasFocus) {
+//        super.onWindowFocusChanged(hasFocus);
+//        if (Build.VERSION.SDK_INT >= 14) {
+//            setUISmall();
+//        }
+//    }
 
 }
