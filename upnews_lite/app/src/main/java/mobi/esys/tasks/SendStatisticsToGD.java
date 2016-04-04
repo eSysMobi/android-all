@@ -59,6 +59,7 @@ public class SendStatisticsToGD implements Runnable {
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                 String dateToday = df.format(Calendar.getInstance().getTime());
                 String todayStatFileName = dateToday + ".csv";
+                String todayNetStatFileName = dateToday + "-net.csv";
                 String serialNumber = UNLApp.getFullDeviceIdForStatistic(); //old version   Build.SERIAL;
 
                 java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "tmp.tmp");
@@ -74,14 +75,22 @@ public class SendStatisticsToGD implements Runnable {
                     }
 
                     DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.STATISTICS_DIR_NAME);
-                    File[] statFilesOnDevice = directoryWorks.getStatisticsFiles();
+                    List<File> statFilesOnDevice = new ArrayList<>();
 
-                    for (int i = 0; i < statFilesOnDevice.length; i++) {
+                    File[] statFiles = directoryWorks.getStatisticsFiles();
+                    statFilesOnDevice.addAll(Arrays.asList(statFiles));
+
+                    if (!UNLApp.getIsStatNetFileWriting()) {
+                        File[] statNetFiles = directoryWorks.getNetworkStatisticsFiles();
+                        statFilesOnDevice.addAll(Arrays.asList(statNetFiles));
+                    }
+
+                    for (int i = 0; i < statFilesOnDevice.size(); i++) {
                         String idStatFileGD = "";
                         int num_idStatFileGD = 0;
                         //search statFilesOnDevice[i] file in GD
                         for (int j = 0; j < statFilesOnGD.size(); j++) {
-                            if (statFilesOnGD.get(j).getTitle().equals(statFilesOnDevice[i].getName())) {
+                            if (statFilesOnGD.get(j).getTitle().equals(statFilesOnDevice.get(i).getName())) {
                                 idStatFileGD = statFilesOnGD.get(j).getId();
                                 num_idStatFileGD = j;
                                 break;
@@ -90,31 +99,31 @@ public class SendStatisticsToGD implements Runnable {
                         //processing finding data
                         if (idStatFileGD.isEmpty()) {
                             //create *.csv file in GD
-                            Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " not exist in GD. Create it!");
+                            Log.d(TAG, "File " + statFilesOnDevice.get(i).getName() + " not exist in GD. Create it!");
                             //Prepare file which we adding
                             com.google.api.services.drive.model.File file = new com.google.api.services.drive.model.File();
-                            file.setTitle(statFilesOnDevice[i].getName());
+                            file.setTitle(statFilesOnDevice.get(i).getName());
                             file.setDescription("Statistics file from device with ID: " + serialNumber);
                             file.setMimeType(STAT_MIME_TYPE);
                             file.setParents(Arrays.asList(new ParentReference().setId(statisticsGDDirID)));
                             //Prepare and create temp file
-                            InputStream tmpInStream = new FileInputStream(statFilesOnDevice[i]);
+                            InputStream tmpInStream = new FileInputStream(statFilesOnDevice.get(i));
                             StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
                             FileContent fileContent = new FileContent(STAT_MIME_TYPE, tmpFile);
                             //create
                             file = drive.files().insert(file, fileContent).execute();
                             tmpInStream.close();
 
-                            Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " with ID " + file.getId() + " created in GD");
+                            Log.d(TAG, "File " + statFilesOnDevice.get(i).getName() + " with ID " + file.getId() + " created in GD");
                         } else {
                             //update *.csv file in GD
-                            Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " exist in GD.");
+                            Log.d(TAG, "File " + statFilesOnDevice.get(i).getName() + " exist in GD.");
                             //checking is this today file
-                            if (statFilesOnDevice[i].getName().equals(todayStatFileName)) {
+                            if (statFilesOnDevice.get(i).getName().equals(todayStatFileName) || statFilesOnDevice.get(i).getName().equals(todayNetStatFileName)) {
                                 //Prepare updatable file
                                 com.google.api.services.drive.model.File file = statFilesOnGD.get(num_idStatFileGD);
                                 //Prepare and create temp file
-                                InputStream tmpInStream = new FileInputStream(statFilesOnDevice[i]);
+                                InputStream tmpInStream = new FileInputStream(statFilesOnDevice.get(i));
                                 StremsUtils.copyInputStreamToFile(tmpInStream, tmpFile);
                                 FileContent fileContent = new FileContent(STAT_MIME_TYPE, tmpFile);
                                 //update
@@ -122,9 +131,9 @@ public class SendStatisticsToGD implements Runnable {
                                 tmpInStream.close();
 
                                 if (file != null) {
-                                    Log.d(TAG, "File " + statFilesOnDevice[i].getName() + " with ID " + file.getId() + " updated in GD");
+                                    Log.d(TAG, "File " + statFilesOnDevice.get(i).getName() + " with ID " + file.getId() + " updated in GD");
                                 } else {
-                                    Log.d(TAG, "Error GD! File " + statFilesOnDevice[i].getName() + " no updated in GD!");
+                                    Log.d(TAG, "Error GD! File " + statFilesOnDevice.get(i).getName() + " no updated in GD!");
                                 }
                             }
                         }
@@ -149,7 +158,7 @@ public class SendStatisticsToGD implements Runnable {
         }
     }
 
-    private void sendEndingSignal(){
+    private void sendEndingSignal() {
         handler.sendEmptyMessage(42);
     }
 }

@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +33,7 @@ import mobi.esys.playback.Playback;
 import mobi.esys.system.MarqueeTextView;
 import mobi.esys.taskmanager.TaskManager;
 import mobi.esys.tasks.CameraShotTask;
+import mobi.esys.tasks.GetMACsTask;
 import mobi.esys.tasks.SendStatisticsToGD;
 
 public class FullscreenActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
@@ -45,7 +48,11 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
     private transient ImageView mLogo;
     private transient SurfaceHolder holder;
 
-    private transient Handler handler2;
+    //Get MACs
+    private transient Handler handlerGetMACs;
+    private transient Runnable runnableGetMACs;
+
+    private transient Handler handlerHideUI;
     private transient View decorView = null;
 
     private transient TaskManager tm;
@@ -77,12 +84,31 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
         if (Build.VERSION.SDK_INT >= 14) {
                 decorView = getWindow().getDecorView();
                 setUISmall();
-                handler2 = new mHandler(this);
+                handlerHideUI = new mHandler(this);
                 decorView.setOnSystemUiVisibilityChangeListener(this);
         }
 
         //prepare Logo task handler
         checkAndSetLogoFromExStorage();
+
+        handlerGetMACs = new Handler();
+        runnableGetMACs = new Runnable() {
+            @Override
+            public void run() {
+                WifiManager wifiMan = (WifiManager) getSystemService(WIFI_SERVICE);
+                WifiInfo wifiInf = wifiMan.getConnectionInfo();
+                int ipAddress = wifiInf.getIpAddress();
+                String ip = String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
+                Log.d("unTag_FullscreenAct", "Start scan network. IP: " + ip);
+
+                GetMACsTask gmt = new GetMACsTask(ip);
+                gmt.start();
+
+                handlerGetMACs.postDelayed(this, UNLConsts.MACS_CYCLE_DELAY);
+            }
+        };
+
+        handlerGetMACs.postDelayed(runnableGetMACs, UNLConsts.MACS_START_DELAY);
 
         br = new BroadcastReceiver() {
             @Override
@@ -187,11 +213,17 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
                     FirstVideoActivity.class));
             finish();
         }
+        if (handlerGetMACs != null && runnableGetMACs != null) {
+            handlerGetMACs.postDelayed(runnableGetMACs, UNLConsts.MACS_START_DELAY);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (handlerGetMACs != null && runnableGetMACs != null) {
+            handlerGetMACs.removeCallbacks(runnableGetMACs);
+        }
     }
 
     @Override
@@ -199,16 +231,25 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
         super.onStop();
         Log.d("unTag_FullscreenAct", "Unregister Receiver in onStop()");
         unregisterReceiver(br);
+        if (handlerGetMACs != null && runnableGetMACs != null) {
+            handlerGetMACs.removeCallbacks(runnableGetMACs);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (handlerGetMACs != null && runnableGetMACs != null) {
+            handlerGetMACs.removeCallbacks(runnableGetMACs);
+        }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        if (handlerGetMACs != null && runnableGetMACs != null) {
+            handlerGetMACs.removeCallbacks(runnableGetMACs);
+        }
         finish();
     }
 
@@ -252,7 +293,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
     public void onSystemUiVisibilityChange(int visibility) {
         Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility);
         if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
-            handler2.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
+            handlerHideUI.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
         }
     }
 

@@ -23,6 +23,8 @@ public final class UNLConsts {
     public static final String STATISTICS_DIR_NAME = "/statistics/";
     public static final String GD_STATISTICS_DIR_NAME = "Statistics";
     public static final String ALL_STATISTICS_FINE_NAME = "StatisticsAll.csv";
+    public static final String NETWORK_STATISTICS_DIR_NAME = "/statistics_net/";
+    public static final String GD_NETWORK_STATISTICS_DIR_NAME = "Statistics_net";
     public static final String STATISTICS_MIME_TYPE = "text/csv";
 
     public static final String PREFIX_USER_VIDEOFILES = "dd";
@@ -47,6 +49,10 @@ public final class UNLConsts {
 
     //time constants
     public final static int APP_START_DELAY = 10000;
+    public final static int MACS_START_DELAY = 8000;
+    public final static int MACS_CYCLE_DELAY = 2 * 60 * 1000;
+    public static long START_OLD_PROFILE_DELAY = 10000;
+
 
     //permissions constants
     public final static int PERMISSIONS_REQUEST = 330;
@@ -54,9 +60,6 @@ public final class UNLConsts {
     //statistics constants
     public static final String CSV_SEPARATOR = ",";
     public static final int NUM_STATISTICS_FILES = 7;
-
-    //delays
-    public static long START_OLD_PROFILE_DELAY = 10000;
 
     //debug
     public static boolean ALLOW_TOAST = false;

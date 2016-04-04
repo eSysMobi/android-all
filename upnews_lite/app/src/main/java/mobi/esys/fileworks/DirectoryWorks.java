@@ -49,6 +49,10 @@ public class DirectoryWorks {
         if (!statisticsDir.exists()) {
             statisticsDir.mkdir();
         }
+        File statisticsNetDir = new File(videoDir.getAbsolutePath() + UNLConsts.NETWORK_STATISTICS_DIR_NAME);
+        if (!statisticsNetDir.exists()) {
+            statisticsNetDir.mkdir();
+        }
         File rssDir = new File(videoDir.getAbsolutePath() + UNLConsts.RSS_DIR_NAME);
         if (!rssDir.exists()) {
             rssDir.mkdir();
@@ -74,6 +78,46 @@ public class DirectoryWorks {
             }
         }
         return result;
+    }
+
+    public File[] getNetworkStatisticsFiles(){
+        File[] result = null;
+        File statisticFolder = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.NETWORK_STATISTICS_DIR_NAME);
+        if (statisticFolder.exists()){
+            result = statisticFolder.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                    return filename.toLowerCase().endsWith(".csv");
+                }
+            });
+        }
+        return result;
+    }
+
+    public File checkLastNetworkStatisticFile() {
+        //check today statistic file
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String dateToday = df.format(Calendar.getInstance().getTime());
+        String fileName = dateToday + "-net.csv";
+        File statisticFile = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.NETWORK_STATISTICS_DIR_NAME, fileName);
+        if (!statisticFile.exists()) {
+            try {
+                statisticFile.createNewFile();
+                //write
+                try {
+                    BufferedWriter output = new BufferedWriter(new FileWriter(statisticFile, true));
+                    output.append("Time,MAC");
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                deleteRedundantStatistics(new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.NETWORK_STATISTICS_DIR_NAME));
+            }
+        }
+        return statisticFile;
     }
 
 
@@ -123,7 +167,7 @@ public class DirectoryWorks {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                deleteRedundantStatistics();
+                deleteRedundantStatistics(new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME));
             }
         }
         return statisticFile;
@@ -158,15 +202,14 @@ public class DirectoryWorks {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                deleteRedundantStatistics();
+                deleteRedundantStatistics(new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME));
             }
         }
         return allStatisticFile;
     }
 
-    public boolean deleteRedundantStatistics() {
+    public boolean deleteRedundantStatistics(File statisticDir) {
         boolean isDeleted = false;
-        File statisticDir = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + this.directoryPath);
         Log.d(DIR_WORKS_TAG, statisticDir.getAbsolutePath());
         if (statisticDir.exists()) {
             //get all files from statistics directory

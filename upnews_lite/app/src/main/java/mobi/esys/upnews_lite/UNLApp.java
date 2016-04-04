@@ -18,6 +18,7 @@ public class UNLApp extends Application {
     private static AtomicBoolean isCreatingDriveFolder;
     private static AtomicBoolean isDeleting;
     private static AtomicBoolean isCamerasWorking;
+    private static AtomicBoolean isStatNetFileWriting;
     private static String curPlayFile;
     private static String fullDeviceIdForStatistic;
     private static String appExtCachePath;
@@ -82,6 +83,15 @@ public class UNLApp extends Application {
         return isDeleting.get();
     }
 
+    public static void setIsStatNetFileWriting(boolean state) {
+        Log.d("unTag_UNLApp", "Set isStatNetFileWriting " + state);
+        isStatNetFileWriting.set(state);
+    }
+
+    public static boolean getIsStatNetFileWriting() {
+        return isStatNetFileWriting.get();
+    }
+
     public static void setCurPlayFile(String incCrPlayFile) {
         curPlayFile = incCrPlayFile;
     }
@@ -106,6 +116,7 @@ public class UNLApp extends Application {
         isDeleting = new AtomicBoolean(false);
         isCreatingDriveFolder = new AtomicBoolean(false);
         isCamerasWorking = new AtomicBoolean(false);
+        isStatNetFileWriting = new AtomicBoolean(false);
     }
 
     @Override
