@@ -50,10 +50,10 @@ public class Playback {
     //127578844442-9qab0sqd5p13fhhs671lg1joqetcvj7k debug
     //127578844442-h41s9f3md1ni2soa7e3t3rpuqrukkd1u release
 
-    public Playback(Context context, UNLApp app) {
+    public Playback(Context context, UNLApp app, TaskManager incTM) {
         super();
         Log.d(TAG, "New playback");
-        tm = TaskManager.getInstance();
+        tm = incTM;
         mController = new MediaController(context);
         //mController.setPadding(0, 0, 0, 50);  //if need up controls
         mVideo = ((FullscreenActivity) context).getVideoView();

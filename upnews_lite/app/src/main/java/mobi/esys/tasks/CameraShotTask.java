@@ -6,10 +6,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.FaceDetector;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
-//import android.view.SurfaceView;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,7 +32,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 17.01.2016.
  */
-public class CameraShotTask implements Runnable{
+public class CameraShotTask extends AsyncTask<Void, Void, Void> {
     private int MAX_FACES = 15;
     private Context mContext;
     private String mVideoName;
@@ -135,9 +135,8 @@ public class CameraShotTask implements Runnable{
             }
         }
     }
-
     @Override
-    public void run() {
+    protected Void doInBackground(Void... params) {
         if (UNLApp.getCamerasID() != null && !mVideoName.isEmpty()) {
             if (!UNLApp.getIsCamerasWorking()) {
                 UNLApp.setIsCamerasWorking(true);
@@ -156,6 +155,7 @@ public class CameraShotTask implements Runnable{
                 Log.d("unTag_Camera", "Cameras working in another thread");
             }
         }
+        return null;
     }
 
     private void getPhotoAndParse(int cameraId) {

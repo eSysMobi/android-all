@@ -1,7 +1,8 @@
 package mobi.esys.tasks;
 
 import android.content.Intent;
-import android.os.Handler;
+import android.os.*;
+import android.os.Process;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
@@ -21,7 +22,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 12.11.2015.
  */
-public class CheckAndGetLogoFromGDriveTask extends Thread {
+public class CheckAndGetLogoFromGDriveTask extends AsyncTask<Void, Void, Void> {
     private UNLApp app;
     private GDFile newRemoteLogo;
     private transient Drive drive;
@@ -38,7 +39,10 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
 
 
     @Override
-    public void run() {
+    protected Void doInBackground(Void... params) {
+
+        //set priority
+        //android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
 
         if (NetWork.isNetworkAvailable(app)) {
 
@@ -155,6 +159,7 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
             //Fail. We have no inet
             signalUseStandardLogo();
         }
+        return null;
     }
 
     private void signalUseNewLogo() {
@@ -182,4 +187,5 @@ public class CheckAndGetLogoFromGDriveTask extends Thread {
         }
         handler.sendEmptyMessage(42);
     }
+
 }

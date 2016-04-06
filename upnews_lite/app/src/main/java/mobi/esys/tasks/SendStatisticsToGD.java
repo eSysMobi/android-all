@@ -2,6 +2,7 @@ package mobi.esys.tasks;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
@@ -32,7 +33,7 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 27.01.2016.
  */
-public class SendStatisticsToGD implements Runnable {
+public class SendStatisticsToGD extends AsyncTask<Void, Void, Void> {
     private transient SharedPreferences prefs;
     private static final String FOLDER_STAT_NAME = UNLConsts.GD_STATISTICS_DIR_NAME;
     private static final String STAT_MIME_TYPE = UNLConsts.STATISTICS_MIME_TYPE;
@@ -51,8 +52,7 @@ public class SendStatisticsToGD implements Runnable {
     }
 
     @Override
-    public void run() {
-        //super.run();
+    protected Void doInBackground(Void... params) {
         if (NetWork.isNetworkAvailable(mApp)) {
             if (!statisticsGDDirID.isEmpty()) {
                 Log.d(TAG, "Start sending statistics files in GD");
@@ -156,9 +156,11 @@ public class SendStatisticsToGD implements Runnable {
             Log.d(TAG, "Internet is offline");
             sendEndingSignal();
         }
+        return null;
     }
 
     private void sendEndingSignal() {
         handler.sendEmptyMessage(42);
     }
+
 }

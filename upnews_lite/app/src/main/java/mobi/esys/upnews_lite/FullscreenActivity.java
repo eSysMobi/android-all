@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,8 +50,8 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
     private transient SurfaceHolder holder;
 
     //Get MACs
-    private transient Handler handlerGetMACs;
-    private transient Runnable runnableGetMACs;
+    private transient Handler handlerGetMACs = null;
+    private transient Runnable runnableGetMACs = null;
 
     private transient Handler handlerHideUI;
     private transient View decorView = null;
@@ -82,33 +83,35 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
 
         //prepare handler for hide Android status bar
         if (Build.VERSION.SDK_INT >= 14) {
-                decorView = getWindow().getDecorView();
-                setUISmall();
-                handlerHideUI = new mHandler(this);
-                decorView.setOnSystemUiVisibilityChangeListener(this);
+            decorView = getWindow().getDecorView();
+            setUISmall();
+            handlerHideUI = new mHandler(this);
+            decorView.setOnSystemUiVisibilityChangeListener(this);
         }
 
         //prepare Logo task handler
         checkAndSetLogoFromExStorage();
 
-        handlerGetMACs = new Handler();
-        runnableGetMACs = new Runnable() {
-            @Override
-            public void run() {
-                WifiManager wifiMan = (WifiManager) getSystemService(WIFI_SERVICE);
-                WifiInfo wifiInf = wifiMan.getConnectionInfo();
-                int ipAddress = wifiInf.getIpAddress();
-                String ip = String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-                Log.d("unTag_FullscreenAct", "Start scan network. IP: " + ip);
+        if (UNLConsts.ALLOW_NET_SCAN) {
+            handlerGetMACs = new Handler();
+            runnableGetMACs = new Runnable() {
+                @Override
+                public void run() {
+                    WifiManager wifiMan = (WifiManager) getSystemService(WIFI_SERVICE);
+                    WifiInfo wifiInf = wifiMan.getConnectionInfo();
+                    int ipAddress = wifiInf.getIpAddress();
+                    String ip = String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
+                    Log.d("unTag_FullscreenAct", "Start scan network. IP: " + ip);
 
-                GetMACsTask gmt = new GetMACsTask(ip);
-                gmt.start();
+                    GetMACsTask gmt = new GetMACsTask(ip);
+                    Thread gmtThread = new Thread(gmt);
+                    gmtThread.start();
 
-                handlerGetMACs.postDelayed(this, UNLConsts.MACS_CYCLE_DELAY);
-            }
-        };
-
-        handlerGetMACs.postDelayed(runnableGetMACs, UNLConsts.MACS_START_DELAY);
+                    handlerGetMACs.postDelayed(this, UNLConsts.MACS_CYCLE_DELAY);
+                }
+            };
+            handlerGetMACs.postDelayed(runnableGetMACs, UNLConsts.MACS_START_DELAY);
+        }
 
         br = new BroadcastReceiver() {
             @Override
@@ -135,8 +138,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
                         if (!nameCurrentPlayedFile.isEmpty()) {
                             Log.d("unTag_FullscreenAct", "Start face counting after ending file " + nameCurrentPlayedFile);
                             CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
-                            Thread thread = new Thread(csTask, "CameraShotTask");
-                            thread.start();
+                            csTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                             //or
                             //CameraShotTask csTask = new CameraShotTask(holder, FullscreenActivity.this, nameCurrentPlayedFile, mApp);
                             //Thread thread = new Thread(null, csTask, "CameraShotTask");
@@ -146,7 +148,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
                         }
                         break;
                     case UNLConsts.SIGNAL_REC_TO_MP:
-                        recToMP(intent.getStringExtra("recToMP_tag"),intent.getStringExtra("recToMP_message"));
+                        recToMP(intent.getStringExtra("recToMP_tag"), intent.getStringExtra("recToMP_message"));
                         break;
                 }
             }
@@ -213,7 +215,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
                     FirstVideoActivity.class));
             finish();
         }
-        if (handlerGetMACs != null && runnableGetMACs != null) {
+        if (UNLConsts.ALLOW_NET_SCAN && handlerGetMACs != null && runnableGetMACs != null) {
             handlerGetMACs.postDelayed(runnableGetMACs, UNLConsts.MACS_START_DELAY);
         }
     }
@@ -254,7 +256,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
     }
 
     public void startPlayback() {
-        playback = new Playback(FullscreenActivity.this, mApp);
+        playback = new Playback(FullscreenActivity.this, mApp, tm);
         playback.playFolder();
     }
 
@@ -307,6 +309,7 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
 //        }
 
         FullscreenActivity wrActivity;
+
         public mHandler(FullscreenActivity activity) {
             wrActivity = activity;
         }

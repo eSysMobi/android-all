@@ -28,10 +28,12 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 01.04.2016.
  */
-public class GetMACsTask extends Thread {
+public class GetMACsTask implements Runnable {
 
     private final static String TAG = "unTag_GetArMACs";
-    private static final int NB_THREADS = 10;
+
+    private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+    private static final int NB_THREADS = CPU_COUNT * 2 + 1;
 
     private final static String MAC_RE = "^%s\\s+0x1\\s+0x2\\s+([:0-9a-fA-F]+)\\s+\\*\\s+\\w+$";
     private final static int BUF = 8 * 1024;
@@ -55,7 +57,7 @@ public class GetMACsTask extends Thread {
     }
 
     private void doScan() {
-        Log.i(TAG, "Start scanning");
+        Log.i(TAG, "Start scanning Network (" + NB_THREADS + " threads)");
 
         netIP = thisDeviceIP.substring(0, thisDeviceIP.lastIndexOf(".") + 1);
 
@@ -71,7 +73,7 @@ public class GetMACsTask extends Thread {
         Log.i(TAG, "Waiting for executor to terminate...");
         executor.shutdown();
         try {
-            executor.awaitTermination(60 * 1000, TimeUnit.MILLISECONDS);
+            executor.awaitTermination(100 * 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ignored) {
         }
 
@@ -107,6 +109,7 @@ public class GetMACsTask extends Thread {
     private Runnable pingRunnable(final String host) {
         return new Runnable() {
             public void run() {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
                 try {
                     InetAddress inet = InetAddress.getByName(host);
                     boolean reachable = inet.isReachable(1000);

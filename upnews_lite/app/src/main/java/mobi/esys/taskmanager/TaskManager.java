@@ -115,7 +115,7 @@ public class TaskManager extends Handler {
 //                gdFiles = server.getGdFiles();
 //                startTask(currentTask);
                 GetServer gs = new GetServer();
-                gs.execute();
+                gs.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 Log.d(TAG, "Can't execute all task again. Previous executing in progress...");
             }
@@ -148,7 +148,9 @@ public class TaskManager extends Handler {
                 case 0:
                     Log.d(TAG, "Start task 0 (LOGO)");
                     CheckAndGetLogoFromGDriveTask task = new CheckAndGetLogoFromGDriveTask(mApp, this, server.getGdLogo(), source);
-                    task.start();
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//                    Thread threadLogo = new Thread(task);
+//                    threadLogo.start();
                     break;
                 case 1:
                     Log.d(TAG, "Start task 1 (CHECK FACES)");
@@ -175,8 +177,9 @@ public class TaskManager extends Handler {
                 case 4:
                     Log.d(TAG, "Start task 4 (SEND STATISTICS)");
                     SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp, this);
-                    Thread thread = new Thread(sstGD, "SendStatisticsToGD");
-                    thread.start();
+                    sstGD.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    //Thread threadSend = new Thread(sstGD, "SendStatisticsToGD");
+                    //threadSend.start();
                     break;
             }
         } else {
