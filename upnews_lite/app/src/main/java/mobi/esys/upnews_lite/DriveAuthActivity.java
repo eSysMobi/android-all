@@ -37,7 +37,7 @@ import mobi.esys.net.NetWork;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
 
-public class DriveAuthActivity extends Activity implements View.OnClickListener, View.OnSystemUiVisibilityChangeListener {
+public class DriveAuthActivity extends Activity implements View.OnClickListener {
     private transient SharedPreferences prefs;
     private transient GoogleAccountCredential credential;
     private transient static final int REQUEST_ACCOUNT_PICKER = 101;
@@ -56,7 +56,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
     private transient boolean externalStorageIsAvailable = false;
     private transient boolean buttonPressed = false;
 
-    private transient Handler handler;
+    private transient Handler handler = null;
     private transient View decorView = null;
 
     @Override
@@ -79,11 +79,19 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
 
         gdAuthBtn.setOnClickListener(this);
 
-        if (Build.VERSION.SDK_INT >= 14) {
+        if (UNLConsts.ALLOW_HIDEUI_DRIVEACTIVITY && Build.VERSION.SDK_INT >= 14) {
             decorView = getWindow().getDecorView();
             setUISmall();
             handler = new mHandler(this);
-            decorView.setOnSystemUiVisibilityChangeListener(this);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    Log.d("unTag_DriveAuthActivity", "onSystemUiVisibilityChange " + visibility);
+                    if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+                        handler.sendEmptyMessageDelayed(32, 2000);
+                    }
+                }
+            });
         }
 
         if (externalStorageIsAvailable) {
@@ -253,6 +261,16 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        handler = null;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (handler != null) {
+            handler.removeMessages(32);
+            Log.d("unTag_DriveAuthActivity", "Remove messages from handlerHideUI in onStop()");
+        }
     }
 
     public void catchUSERException(Intent intent) {
@@ -318,14 +336,6 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener,
         } else {
             Log.d("unTag_DriveAuthActivity", "External storage is not available");
             Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        Log.d("unTag_DriveAuthActivity", "onSystemUiVisibilityChange " + visibility);
-        if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
-            handler.sendEmptyMessageDelayed(32, 2000);
         }
     }
 

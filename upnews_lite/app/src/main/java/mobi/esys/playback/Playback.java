@@ -16,15 +16,12 @@ import android.widget.VideoView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.taskmanager.TaskManager;
-import mobi.esys.tasks.DownloadVideoTask;
 import mobi.esys.upnews_lite.FirstVideoActivity;
 import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.R;
@@ -121,6 +118,9 @@ public class Playback {
                             }
                         }
                     }
+                    //hide elements
+                    Log.d(TAG, "Force hide UiVisibility in mVideo.setOnPreparedListener");
+                    ((FullscreenActivity) mContext).forceSetUISmall();
                 }
             });
         } else {

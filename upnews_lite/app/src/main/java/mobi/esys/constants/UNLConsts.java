@@ -64,6 +64,7 @@ public final class UNLConsts {
     //debug
     public static boolean ALLOW_TOAST = false;
     public static boolean ALLOW_NET_SCAN = true;
+    public static boolean ALLOW_HIDEUI_DRIVEACTIVITY = false;
 
     public static final String MP_TOKEN = "5a24b4c7001b8850ace0573dc56dc1b9";
 }

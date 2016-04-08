@@ -37,7 +37,7 @@ import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.GetMACsTask;
 import mobi.esys.tasks.SendStatisticsToGD;
 
-public class FullscreenActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
+public class FullscreenActivity extends Activity {
     private static transient int DELAY_NAV_HIDE = 2000;
     private transient VideoView videoView;
     private transient Playback playback = null;
@@ -86,7 +86,15 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
             decorView = getWindow().getDecorView();
             setUISmall();
             handlerHideUI = new mHandler(this);
-            decorView.setOnSystemUiVisibilityChangeListener(this);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+                        //Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility + " need hide nav. Post delay handler");
+                        handlerHideUI.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
+                    }
+                }
+            });
         }
 
         //prepare Logo task handler
@@ -236,6 +244,10 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
         if (handlerGetMACs != null && runnableGetMACs != null) {
             handlerGetMACs.removeCallbacks(runnableGetMACs);
         }
+        Log.d("unTag_FullscreenAct", "Remove messages from handlerHideUI in onStop()");
+        if(handlerHideUI!=null){
+            handlerHideUI.removeMessages(32);
+        }
     }
 
     @Override
@@ -291,14 +303,6 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
         }
     }
 
-    @Override
-    public void onSystemUiVisibilityChange(int visibility) {
-        Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility);
-        if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
-            handlerHideUI.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
-        }
-    }
-
     private static class mHandler extends Handler {
         //need check this! may be memory leak
 
@@ -326,7 +330,17 @@ public class FullscreenActivity extends Activity implements View.OnSystemUiVisib
 
     private void setUISmall() {
         //not need check SDK version because checking in onCreate
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            Log.d("unTag_FullscreenAct", "UiVisibility before " + decorView.getSystemUiVisibility());
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            Log.d("unTag_FullscreenAct", "UiVisibility after " + decorView.getSystemUiVisibility());
+        }
+    }
+
+    public void forceSetUISmall(){
+        //if (decorView.getSystemUiVisibility() != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+            setUISmall();
+        //}
     }
 
 //    @Override
