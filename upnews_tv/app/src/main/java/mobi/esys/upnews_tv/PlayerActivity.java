@@ -18,6 +18,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.TypedValue;
@@ -146,6 +147,10 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
     private final static int PERMISSION_REQUEST_CODE = 334;
     private transient boolean allowflag = false;
+
+    private transient Handler handlerHideUI;
+    private transient View decorView = null;
+    private static transient int DELAY_NAV_HIDE = 2000;
 
     private final static String TAG = "unTag_PlayerActivity";
 
@@ -421,7 +426,21 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         };
         currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
 
-
+        //prepare handler for hide Android status bar
+        if (Build.VERSION.SDK_INT >= 14) {
+            decorView = getWindow().getDecorView();
+            setUISmall();
+            handlerHideUI = new mHandler(this);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+                        //Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility + " need hide nav. Post delay handler");
+                        handlerHideUI.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
+                    }
+                }
+            });
+        }
     }
 
     public void loadSlide(String tag) {
@@ -683,9 +702,11 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 Glide.with(this).load(Uri.parse(weatherInfo.getCurrentConditionIconURL())).into(conditionImage);
             } else {
                 Toast.makeText(PlayerActivity.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
+                Log.d(TAG,"Weather information is unavailable. weatherInfo = null");
             }
         } else {
-            Toast.makeText(PlayerActivity.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
+            Toast.makeText(PlayerActivity.this, "Weather information is unavailable. No inet.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Weather information is unavailable. No inet.");
         }
     }
 
@@ -993,6 +1014,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             if (cityName.equals("Not Found")) {
                 Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
             } else {
+                Log.d(TAG, "City: " + cityName);
                 mYahooWeather.setNeedDownloadIcons(true);
                 mYahooWeather.setUnit(YahooWeather.UNIT.CELSIUS);
                 mYahooWeather.setSearchMode(YahooWeather.SEARCH_MODE.PLACE_NAME);
@@ -1018,18 +1040,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (locationHandler != null) {
-            locationHandler.removeCallbacks(locationRunnable);
-        }
-//        if (proxyCache != null) {
-//            proxyCache.shutdown();
-//        }
-//        IjkMediaPlayer.native_profileEnd();
-    }
-
-    @Override
     protected void onResume() {
         if (playerView != null) {
             playerView.resume();  // <-- this will cause re-buffer.
@@ -1046,6 +1056,27 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
         //FacebookVideoDownloadHelper.getInstance().unRegisterReceiverInFacebookVDHelper(PlayerActivity.this);
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("unTag_FullscreenAct", "Remove messages from handlerHideUI in onStop()");
+        if(handlerHideUI!=null){
+            handlerHideUI.removeMessages(32);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (locationHandler != null) {
+            locationHandler.removeCallbacks(locationRunnable);
+        }
+//        if (proxyCache != null) {
+//            proxyCache.shutdown();
+//        }
+//        IjkMediaPlayer.native_profileEnd();
     }
 
     public void getCurrencies() {
@@ -1129,10 +1160,9 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 videoIndex = i;
             }
         }
-        Log.d(TAG, "Play file " + videoIndex + " name " + mp4Files.get(videoIndex).getName());
 
-        Log.d("mp4", mp4Files.toString());
         if (mp4Files.size() > 0) {
+            Log.d(TAG, "Play file " + videoIndex + " name " + mp4Files.get(videoIndex).getName());
 
             if (videoIndex < mp4Files.size()) {
                 playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
@@ -1168,6 +1198,46 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                     "video_playback", "go to next video", null).build());
         }
 
+    }
+
+    private static class mHandler extends Handler {
+        //need check this! may be memory leak
+
+//        WeakReference<FullscreenActivity> wrActivity;
+//
+//        public mHandler(FullscreenActivity activity) {
+//            wrActivity = new WeakReference<FullscreenActivity>(activity);
+//        }
+
+        PlayerActivity wrActivity;
+
+        public mHandler(PlayerActivity activity) {
+            wrActivity = activity;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+//            FullscreenActivity activity = wrActivity.get();
+//            if (activity != null)
+//                activity.setUISmall();
+            wrActivity.setUISmall();
+        }
+    }
+
+    private void setUISmall() {
+        //not need check SDK version because checking in onCreate
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            Log.d(TAG, "UiVisibility before " + decorView.getSystemUiVisibility());
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            Log.d(TAG, "UiVisibility after " + decorView.getSystemUiVisibility());
+        }
+    }
+
+    public void forceSetUISmall(){
+        //if (decorView.getSystemUiVisibility() != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+        setUISmall();
+        //}
     }
 
 

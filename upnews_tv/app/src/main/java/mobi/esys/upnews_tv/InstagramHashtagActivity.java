@@ -129,7 +129,7 @@ public class InstagramHashtagActivity extends Activity {
                     String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
                     Log.d("curr tag", hashtag);
                     Log.d("prev tag", prevHashtag);
-                    if (!"".equals(prevHashtag)&&!hashtag.equals(prevHashtag)) {
+                    if (!"".equals(prevHashtag) && !hashtag.equals(prevHashtag)) {
                         clearFolder();
                     }
                     SharedPreferences.Editor editor = preferences.edit();
@@ -151,14 +151,20 @@ public class InstagramHashtagActivity extends Activity {
     }
 
     public void clearFolder() {
-        File[] igPhotosFileList = new File(Folders.SD_CARD.
+        File tmpFolder = new File(Folders.SD_CARD.
                 concat(File.separator).
                 concat(Folders.BASE_FOLDER).
-                concat(File.separator).concat(Folders.PHOTO_FOLDER)).listFiles();
-        Log.d("photo folder", Arrays.asList(igPhotosFileList).toString());
+                concat(File.separator).concat(Folders.PHOTO_FOLDER));
 
-        for (File photoFile : igPhotosFileList) {
-            photoFile.delete();
+        if (tmpFolder.exists()) {
+            File[] igPhotosFileList = tmpFolder.listFiles();
+            Log.d("photo folder", Arrays.asList(igPhotosFileList).toString());
+
+            for (File photoFile : igPhotosFileList) {
+                photoFile.delete();
+            }
+        } else {
+            tmpFolder.mkdir();
         }
     }
 }

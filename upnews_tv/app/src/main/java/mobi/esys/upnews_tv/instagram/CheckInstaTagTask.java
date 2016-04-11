@@ -1,6 +1,7 @@
 package mobi.esys.upnews_tv.instagram;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import net.londatiga.android.instagram.InstagramRequest;
 
@@ -51,13 +52,18 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, Boolean> {
                                 && resObject.getJSONObject("meta").has(
                                 "error_type")) {
                             status = false;
+                            Log.d("unTag_CheckInstaTag","Error JSON response");
                         } else {
                             status = true;
+                            Log.d("unTag_CheckInstaTag","All ok. Instagram tag is valid.");
                         }
                     }
                 } catch (Exception e) {
                     status = false;
+                    Log.d("unTag_CheckInstaTag","Error checking");
                 }
+            } else {
+                Log.d("unTag_CheckInstaTag","No inet, can't check instagram tag");
             }
         }
 

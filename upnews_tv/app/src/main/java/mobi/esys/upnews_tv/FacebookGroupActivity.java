@@ -168,13 +168,19 @@ public class FacebookGroupActivity extends Activity {
     }
 
     public void clearFolder() {
-        File[] igPhotosFileList = new File(Folders.SD_CARD.
+        File tmpFolder = new File(Folders.SD_CARD.
                 concat(File.separator).
                 concat(Folders.BASE_FOLDER).
-                concat(File.separator).concat(Folders.VIDEO_FOLDER)).listFiles();
+                concat(File.separator).concat(Folders.VIDEO_FOLDER));
 
-        for (File photoFile : igPhotosFileList) {
-            photoFile.delete();
+        if (tmpFolder.exists()) {
+            File[] igPhotosFileList = tmpFolder.listFiles();
+
+            for (File photoFile : igPhotosFileList) {
+                photoFile.delete();
+            }
+        } else {
+            tmpFolder.mkdir();
         }
     }
 }
