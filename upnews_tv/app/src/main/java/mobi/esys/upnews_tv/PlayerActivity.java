@@ -693,7 +693,15 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 tempText.setTextColor(Color.WHITE);
                 tempText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 tempText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                tempText.setText(String.valueOf(weatherInfo.getCurrentTemp()) + " " + "\u2103");
+
+                String tempInC = "";
+                if(mYahooWeather.getUnit()=='c'){
+                    tempInC = String.valueOf((weatherInfo.getCurrentTemp() - 32) * 5 / 9 ) + " " + "\u2103";
+                } else {
+                    tempInC = String.valueOf(weatherInfo.getCurrentTemp()) + " " + "\u2109";
+                }
+
+                tempText.setText(tempInC);
 
                 weatherLayout.addView(conditionImage);
                 weatherLayout.addView(tempText);

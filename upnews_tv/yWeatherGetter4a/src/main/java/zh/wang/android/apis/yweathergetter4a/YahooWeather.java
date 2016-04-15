@@ -17,6 +17,14 @@
 
 package zh.wang.android.apis.yweathergetter4a;
 
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Handler;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,10 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.SocketTimeoutException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -38,18 +43,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import zh.wang.android.apis.yweathergetter4a.UserLocationUtils.LocationResult;
 import zh.wang.android.apis.yweathergetter4a.WeatherInfo.ForecastInfo;
-import android.content.Context;
-import android.location.Location;
-import android.os.AsyncTask;
 
 /**
  * A wrapper for accessing Yahoo weather informations. 
  * @author Zhenghong Wang
  */
 public class YahooWeather implements LocationResult {
-    
+
+    private static final String YQL_WEATHER_ENDPOINT_AUTHORITY = "query.yahooapis.com";
+    private static final String YQL_WEATHER_ENDPOINT_PATH = "/v1/public/yql";
+
     private static final int CONNECT_TIMEOUT_DEFAULT = 20 * 1000;
     private static final int SOCKET_TIMEOUT_DEFAULT = 20 * 1000;
 
@@ -95,6 +103,8 @@ public class YahooWeather implements LocationResult {
      */
 	public void setUnit(char unit) {
 		if (unit == 'f')
+			mUnit = unit;
+		if (unit == 'c')
 			mUnit = unit;
 	}
 	
@@ -142,7 +152,7 @@ public class YahooWeather implements LocationResult {
 	 * Use this to query weather information from Yahoo.
 	 * @param connectTimeout in milliseconds, 5 seconds in default
 	 * @param socketTimeout in milliseconds, 5 seconds in default
-	 * @param isDebbugable set if you want some debug log in Logcat
+	 * @param isDebuggable set if you want some debug log in Logcat
 	 * @return YahooWeather instance
 	 */
 	public static YahooWeather getInstance(int connectTimeout, int socketTimeout, boolean isDebuggable) {
@@ -163,14 +173,13 @@ public class YahooWeather implements LocationResult {
 	
 	/**
 	 * Set exception listener. 
-	 * If this is not set, stack info will be printed in logcat if {@link isDebuggable} is set to true.
+	 * If this is not set, stack info will be printed in logcat if 'isDebuggable' is set to true.
 	 * Remember, these methodas may be called on background thread. Therefore, any UI related
 	 * activities must be post to UI thread, using {@link Handler} or something else.
 	 * @param exceptionListener
 	 */
 	public void setExceptionListener(final YahooWeatherExceptionListener exceptionListener) {
 	    this.mExceptionListener = exceptionListener;
-	    WOEIDUtils.getInstance().setExceptionListener(exceptionListener);
 	}
 	
 	/**
@@ -196,7 +205,7 @@ public class YahooWeather implements LocationResult {
         final String convertedlocation = AsciiUtils.convertNonAscii(cityAreaOrLocation);
 		mWeatherInfoResult = result;
 		final WeatherQueryByPlaceTask task = new WeatherQueryByPlaceTask();
-		task.execute(new String[]{convertedlocation});
+		task.execute(new String[] {convertedlocation});
 	}
 	
 	/** 
@@ -209,7 +218,7 @@ public class YahooWeather implements LocationResult {
 	 * @param lon A string of longitude value
 	 * @param result A {@link WeatherInfo} instance
 	 */
-	public void queryYahooWeatherByLatLon(final Context context, final String lat, final String lon, 
+	public void queryYahooWeatherByLatLon(final Context context, final Double lat, final Double lon, 
 			final YahooWeatherInfoListener result) {
 		YahooWeatherLog.d("query yahoo weather by lat lon");
 		mContext = context;
@@ -220,7 +229,7 @@ public class YahooWeather implements LocationResult {
         }
 		mWeatherInfoResult = result;
 		final WeatherQueryByLatLonTask task = new WeatherQueryByLatLonTask();
-		task.execute(new String[]{lat, lon});
+		task.execute(new Double[]{lat, lon});
 	}
 	
 	/**
@@ -242,16 +251,16 @@ public class YahooWeather implements LocationResult {
 	}
 	
 	@Override
-	public void gotLocation(Location location) {
+	public void gotLocation(final Location location) {
 	    if (location == null) {
 	        if (mExceptionListener != null) mExceptionListener.onFailFindLocation(
-	                new Exception("Location cannot be found"));
+					new Exception("Location cannot be found"));
 	        return;
 	    }
-		final String lat = String.valueOf(location.getLatitude());
-		final String lon = String.valueOf(location.getLongitude());
-		final WeatherQueryByLatLonTask task = new WeatherQueryByLatLonTask();
-		task.execute(new String[]{lat, lon});
+	    final Double lat = location.getLatitude();
+	    final Double lon = location.getLongitude();
+	    final WeatherQueryByLatLonTask task = new WeatherQueryByLatLonTask();
+		task.execute(new Double[] {lat, lon});
 	}
 
 	public static int turnFtoC(int tempF) {
@@ -261,56 +270,82 @@ public class YahooWeather implements LocationResult {
 	public static int turnCtoF(int tempC) {
 	    return (int) (tempC * 9.0f / 5 + 32);
 	}
-
-	private String getWeatherString(Context context, String woeidNumber, char unit) {
-		YahooWeatherLog.d("query yahoo weather with WOEID number : " + woeidNumber);
-
-		String qResult = "";
-		String queryUrl = "http://weather.yahooapis.com/forecastrss?w=" + woeidNumber + "&u=" + unit;
-		
-		YahooWeatherLog.d("query url : " + queryUrl);
-		
-		HttpClient httpClient = NetworkUtils.createHttpClient();
-
-		HttpGet httpGet = new HttpGet(queryUrl);
-
-		try {
-			HttpEntity httpEntity = httpClient.execute(httpGet).getEntity();
-			
-			if (httpEntity != null) {
-				InputStream inputStream = httpEntity.getContent();
-				Reader in = new InputStreamReader(inputStream);
-				BufferedReader bufferedreader = new BufferedReader(in);
-				StringBuilder stringBuilder = new StringBuilder();
-
-				String readLine = null;
-
-				while ((readLine = bufferedreader.readLine()) != null) {
-					YahooWeatherLog.d(readLine);
-					stringBuilder.append(readLine + "\n");
-				}
-
-				qResult = stringBuilder.toString();
-			}
-
-		} catch (ClientProtocolException e) {
-			YahooWeatherLog.printStack(e);
-			if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
-		} catch (ConnectTimeoutException e) {
-			YahooWeatherLog.printStack(e);
-			if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
-		} catch (SocketTimeoutException e) {
-			YahooWeatherLog.printStack(e);
-			if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
-		} catch (IOException e) {
-			YahooWeatherLog.printStack(e);
-			if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
-		} finally {
-			httpClient.getConnectionManager().shutdown();
-		}
-
-		return qResult;
+	
+	public static String addressToPlaceName(final Address address) {
+	    String result = "";
+	    if (address.getLocality() != null) {
+	        result += address.getLocality();
+	        result += " ";
+	    }
+	    if (address.getAdminArea() != null) {
+	        result += address.getAdminArea();
+	        result += " ";
+	    }
+	    if (address.getCountryName() != null) {
+	        result += address.getCountryName();
+	        result += " ";
+	    }
+	    return result;
 	}
+
+    private String getWeatherString(Context context, String placeName) {
+        YahooWeatherLog.d("query yahoo weather with placeName : " + placeName);
+
+        String qResult = "";
+
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("https");
+        builder.authority(YQL_WEATHER_ENDPOINT_AUTHORITY);
+        builder.path(YQL_WEATHER_ENDPOINT_PATH);
+		builder.appendQueryParameter("q", "select * from weather.forecast where woeid in" +
+				"(select woeid from geo.places(1) where text=\"" +
+				placeName +
+                        "\")");
+        String queryUrl = builder.build().toString();
+
+        YahooWeatherLog.d("query url : " + queryUrl);
+
+        HttpClient httpClient = NetworkUtils.createHttpClient();
+
+        HttpGet httpGet = new HttpGet(queryUrl);
+
+        try {
+            HttpEntity httpEntity = httpClient.execute(httpGet).getEntity();
+
+            if (httpEntity != null) {
+                InputStream inputStream = httpEntity.getContent();
+                Reader in = new InputStreamReader(inputStream);
+                BufferedReader bufferedreader = new BufferedReader(in);
+                StringBuilder stringBuilder = new StringBuilder();
+
+                String readLine = null;
+
+                while ((readLine = bufferedreader.readLine()) != null) {
+                    YahooWeatherLog.d(readLine);
+                    stringBuilder.append(readLine + "\n");
+                }
+
+                qResult = stringBuilder.toString();
+            }
+
+        } catch (ClientProtocolException e) {
+            YahooWeatherLog.printStack(e);
+            if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
+        } catch (ConnectTimeoutException e) {
+            YahooWeatherLog.printStack(e);
+            if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
+        } catch (SocketTimeoutException e) {
+            YahooWeatherLog.printStack(e);
+            if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
+        } catch (IOException e) {
+            YahooWeatherLog.printStack(e);
+            if (mExceptionListener != null) mExceptionListener.onFailConnection(e);
+        } finally {
+            httpClient.getConnectionManager().shutdown();
+        }
+
+        return qResult;
+    }
 
 	private Document convertStringToDocument(Context context, String src) {
 		Document dest = null;
@@ -335,7 +370,7 @@ public class YahooWeather implements LocationResult {
 		return dest;
 	}
 	
-	private WeatherInfo parseWeatherInfo(Context context, Document doc, WOEIDInfo woeidInfo) {
+	private WeatherInfo parseWeatherInfo(Context context, Document doc) {
 		WeatherInfo weatherInfo = new WeatherInfo();
 		try {
 			
@@ -397,14 +432,6 @@ public class YahooWeather implements LocationResult {
 				this.parseForecastInfo(weatherInfo.getForecastInfoList().get(i), doc, i);
 			}
 
-			/*
-			 * pass some woied info
-			 */
-			weatherInfo.mWOEIDneighborhood = woeidInfo.mNeighborhood;
-			weatherInfo.mWOEIDCounty = woeidInfo.mCounty;
-			weatherInfo.mWOEIDState = woeidInfo.mState;
-			weatherInfo.mWOEIDCountry = woeidInfo.mCountry;
-
 		} catch (NullPointerException e) {
 		    YahooWeatherLog.printStack(e);
 			if (mExceptionListener != null) mExceptionListener.onFailParsing(e);
@@ -441,20 +468,15 @@ public class YahooWeather implements LocationResult {
 	
 	private class WeatherQueryByPlaceTask extends AsyncTask<String, Void, WeatherInfo> {
 		@Override
-		protected WeatherInfo doInBackground(String... cityName) {
-			if (cityName == null || cityName.length > 1) {
-				throw new IllegalArgumentException("Parameter of WeatherQueryByPlaceTask is illegal");
+		protected WeatherInfo doInBackground(String... placeName) {
+			if (placeName == null || placeName.length > 1) {
+				throw new IllegalArgumentException("Parameter of WeatherQueryByPlaceTask is illegal. "
+                        + "No place name exists.");
 			}
-			WOEIDUtils woeidUtils = WOEIDUtils.getInstance();
-			mWoeidNumber = woeidUtils.getWOEID(mContext, cityName[0]);
-			if(!mWoeidNumber.equals(WOEIDUtils.WOEID_NOT_FOUND)) {
-				String weatherString = getWeatherString(mContext, mWoeidNumber, mUnit);
-				Document weatherDoc = convertStringToDocument(mContext, weatherString);
-				WeatherInfo weatherInfo = parseWeatherInfo(mContext, weatherDoc, woeidUtils.getWoeidInfo());
-				return weatherInfo;
-			} else {
-				return null;
-			}
+            String weatherString = getWeatherString(mContext, placeName[0]);
+            Document weatherDoc = convertStringToDocument(mContext, weatherString);
+            WeatherInfo weatherInfo = parseWeatherInfo(mContext, weatherDoc);
+            return weatherInfo;
 		}
 
 		@Override
@@ -466,25 +488,50 @@ public class YahooWeather implements LocationResult {
 		}
 	}
 
-	private class WeatherQueryByLatLonTask extends AsyncTask<String, Void, WeatherInfo> {
+	private class WeatherQueryByLatLonTask extends AsyncTask<Double, Void, WeatherInfo> {
 
         @Override
-		protected WeatherInfo doInBackground(String... params) {
+		protected WeatherInfo doInBackground(Double... params) {
 			if (params == null || params.length != 2) {
-				throw new IllegalArgumentException("Parameter of WeatherQueryByLatLonTask is illegal");
+				throw new IllegalArgumentException("Parameter of WeatherQueryByLatLonTask is illegal."
+                        + "No Lat Lon exists.");
 			}
-			final String lat = params[0];
-			final String lon = params[1];
-			WOEIDUtils woeidUtils = WOEIDUtils.getInstance();
-			mWoeidNumber = woeidUtils.getWOEID(mContext, lat, lon);
-			if (!mWoeidNumber.equals(WOEIDUtils.WOEID_NOT_FOUND)) {
-				String weatherString = getWeatherString(mContext, mWoeidNumber, mUnit);
-				Document weatherDoc = convertStringToDocument(mContext, weatherString);
-				WeatherInfo weatherInfo = parseWeatherInfo(mContext, weatherDoc, woeidUtils.getWoeidInfo());
-				return weatherInfo;
-			} else {
-				return null;
+			final Double lat = params[0];
+			final Double lon = params[1];
+			// Get city name or place name
+			if (mContext != null) {
+                final Geocoder geocoder = new Geocoder(mContext);
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(lat.doubleValue(), lon.doubleValue(), 1);
+                    for (Address address : addresses) {
+                        YahooWeatherLog.d("latlon : " + lat + ", " + lon);
+                        int n = address.getMaxAddressLineIndex();
+                        for (int i = 0; i < n; i++) {
+                            YahooWeatherLog.d("address line : " + address.getAddressLine(i));
+                        }
+
+                        YahooWeatherLog.d("adminarea : " + address.getAdminArea());
+                        YahooWeatherLog.d("subAdminArea : " + address.getSubAdminArea());
+                        YahooWeatherLog.d("countryName : " + address.getCountryName());
+                        YahooWeatherLog.d("feature name : " + address.getFeatureName());
+                        YahooWeatherLog.d("locality : " + address.getLocality());
+                        YahooWeatherLog.d("sublocality : " + address.getSubLocality());
+                        YahooWeatherLog.d("postCode : " + address.getPostalCode());
+                        YahooWeatherLog.d("premises : " + address.getPremises());
+                        YahooWeatherLog.d("thoroughfare : " + address.getThoroughfare());
+
+                        String weatherString = getWeatherString(mContext, addressToPlaceName(address));
+                        Document weatherDoc = convertStringToDocument(mContext, weatherString);
+                        WeatherInfo weatherInfo = parseWeatherInfo(mContext, weatherDoc);
+                        weatherInfo.setAddress(address);
+                        return weatherInfo;
+                    }
+
+                } catch (IOException e) {
+                    YahooWeatherLog.printStack(e);
+                }
 			}
+            return null;
 		}
 
 		@Override
