@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="mobi.esys.upnews_tube.PlayerActivityYouTube">
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="110dp"
+        android:layout_height="24dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="20dp"
+        android:alpha="0.3"
+        android:background="@null"
+        android:src="@drawable/upnews_logo_w2"
+        android:layout_marginLeft="5dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/logo"
+        android:visibility="visible"
+        android:layout_above="@+id/rlForTwitter"
+        android:layout_toLeftOf="@+id/logo">
+        <com.google.android.youtube.player.YouTubePlayerView
+            android:id="@+id/youtube_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/clockLayout"
+        android:layout_width="120dp"
+        android:layout_height="26dp"
+        android:background="@null"
+        android:orientation="horizontal"
+        android:layout_below="@+id/logo"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="6dp"
+        android:gravity="center" />
+
+    <LinearLayout
+        android:id="@+id/weatherLayout"
+        android:layout_width="120dp"
+        android:layout_height="26dp"
+        android:background="@null"
+        android:orientation="horizontal"
+        android:layout_below="@+id/clockLayout"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="center" />
+
+    <com.daimajia.slider.library.SliderLayout
+        android:id="@+id/slider"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_below="@+id/weatherLayout"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:background="@null" />
+
+    <LinearLayout
+        android:id="@+id/dashLayout"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:orientation="vertical"
+        android:layout_below="@+id/slider"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:id="@+id/rlForTwitter"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@+id/dashLayout"
+        android:layout_toStartOf="@+id/dashLayout"></RelativeLayout>
+
+
+</RelativeLayout>

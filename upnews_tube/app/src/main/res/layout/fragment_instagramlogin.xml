@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/igLgBtn"
+        android:layout_width="220dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:text="@string/login_instagram"
+        android:textColor="@android:color/white"
+        android:background="@drawable/youtube_element_background_selector"
+        android:textStyle="bold"
+        android:nextFocusDown="@+id/igSkipBtn">
+        <requestFocus/>
+        </Button>
+
+    <Button
+        android:id="@+id/igSkipBtn"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:text="@string/skip"
+        android:textColor="@android:color/white"
+        android:background="@drawable/youtube_element_background_selector"
+        android:textStyle="bold"
+        android:layout_below="@+id/igLgBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:nextFocusUp="@+id/igLgBtn"/>
+
+</RelativeLayout>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="mobi.esys.upnews_tube"
+    android:installLocation="auto">
+
+    <uses-sdk
+        android:minSdkVersion="15"
+        android:targetSdkVersion="23"
+        tools:overrideLibrary="tv.danmaku.ijk.media.player_arm64" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.faketouch"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+
+    <application
+        android:name=".UpnewsTubeApp"
+        android:allowBackup="true"
+        android:banner="@drawable/upnews_tube_banner"
+        android:fullBackupContent="@xml/backup"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:screenOrientation="landscape"
+        android:theme="@android:style/Theme.NoTitleBar">
+
+        <activity
+            android:name="mobi.esys.upnews_tube.StartCommon"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="mobi.esys.upnews_tube.StartTV"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="mobi.esys.upnews_tube.InAppBillingActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.InstagramLoginActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.InstagramHashtagActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.TwitterLoginActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.YouTubeSelectActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.PlayerActivityYouTube"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+        <activity android:name="mobi.esys.upnews_tube.EditYouTubeChannelName"
+            android:theme="@android:style/Theme.Dialog"
+            android:label="@string/enter_youtube_channel_name"
+            />
+
+        <receiver
+            android:name="mobi.esys.upnews_tube.recievers.BootUpReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="c4b844cc94ec6cbfcc07c4a337ad37857a6fb89d" />
+
+
+    </application>
+
+</manifest>

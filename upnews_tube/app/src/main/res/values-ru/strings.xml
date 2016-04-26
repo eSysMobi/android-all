@@ -1,0 +1,14 @@
+<resources>
+    <string name="login_instagram">Авторизация в Instagram</string>
+    <string name="hint_instagram">Введите тег для поиска в Instagram</string>
+    <string name="select_source">Выберете источник видео</string>
+    <string name="autostart_select_part1">Автостарт</string>
+    <string name="autostart_select_part2">через 10 секунд…</string>
+    <string name="youtube_channel_name">Пользователь YouTube:</string>
+    <string name="line12">____________</string>
+    <string name="enter_youtube_channel_name">Введите имя пользователя YouTube</string>
+    <string name="no_inet">Отсутствует соединение с интернетом</string>
+    <string name="incorrect_youtube_username">Неверное имя пользователя YouTube</string>
+    <string name="skip">Пропустить</string>
+
+</resources>

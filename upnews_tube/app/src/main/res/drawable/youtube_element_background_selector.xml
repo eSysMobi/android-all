@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<selector
+xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_pressed="false" android:drawable="@drawable/recyclerview_element_back_focused_td" />
+    <item android:state_focused="true" android:state_pressed="true" android:drawable="@drawable/recyclerview_element_back_focused_td" />
+    <item android:state_focused="false" android:state_pressed="true" android:drawable="@drawable/recyclerview_element_back"/>
+    <item android:drawable="@drawable/recyclerview_element_back" />
+</selector>

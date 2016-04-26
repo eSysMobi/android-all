@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name" translatable="false">upnews | TUBE</string>
+    <string name="login_instagram">Log in with Instagram</string>
+    <string name="hint_instagram">Input Instagram hashtag</string>
+    <string name="select_source">Select video source</string>
+    <string name="autostart_select_part1">Autostart</string>
+    <string name="autostart_select_part2">after 10 seconds …</string>
+    <string name="youtube_channel_name">YouTube username:</string>
+    <string name="line12">____________</string>
+    <string name="enter_youtube_channel_name">Enter the username in the YouTube</string>
+    <string name="no_inet">No internet connection</string>
+    <string name="incorrect_youtube_username">Incorrect YouTube username</string>
+    <string name="skip">Skip</string>
+</resources>

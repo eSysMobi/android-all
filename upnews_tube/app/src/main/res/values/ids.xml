@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="twitterImage" type="id" />
+    <item name="profileImage" type="id" />
+    <item name="twitterLayout" type="id" />
+    <item name="clock" type="id" />
+</resources>
