@@ -86,10 +86,10 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 UNLConsts.VIDEO_DIR_NAME +
                                         UNLConsts.GD_STORAGE_DIR_NAME +
                                         "/");
-                        String[] localFileNames = directoryWorks.getDirFileList("download task for localFileNames");   //or getOnlyVideoDirFileList
-                        folderMD5 = directoryWorks.getMD5Sums(); //or getOnlyVideoMD5Sums
-                        Log.d("unTag_down", "localFileNames=" + Arrays.toString(localFileNames));
-                        Log.d("unTag_down", "folderMD5=" + folderMD5.toString());
+                        String[] localFileNames = directoryWorks.getOnlyVideoDirFileList("download task for localFileNames");   //or getOnlyVideoDirFileList
+                        folderMD5 = directoryWorks.getOnlyVideoMD5Sums(); //or getOnlyVideoMD5Sums
+                        Log.d("unTag_down", "localFileNames (" + localFileNames.length + ")=" + Arrays.toString(localFileNames));
+                        Log.d("unTag_down", "folderMD5 (" + folderMD5.size() + ")=" + folderMD5.toString());
 
                         //save local filenames and md5 for caching
                         SharedPreferences.Editor editor = prefs.edit();
@@ -140,7 +140,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
 
     private void downloadFile(Drive service, File file) {
 
-        if (file.getFileSize() < Environment.getExternalStorageDirectory().getUsableSpace()) {  //TODO need +100MB to Environment
+        if (file.getFileSize() < (Environment.getExternalStorageDirectory().getUsableSpace() - 209715200)) {  // +200MB to Environment
             Log.d("unTag_down", "start down file number " + downCount);
             if (!folderMD5.contains(file.getMd5Checksum())) {
                 if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0) {
@@ -149,10 +149,10 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                                 + UNLConsts.VIDEO_DIR_NAME
                                 + UNLConsts.GD_STORAGE_DIR_NAME
                                 + "/";
-                        String fileName = file.getTitle().replace(",","").substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
+                        String fileName = file.getTitle().replace(",", "").substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
 
                         //checking duplicate name in different files
-                        String fileNameMP4 = file.getTitle().replace(",","");
+                        String fileNameMP4 = file.getTitle().replace(",", "");
                         java.io.File checkingFile = new java.io.File(root_dir, fileNameMP4);
                         if (checkingFile.exists()) {
                             Log.d("unTag_down", "Another file with name " + fileName + " already exists. Rename new file.");
@@ -192,21 +192,21 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                         String downloadedMD5 = fileWorks.getFileMD5();
                         if (serverMD5.contains(downloadedMD5)) {
                             //rename "tmp" to "mp4" or "avi"
-                            fileWorks.renameFileExtension(file.getFileExtension());
+                            String resultOfRenaming = fileWorks.renameFileExtension(file.getFileExtension());
                             downCount++;
 
                             //save
                             String localN = prefs.getString("localNames", "");
                             if (localN.isEmpty()) {
-                                localN = fileWorks.getFile().getPath();
+                                localN = resultOfRenaming;
                             } else {
-                                localN = localN + "," + fileWorks.getFile().getPath();
+                                localN = localN + "," + resultOfRenaming;
                             }
                             String localM = prefs.getString("localMD5", "");
                             if (localM.isEmpty()) {
                                 localM = downloadedMD5;
                             } else {
-                                localM = localN + "," + downloadedMD5;
+                                localM = localM + "," + downloadedMD5;
                             }
                             SharedPreferences.Editor editor = prefs.edit();
                             editor.putString("localMD5", localM);

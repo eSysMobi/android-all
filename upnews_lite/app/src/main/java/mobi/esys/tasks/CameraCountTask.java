@@ -54,23 +54,25 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
             BitmapFactory.Options bitmap_options = new BitmapFactory.Options();
             bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
             Bitmap background_image = BitmapFactory.decodeFile(tmpFileForFaceDetecting.getAbsolutePath(), bitmap_options);
-            FaceDetector face_detector = new FaceDetector(
-                    background_image.getWidth(), background_image.getHeight(),
-                    MAX_FACES);
-            FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
-            int face_count = face_detector.findFaces(background_image, faces);
-            Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + i + ")");
-            count = count + face_count;
-            //clean trash
-            background_image.recycle();
-            background_image = null;
+            if (background_image != null) {
+                FaceDetector face_detector = new FaceDetector(
+                        background_image.getWidth(), background_image.getHeight(),
+                        MAX_FACES);
+                FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
+                int face_count = face_detector.findFaces(background_image, faces);
+                Log.d("unTag_Camera", "Faces detected: " + face_count + " (camera id " + i + ")");
+                count = count + face_count;
+                //clean trash
+                background_image.recycle();
+                background_image = null;
 
-            if (allowToast) {
-                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
-                String toastText = "camera " + i + " detect " + face_count + " faces";
-                intentOut.putExtra("toastText", toastText);
-                mApp.sendBroadcast(intentOut);
+                if (allowToast) {
+                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
+                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
+                    String toastText = "camera " + i + " detect " + face_count + " faces";
+                    intentOut.putExtra("toastText", toastText);
+                    mApp.sendBroadcast(intentOut);
+                }
             }
         }
         //save to xml

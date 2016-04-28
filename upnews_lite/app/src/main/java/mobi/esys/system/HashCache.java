@@ -10,12 +10,12 @@ public class HashCache {
     private String name;
     private String md5;
 
-    HashCache(){
+    public HashCache(){
         name = "";
         md5 = "";
     }
 
-    HashCache(String incName, String incMD5){
+    public HashCache(String incName, String incMD5){
         name = incName;
         md5 = incMD5;
     }

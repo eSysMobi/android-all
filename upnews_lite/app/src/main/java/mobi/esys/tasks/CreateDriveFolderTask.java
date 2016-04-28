@@ -28,6 +28,7 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
+import mobi.esys.system.HashCache;
 import mobi.esys.system.StremsUtils;
 import mobi.esys.upnews_lite.DriveAuthActivity;
 import mobi.esys.upnews_lite.FirstVideoActivity;
@@ -350,10 +351,57 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                     }
                 } else {
                     Log.w(TAG, "We have no files, start FirstVideoActivity");
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("localMD5", "");
+                    editor.putString("localNames", "");
+                    editor.apply();
                     mContext.startActivity(new Intent(mContext,
                             FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
                     ((DriveAuthActivity) mContext).finish();
                 }
+//                if (files.length > 0) {
+//                    String[] localMD5 = prefs.getString("localMD5", "").split(",");
+//                    String[] localNames = prefs.getString("localNames", "").split(",");
+//                    int len = localNames.length;
+//                    if (localMD5.length < len) {
+//                        len = localMD5.length;
+//                    }
+//                    List<HashCache> tmp = new ArrayList<>();
+//                    for (int i = 0; i < len; i++) {
+//                        tmp.add(new HashCache(localNames[i], localMD5[i]));
+//                    }
+//                    UNLApp.setHashCaches(tmp);
+//
+//
+//                    boolean haveVideoFile = false;
+//                    for (int i = 0; i < files.length; i++) {
+//                        for(int j=0; j<tmp.size();j++){
+//                            //FileWorks fileWorks = new FileWorks(files[i]);
+//                            if (tmp.get(j).getName().equals(files[i])) {    //  && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())
+//                                haveVideoFile = true;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    if (haveVideoFile) {
+//                        Log.w(TAG, "We have MP4 or AVI files on device. All OK. Start FullscreenActivity.");
+//                        mContext.startActivity(new Intent(mContext,
+//                                FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+//                        ((DriveAuthActivity) mContext).finish();
+//                    } else {
+//                        Log.w(TAG, "We have no MP4 or AVI files or saved localNames not contain current files, start FirstVideoActivity");
+//                        mContext.startActivity(new Intent(mContext,
+//                                FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+//                        ((DriveAuthActivity) mContext).finish();
+//                    }
+//                } else {
+//                    List<HashCache> tmp = new ArrayList<>();
+//                    UNLApp.setHashCaches(tmp);
+//                    Log.w(TAG, "We have no files, start FirstVideoActivity");
+//                    mContext.startActivity(new Intent(mContext,
+//                            FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+//                    ((DriveAuthActivity) mContext).finish();
+//                }
             } else {
                 Log.w(TAG, "Authentication is failed. Return to DriveAuthActivity.");
                 mContext.startActivity(new Intent(mContext,

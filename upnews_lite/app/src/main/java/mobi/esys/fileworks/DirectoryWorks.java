@@ -260,10 +260,11 @@ public class DirectoryWorks {
         checkDirs();
         File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
         List<String> filePaths = new ArrayList<>();
-        //get all files from directory
+        //get only video files from directory
         File[] files = videoDir.listFiles();
         for (File file : files) {
-            if (file.exists() && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(file.getName())) {
+            FileWorks fw = new FileWorks(file);
+            if (file.exists() && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fw.getFileExtension())) {
                 filePaths.add(file.getPath());
             }
         }

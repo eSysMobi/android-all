@@ -179,13 +179,18 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
                 parameters.setPreviewSize(previewSize.width, previewSize.height);
             }
 
-            mCamera.setParameters(parameters);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
-                mCamera.enableShutterSound(false);
-            mCamera.startPreview();
+            try {
+                mCamera.setParameters(parameters);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
+                    mCamera.enableShutterSound(false);
+                mCamera.startPreview();
 
-            callbackJPEG = new Clb();
-            mCamera.takePicture(null, null, callbackJPEG);
+                callbackJPEG = new Clb();
+                mCamera.takePicture(null, null, callbackJPEG);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("unTag_Camera", "Unknown error when camera startPreview.");
+            }
 
         } else {
             Log.e("unTag_Camera", "Camera id " + currentCamID + " is not open. Next camera.");

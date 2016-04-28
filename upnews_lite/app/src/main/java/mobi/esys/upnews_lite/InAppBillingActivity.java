@@ -191,7 +191,7 @@ public class InAppBillingActivity extends Activity {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt("lastAppVersion", versionCode);
             editor.putString("accName", "");  //may be not need clear
-            editor.putString("lastPlayedFileMD5", "");
+            editor.putString("lastPlayedFile", "");
             editor.putString("md5sApp", "");
             editor.putString("folderId", "");
             editor.putString("deviceFolderIdStatistics", "");

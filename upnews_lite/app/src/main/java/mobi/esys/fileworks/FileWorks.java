@@ -108,10 +108,11 @@ public class FileWorks {
         return bytes;
     }
 
-    public boolean renameFileExtension(String newExtension) {
-        String target;
+    public String renameFileExtension(String newExtension) {
+        String target = "";
         String currentExtension = getFileExtension();
         String path = file.getAbsolutePath();
+        String result = "";
 
         if (currentExtension.equals("")) {
             target = path + "." + newExtension;
@@ -120,7 +121,11 @@ public class FileWorks {
                     currentExtension) + "$", Matcher.quoteReplacement("." + newExtension));
 
         }
-        return new File(path).renameTo(new File(target));
+        if(new File(path).renameTo(new File(target))){
+            result = target;
+        }
+
+        return result;
     }
 
     public Bitmap getLogoFromExternalStorage() {

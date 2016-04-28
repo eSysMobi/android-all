@@ -113,6 +113,13 @@ public class UNLApp extends Application {
         return driveService;
     }
 
+    public static synchronized void setHashCaches(List<HashCache> incHashCaches) {
+        hashCaches = incHashCaches;
+    }
+
+    public static synchronized List<HashCache> getHashCaches() {
+        return hashCaches;
+    }
 
     @Override
     public void onCreate() {
