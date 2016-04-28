@@ -1,6 +1,5 @@
 package mobi.esys.tasks;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -25,9 +24,6 @@ import mobi.esys.data.GDFile;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
-import mobi.esys.server.UNLServer;
-import mobi.esys.upnews_lite.FirstVideoActivity;
-import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class RSSTask extends AsyncTask<Void, Void, URL> {

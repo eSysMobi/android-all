@@ -2,7 +2,6 @@ package mobi.esys.server;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.util.Log;
 
 import com.google.api.services.drive.Drive;
@@ -14,15 +13,14 @@ import com.google.api.services.drive.model.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.data.GDFile;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
-import mobi.esys.net.NetWork;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class UNLServer {
@@ -33,12 +31,10 @@ public class UNLServer {
     private transient GDFile gdRSS;
     private transient GDFile gdLogo;
     private static final String TAG = "unTag_UNLServer";
-    private transient UNLApp mApp;
     private transient boolean allOK = false;
 
 
     public UNLServer(UNLApp app) {
-        mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         drive = UNLApp.getDriveService();
         folderId = prefs.getString("folderId", "");
@@ -58,20 +54,17 @@ public class UNLServer {
             e.printStackTrace();
         }
 
-        if (NetWork.isNetworkAvailable(mApp)) {
-            if (allOK) {  //if getting GDfiles in saveURLS() is success
-                for (int i = 0; i < gdFiles.size(); i++) {
-                    if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
-                            .contains(gdFiles.get(i).getGdFileInst().getFileExtension())) {
-                        resultMD5 = resultMD5 + "," + gdFiles.get(i).getGdFileMD5();
-                    }
+
+        if (allOK) {  //if getting GDfiles in saveURLS() is success
+            for (int i = 0; i < gdFiles.size(); i++) {
+                if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)
+                        .contains(gdFiles.get(i).getGdFileInst().getFileExtension())) {
+                    resultMD5 = resultMD5 + "," + gdFiles.get(i).getGdFileMD5();
                 }
-                Log.d(TAG, "md5 from server size " + String.valueOf(gdFiles.size()));
-            } else {
-                //if getting GDfiles in saveURLS() is fail return old MD5
-                resultMD5 = prefs.getString("md5sApp", defaultString);
             }
+            Log.d(TAG, "md5 from server size " + String.valueOf(gdFiles.size()));
         } else {
+            //if getting GDfiles in saveURLS() is fail return old MD5
             resultMD5 = prefs.getString("md5sApp", defaultString);
         }
 
@@ -88,11 +81,12 @@ public class UNLServer {
                 String tmpMD5 = fileWorks.getFileMD5();
                 if (!resultMD5.contains(tmpMD5) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
                     resultMD5 = resultMD5 + "," + tmpMD5;
+
                 }
             }
         }
         //del last ","
-        if(!resultMD5.isEmpty() && resultMD5.startsWith(",")){
+        if (!resultMD5.isEmpty() && resultMD5.startsWith(",")) {
             resultMD5 = resultMD5.substring(1);
         }
         //overwrite md5sApp in pref if it different
@@ -105,7 +99,7 @@ public class UNLServer {
         return resultMD5;
     }
 
-        //not need
+    //not need
 //    private void saveURLS() {
 //        List<String> resultURL = new ArrayList<String>();
 //        List<String> defaultURL = new ArrayList<String>();
@@ -231,8 +225,15 @@ public class UNLServer {
             }
         } while (request.getPageToken() != null && request.getPageToken().length() > 0);
 
-        if (gdFiles.size()>0){
+        if (gdFiles.size() > 0) {
             allOK = true;
+            //sort gdFiles by name
+            Collections.sort(gdFiles, new Comparator<GDFile>() {
+                @Override
+                public int compare(GDFile lhs, GDFile rhs) {
+                    return lhs.getGdFileName().compareTo(rhs.getGdFileName());
+                }
+            });
         } else {
             allOK = false;
         }

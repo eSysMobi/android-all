@@ -12,11 +12,11 @@ android {
     buildToolsVersion '23.0.3'
     defaultConfig {
         applicationId "mobi.esys.upnews_lite"
-        minSdkVersion 11
+        minSdkVersion 12
         targetSdkVersion 23
         signingConfig signingConfigs.config
-        versionCode 12
-        versionName '2.5.2'
+        versionCode 13
+        versionName '2.6.0'
     }
     buildTypes {
         release {

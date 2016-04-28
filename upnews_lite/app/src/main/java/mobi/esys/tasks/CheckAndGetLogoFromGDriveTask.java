@@ -2,7 +2,6 @@ package mobi.esys.tasks;
 
 import android.content.Intent;
 import android.os.*;
-import android.os.Process;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
@@ -16,7 +15,6 @@ import java.io.OutputStream;
 import mobi.esys.constants.UNLConsts;
 import mobi.esys.data.GDFile;
 import mobi.esys.net.NetWork;
-import mobi.esys.server.UNLServer;
 import mobi.esys.upnews_lite.UNLApp;
 
 /**

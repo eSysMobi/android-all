@@ -28,6 +28,10 @@ public class FileWorks {
         this.file = incomingFile;
     }
 
+    public File getFile(){
+        return file;
+    }
+
     private static byte[] createChecksum(String filename) {
         InputStream fis;
         byte[] sum = new byte[1];
@@ -50,8 +54,11 @@ public class FileWorks {
             buffer = null;
 
         } catch (FileNotFoundException e) {
+            Log.i("unTag_FileWorks", "Error FileNotFoundException in createChecksum");
         } catch (NoSuchAlgorithmException e) {
+            Log.i("unTag_FileWorks", "Error NoSuchAlgorithmException in createChecksum");
         } catch (IOException e) {
+            Log.i("unTag_FileWorks", "Error IOException in createChecksum");
         }
 
         return sum;

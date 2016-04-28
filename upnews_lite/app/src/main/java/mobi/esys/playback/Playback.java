@@ -148,88 +148,94 @@ public class Playback {
     }
 
     private void nextTrack() {
-        md5sApp = prefs.getString("md5sApp", "");  //why here, but not in constructor?
+        String[] md5sAppArray = prefs.getString("md5sApp", "").split(",");
+        String[] localMD5Array = prefs.getString("localMD5", "").split(",");
+        String localNames = prefs.getString("localNames", "");
+        String[] localNamesArray = localNames.split(",");
+
+
         files = directoryWorks.getDirFileList("play folder");
 
         //get only video files      TODO is this need with md5?
         List<String> videoFiles = new ArrayList<>();
         for (int i = 0; i < files.length; i++) {
             for (int j = 0; j < UNLConsts.UNL_ACCEPTED_FILE_EXTS.length; j++) {
-                if (files[i].contains(UNLConsts.UNL_ACCEPTED_FILE_EXTS[j])) {
+                if (files[i].endsWith("." + UNLConsts.UNL_ACCEPTED_FILE_EXTS[j])) {
                     videoFiles.add(files[i]);
                     //break;    //is this ended both cycles?
                 }
             }
         }
 
-        String[] md5sAppArray = md5sApp.split(",");
-
-        Log.d(TAG, "Video files on device (" + videoFiles.size() + "): " + videoFiles.toString());
+        Log.d(TAG, "Video files on device (" + localNamesArray.length + "): " + localNames);
         if (md5sAppArray.length > 0) {
 
-            //check and restored lastPlayedFileIndex
-            if (isFirstSession) {
-                String lastPlayedMD5 = prefs.getString("lastPlayedFileMD5", "");
-                if (!lastPlayedMD5.isEmpty()) {
-                    int lastPlayedFileIndex = 0;
-                    for (int i = 0; i < md5sAppArray.length; i++) {
-                        if (md5sAppArray[i].equals(lastPlayedMD5)) {
-                            lastPlayedFileIndex = i;
-                            break;
+            if (videoFiles.size()>0) {
+                //check and restored lastPlayedFileIndex    TODO saved from previous version?!
+                if (isFirstSession) {
+                    String lastPlayedMD5 = prefs.getString("lastPlayedFileMD5", "");
+                    if (!lastPlayedMD5.isEmpty()) {
+                        int lastPlayedFileIndex = 0;
+                        for (int i = 0; i < md5sAppArray.length; i++) {
+                            if (md5sAppArray[i].equals(lastPlayedMD5)) {
+                                lastPlayedFileIndex = i;
+                                break;
+                            }
+                        }
+                        videofileIndex = lastPlayedFileIndex;
+                    }
+                    isFirstSession = false;
+                }
+                if (videofileIndex >= md5sAppArray.length) {
+                    videofileIndex = 0;
+                }
+
+                File fs = null;
+
+                //find file with current md5
+                for (int i = 0; i < localMD5Array.length; i++) {
+                    if(localMD5Array[i].equals(md5sAppArray[videofileIndex])){
+                        if(i<localNamesArray.length){
+                            fs = new File(localNamesArray[i]);
+                        } else{
+                            Log.w(TAG, "We have index of md5 in localMD5Array, but haven't localNamesArray with this index!");
                         }
                     }
-                    videofileIndex = lastPlayedFileIndex;
                 }
-                isFirstSession = false;
-            }
-            if (videofileIndex >= md5sAppArray.length) {
-                videofileIndex = 0;
-            }
 
-            File fs = null;
+                //find result finding file with current md5
+                if (fs != null) {
+                    Log.d(TAG, "next file: " + fs.getName());
+                    if (fs.exists()) {
+                        //playFile(fs);
 
-            //find file with current md5
-            for(int i = 0; i<videoFiles.size();i++){
-                File fsTmp = new File(videoFiles.get(i));
-                FileWorks fw = new FileWorks(fsTmp);
-                if (fw.getFileMD5().equals(md5sAppArray[videofileIndex])){
-                    fs = fsTmp;
-                    fw = null;
-                    break;
+                        //mController.setFocusable(false);
+                        //mController.setSelected(false);
+                        //mController.setFocusableInTouchMode(false);
+                        mVideo.setVideoURI(Uri.parse(fs.getPath()));
+                        mVideo.start();
+
+                        //save name of current played file
+                        UNLApp.setCurPlayFile(fs.getPath());
+                        //save lastPlayedFileMD5
+                        nameCurrentPlayedFile = fs.getName();
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("lastPlayedFileMD5", md5sAppArray[videofileIndex]);
+                        editor.apply();
+
+                        videofileIndex++;
+                    } else {
+                        Log.d(TAG, "File not exists!");
+                        videofileIndex++;
+                        nextTrack();
+                    }
                 } else {
-                    fw = null;
-                    fsTmp = null;
-                }
-            }
-
-            //find result finding file with current md5
-            if (fs!=null) {
-                Log.d(TAG, "next file: " + fs.getName());
-                if(fs.exists()){
-                    //playFile(fs);
-
-                    //mController.setFocusable(false);
-                    //mController.setSelected(false);
-                    //mController.setFocusableInTouchMode(false);
-                    mVideo.setVideoURI(Uri.parse(fs.getPath()));
-                    mVideo.start();
-
-                    //save name of current played file
-                    UNLApp.setCurPlayFile(fs.getPath());
-                    //save lastPlayedFileMD5
-                    nameCurrentPlayedFile = fs.getName();
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString("lastPlayedFileMD5", md5sAppArray[videofileIndex]);
-                    editor.apply();
-
-                    videofileIndex++;
-                }else{
-                    Log.d(TAG, "File not exists!");
+                    Log.d(TAG, "We have no files associated with this videofileIndex");
                     videofileIndex++;
                     nextTrack();
                 }
             } else {
-                Log.d(TAG, "We have no files");
+                Log.d(TAG, "We have no video files");
                 mContext.startActivity(new Intent(mContext, FirstVideoActivity.class));
                 ((Activity) mContext).finish();
             }

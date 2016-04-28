@@ -32,45 +32,47 @@ public class DirectoryWorks {
         checkDirs();
     }
 
-    public void checkDirs() {
+    public boolean checkDirs() {
+        boolean res = true;
         File videoDir = new File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME);
         if (!videoDir.exists()) {
-            videoDir.mkdir();
+            res = res && videoDir.mkdir();
         }
         File storageDir = new File(videoDir.getAbsolutePath() + UNLConsts.STORAGE_DIR_NAME);
         if (!storageDir.exists()) {
-            storageDir.mkdir();
+            res = res && storageDir.mkdir();
         }
         File logoDir = new File(videoDir.getAbsolutePath() + UNLConsts.LOGO_DIR_NAME);
         if (!logoDir.exists()) {
-            logoDir.mkdir();
+            res = res && logoDir.mkdir();
         }
         File statisticsDir = new File(videoDir.getAbsolutePath() + UNLConsts.STATISTICS_DIR_NAME);
         if (!statisticsDir.exists()) {
-            statisticsDir.mkdir();
+            res = res && statisticsDir.mkdir();
         }
         File statisticsNetDir = new File(videoDir.getAbsolutePath() + UNLConsts.NETWORK_STATISTICS_DIR_NAME);
         if (!statisticsNetDir.exists()) {
-            statisticsNetDir.mkdir();
+            res = res && statisticsNetDir.mkdir();
         }
         File rssDir = new File(videoDir.getAbsolutePath() + UNLConsts.RSS_DIR_NAME);
         if (!rssDir.exists()) {
-            rssDir.mkdir();
+            res = res && rssDir.mkdir();
         }
+        return res;
     }
 
-    public File getRSSFile(){
+    public File getRSSFile() {
         File result = null;
         File rssFile = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.RSS_DIR_NAME + UNLConsts.RSS_FILE_NAME);
-        if(rssFile.exists()){
+        if (rssFile.exists()) {
             result = rssFile;
-        } else{
+        } else {
             try {
                 boolean fileCreated = rssFile.createNewFile();
                 if (fileCreated) {
                     result = rssFile;
                 } else {
-                    Log.d(DIR_WORKS_TAG,"Cant create empty rss file");
+                    Log.d(DIR_WORKS_TAG, "Cant create empty rss file");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -80,10 +82,10 @@ public class DirectoryWorks {
         return result;
     }
 
-    public File[] getNetworkStatisticsFiles(){
+    public File[] getNetworkStatisticsFiles() {
         File[] result = null;
         File statisticFolder = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.NETWORK_STATISTICS_DIR_NAME);
-        if (statisticFolder.exists()){
+        if (statisticFolder.exists()) {
             result = statisticFolder.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
@@ -121,10 +123,10 @@ public class DirectoryWorks {
     }
 
 
-    public File[] getStatisticsFiles(){
+    public File[] getStatisticsFiles() {
         File[] result = null;
         File statisticFolder = new File(UNLApp.getAppExtCachePath() + "/" + UNLConsts.GD_VIDEO_DIR_NAME + UNLConsts.STATISTICS_DIR_NAME);
-        if (statisticFolder.exists()){
+        if (statisticFolder.exists()) {
             result = statisticFolder.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
@@ -224,10 +226,10 @@ public class DirectoryWorks {
                 Collections.sort(statisticsList);
                 Collections.reverse(statisticsList);
                 //delete files older than 7 days
-                for (int j=UNLConsts.NUM_STATISTICS_FILES; j<statisticsList.size(); j++){
-                    if (statisticsList.get(j).exists()){
+                for (int j = UNLConsts.NUM_STATISTICS_FILES; j < statisticsList.size(); j++) {
+                    if (statisticsList.get(j).exists()) {
                         Log.d(DIR_WORKS_TAG, "Redundant Statistics file " + statisticsList.get(j).getName() + " deleted");
-                        isDeleted=statisticsList.get(j).delete();
+                        isDeleted = statisticsList.get(j).delete();
                     }
                 }
             }
@@ -239,31 +241,40 @@ public class DirectoryWorks {
     }
 
     public String[] getDirFileList(String mess) {
+        checkDirs();
         File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
-        Log.d(DIR_WORKS_TAG, videoDir.getAbsolutePath());
         List<String> filePaths = new ArrayList<>();
-        if (videoDir.exists()) {
-            //get all files from directory
-            File[] files = videoDir.listFiles();
-            for (File file : files) {
-                if (file.exists()) {
-                    filePaths.add(file.getPath());
-                }
+        //get all files from directory
+        File[] files = videoDir.listFiles();
+        for (File file : files) {
+            if (file.exists()) {
+                filePaths.add(file.getPath());
             }
-            Log.d(DIR_WORKS_TAG, mess + " " + filePaths.toString());
-        } else {
-            Log.d(DIR_WORKS_TAG, "folder don't exist");
-            checkDirs();
         }
+        Log.d(DIR_WORKS_TAG, mess + " " + filePaths.toString());
+
+        return filePaths.toArray(new String[filePaths.size()]);
+    }
+
+    public String[] getOnlyVideoDirFileList(String mess) {
+        checkDirs();
+        File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
+        List<String> filePaths = new ArrayList<>();
+        //get all files from directory
+        File[] files = videoDir.listFiles();
+        for (File file : files) {
+            if (file.exists() && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(file.getName())) {
+                filePaths.add(file.getPath());
+            }
+        }
+        Log.d(DIR_WORKS_TAG, mess + " " + filePaths.toString());
 
         return filePaths.toArray(new String[filePaths.size()]);
     }
 
     public void deleteFilesFromDir(List<String> maskList) {
         File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
-        Log.d(DIR_WORKS_TAG, "deleteFilesFromDir Deleting " + maskList.size() + " files");
-        Log.d(DIR_WORKS_TAG, UNLApp.getAppExtCachePath().concat(this.directoryPath));
-
+        Log.d(DIR_WORKS_TAG, "deleteFilesFromDir " + UNLApp.getAppExtCachePath().concat(this.directoryPath) + " Deleting " + maskList.size() + " files");
         Log.d(DIR_WORKS_TAG, "mask list task" + maskList.toString());
         if (videoDir.exists()) {
             File[] files = videoDir.listFiles();
@@ -278,7 +289,7 @@ public class DirectoryWorks {
                 }
             } else {
                 for (int i = 0; i < files.length; i++) {
-                    if (maskList.contains(files[i].getAbsolutePath())) {
+                    if (maskList.contains(files[i].getPath())) {
 
                         Date modDate = new Date(files[i].lastModified());
                         Calendar today = Calendar.getInstance();
@@ -297,6 +308,7 @@ public class DirectoryWorks {
         } else {
             Log.d(DIR_WORKS_TAG, "Folder don't exists");
             checkDirs();
+            deleteFilesFromDir(maskList);
         }
         UNLApp.setIsDeleting(false);
     }
@@ -306,10 +318,17 @@ public class DirectoryWorks {
         List<String> dirMD5s = new ArrayList<String>();
         for (int i = 0; i < files.length; i++) {
             FileWorks fileWorks = new FileWorks(files[i]);
-            File file = new File(files[i]);
-            if (file.exists()) {
-                dirMD5s.add(fileWorks.getFileMD5());
-            }
+            dirMD5s.add(fileWorks.getFileMD5());
+        }
+        return dirMD5s;
+    }
+
+    public List<String> getOnlyVideoMD5Sums() {
+        String[] files = getOnlyVideoDirFileList("getMD5SUM");
+        List<String> dirMD5s = new ArrayList<String>();
+        for (int i = 0; i < files.length; i++) {
+            FileWorks fileWorks = new FileWorks(files[i]);
+            dirMD5s.add(fileWorks.getFileMD5());
         }
         return dirMD5s;
     }

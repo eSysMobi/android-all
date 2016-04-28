@@ -1,6 +1,5 @@
 package mobi.esys.tasks;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,24 +7,18 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
-import com.google.common.io.ByteStreams;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,16 +27,11 @@ import mobi.esys.data.GDFile;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
-import mobi.esys.server.UNLServer;
-import mobi.esys.upnews_lite.FirstVideoActivity;
-import mobi.esys.upnews_lite.FullscreenActivity;
-import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient Handler handler;
     private transient List<GDFile> gdFiles;
-    private transient static FileOutputStream output;
     private transient List<String> serverMD5;
     private transient int downCount;
     private transient List<GDFile> listWithoutDuplicates;
@@ -51,15 +39,17 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient Drive drive;
     private transient UNLApp mApp;
     private transient String actName;
-    private transient DirectoryWorks directoryWorks;
+    private transient SharedPreferences prefs;
 
-    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5, String actName) {
+    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5, String incActName) {
         downCount = 0;
         mApp = app;
+        prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         handler = incHandler;
-        drive = app.getDriveService();
-        this.gdFiles = incGDFiles;
-        this.actName = actName;
+        drive = UNLApp.getDriveService();
+        gdFiles = incGDFiles;
+        actName = incActName;
+        //convert String to List
         serverMD5 = new ArrayList<>();
         String[] md5sAppArray = incServerMD5.split(",");
         serverMD5 = Arrays.asList(md5sAppArray);
@@ -72,41 +62,46 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                 UNLApp.setIsDownloadTaskRunning(true);
                 if (NetWork.isNetworkAvailable(mApp)) {
                     if (serverMD5.size() != 0) {
-                        directoryWorks = new DirectoryWorks(
-                                UNLConsts.VIDEO_DIR_NAME +
-                                        UNLConsts.GD_STORAGE_DIR_NAME +
-                                        "/");
-
-                        //deleting duplicates
                         listWithoutDuplicates = new ArrayList<>(gdFiles);
-                        ArrayList<Integer> delEntriesFromList = new ArrayList<>();
+                        //deleting duplicates for download
+                        //get duplicates
+                        HashSet<GDFile> delEntriesFromList = new HashSet<>();
                         for (int i = 0; i < listWithoutDuplicates.size(); i++) {
                             String curMD5 = listWithoutDuplicates.get(i).getGdFileMD5();
                             for (int j = i + 1; j < listWithoutDuplicates.size(); j++) {
                                 if (curMD5.equals(listWithoutDuplicates.get(j).getGdFileMD5())) {
-                                    delEntriesFromList.add(j);
+                                    delEntriesFromList.add(listWithoutDuplicates.get(j));
                                 }
                             }
                         }
-                        for (int i = delEntriesFromList.size() - 1; i >= 0; i--) {
-                            int removePos = delEntriesFromList.get(i);
-                            listWithoutDuplicates.remove(removePos);
+                        //delete duplicates
+                        for (GDFile aDelEntriesFromList : delEntriesFromList) {
+                            listWithoutDuplicates.remove(aDelEntriesFromList);
                         }
+                        Log.d("unTag_down", "Drive files without duplicates (" + String.valueOf(listWithoutDuplicates.size()) + "): " + listWithoutDuplicates.toString());
+                        Log.d("unTag_down", "Count all MD5 of drive files: " + String.valueOf(serverMD5.size()));
 
-                        Log.d("unTag_drive files", String.valueOf(listWithoutDuplicates.size()));
-                        Log.d("unTag_md5", String.valueOf(serverMD5.size()));
+                        //get and save local file names and they md5's
+                        DirectoryWorks directoryWorks = new DirectoryWorks(
+                                UNLConsts.VIDEO_DIR_NAME +
+                                        UNLConsts.GD_STORAGE_DIR_NAME +
+                                        "/");
+                        String[] localFileNames = directoryWorks.getDirFileList("download task for localFileNames");   //or getOnlyVideoDirFileList
+                        folderMD5 = directoryWorks.getMD5Sums(); //or getOnlyVideoMD5Sums
+                        Log.d("unTag_down", "localFileNames=" + Arrays.toString(localFileNames));
+                        Log.d("unTag_down", "folderMD5=" + folderMD5.toString());
 
-                        Collections.sort(listWithoutDuplicates, new Comparator<GDFile>() {
-                            @Override
-                            public int compare(GDFile lhs, GDFile rhs) {
-                                return lhs.getGdFileName().compareTo(rhs.getGdFileName());
-                            }
-                        });
+                        //save local filenames and md5 for caching
+                        SharedPreferences.Editor editor = prefs.edit();
+                        String localMD5 = folderMD5.toString().substring(1, folderMD5.toString().length() - 1).replace(", ", ",");
+                        editor.putString("localMD5", localMD5);
+                        String localNames = Arrays.toString(localFileNames);
+                        localNames = localNames.substring(1, localNames.length() - 1).replace(", ", ",");
+                        editor.putString("localNames", localNames);
+                        editor.apply();
 
-                        Log.d("unTag_files", listWithoutDuplicates.toString());
-
-                        folderMD5 = directoryWorks.getMD5Sums();
-                        Set<String> tmpSet = new HashSet<String>();
+                        //checking need download or not
+                        Set<String> tmpSet = new HashSet<>();
                         tmpSet.addAll(serverMD5);
                         if (folderMD5.containsAll(tmpSet) && folderMD5.size() == tmpSet.size()) {
                             Log.d("unTag_down", "Not need down file, all files already exists. Cancel download task");
@@ -145,108 +140,86 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
 
     private void downloadFile(Drive service, File file) {
 
-        if (file.getFileSize() < Environment.getExternalStorageDirectory().getUsableSpace()) {
+        if (file.getFileSize() < Environment.getExternalStorageDirectory().getUsableSpace()) {  //TODO need +100MB to Environment
             Log.d("unTag_down", "start down file number " + downCount);
             if (!folderMD5.contains(file.getMd5Checksum())) {
                 if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0) {
                     try {
-                        HttpResponse resp = service
-                                .getRequestFactory()
-                                .buildGetRequest(
-                                        new GenericUrl(file.getDownloadUrl()))
-                                .execute();
                         String root_dir = UNLApp.getAppExtCachePath()
                                 + UNLConsts.VIDEO_DIR_NAME
                                 + UNLConsts.GD_STORAGE_DIR_NAME
                                 + "/";
-                        String fileName = file.getTitle().substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
+                        String fileName = file.getTitle().replace(",","").substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
 
                         //checking duplicate name in different files
-                        String fileNameMP4 = file.getTitle();
+                        String fileNameMP4 = file.getTitle().replace(",","");
                         java.io.File checkingFile = new java.io.File(root_dir, fileNameMP4);
-                        if(checkingFile.exists()){
+                        if (checkingFile.exists()) {
                             Log.d("unTag_down", "Another file with name " + fileName + " already exists. Rename new file.");
                             fileName = "copy_" + fileName;
                         }
                         checkingFile = null;
 
-                        java.io.File downFile = new java.io.File(root_dir, fileName);
-                        FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
-                        Log.d("unTag_down", downFile.getAbsolutePath());
-                        //if file do not exists on SD
-                        if (!downFile.exists()) {
-                            output = new FileOutputStream(downFile);
-                            int bufferSize = 1024;
-                            byte[] buffer = new byte[bufferSize];
-                            int len = 0;
-                            while ((len = resp.getContent().read(buffer)) != -1) {
-                                output.write(buffer, 0, len);
-                            }
-                            output.flush();
-                            output.close();
-                            if (serverMD5.contains(fileWorks.getFileMD5())) {
-                                fileWorks.renameFileExtension(file.getFileExtension());
-                                downCount++;
-                                Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
-                                return;
-                            } else {
-                                downCount++;
-                                return;
-                            }
-                        }
-                        //if file exists on SD and his extension is "tmp" we delete this file and write new on his place.
-                        else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension())) {
+                        java.io.File downFile = new java.io.File(root_dir, fileName);   //file *.tmp
+
+                        //Checking existing tmp file
+                        //If file exists on SD we delete this file and write new on his place.
+                        if (downFile.exists()) {
                             if (downFile.delete()) {
                                 Log.d("unTag_down", "TMP file deleted download again");
-                                output = new FileOutputStream(downFile);
-                                int bufferSize = 1024;
-                                byte[] buffer = new byte[bufferSize];
-                                int len = 0;
-                                while ((len = resp.getContent().read(buffer)) != -1) {
-                                    output.write(buffer, 0, len);
-                                }
-                                output.flush();
-                                output.close();
-                                if (serverMD5.contains(fileWorks.getFileMD5())) {
-                                    fileWorks.renameFileExtension(file.getFileExtension());
-                                    downCount++;
-                                    Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
-                                    return;
-                                } else {
-                                    downCount++;
-                                    return;
-                                }
                             }
                         }
-//                            else if (downFile.exists() && UNLConsts.TEMP_FILE_EXT.equals(fileWorks.getFileExtension()) && serverMD5.contains(fileWorks.getFileMD5()) && downFile.length() < file.getFileSize()) {
-//                                Log.d("unTag_down_tag", fileWorks.getFileExtension());
-//
-//                                output = new FileOutputStream(downFile, true);
-//                                int bufferSize = 1024;
-//                                byte[] buffer = new byte[bufferSize];
-//                                int len = 0;
-//                                InputStream inputStream = resp.getContent();
-//
-//                                long skipped = inputStream.skip(file.getFileSize() - downFile.length());
-//                                Log.d("down_tag", String.valueOf(file.getFileSize() - downFile.length()) + ":" + String.valueOf(skipped));
-//                                if (skipped < file.getFileSize() - downFile.length()) {
-//                                    append(downFile, ByteStreams.toByteArray(inputStream));
-//                                } else {
-//                                    downFile.delete();
-//                                }
-//
-//                                if (serverMD5.contains(fileWorks.getFileMD5())) {
-//                                    fileWorks.renameFileExtension(file.getFileExtension());
-//                                    downCount++;
-//
-//                                    Log.d("unTag_countDownComplete",
-//                                            String.valueOf(downCount));
-//                                    return;
-//                                } else {
-//                                    downCount++;
-//                                    return;
-//                                }
-//                            }
+
+                        //download
+                        Log.d("unTag_down", "Start downloading in the " + fileName);
+                        HttpResponse resp = service
+                                .getRequestFactory()
+                                .buildGetRequest(
+                                        new GenericUrl(file.getDownloadUrl()))
+                                .execute();
+                        FileOutputStream output = new FileOutputStream(downFile);
+                        int bufferSize = 1024;
+                        byte[] buffer = new byte[bufferSize];
+                        int len = 0;
+                        while ((len = resp.getContent().read(buffer)) != -1) {
+                            output.write(buffer, 0, len);
+                        }
+                        output.flush();
+                        output.close();
+
+                        //checking successful write     TODO is this checking really need?
+                        FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
+                        String downloadedMD5 = fileWorks.getFileMD5();
+                        if (serverMD5.contains(downloadedMD5)) {
+                            //rename "tmp" to "mp4" or "avi"
+                            fileWorks.renameFileExtension(file.getFileExtension());
+                            downCount++;
+
+                            //save
+                            String localN = prefs.getString("localNames", "");
+                            if (localN.isEmpty()) {
+                                localN = fileWorks.getFile().getPath();
+                            } else {
+                                localN = localN + "," + fileWorks.getFile().getPath();
+                            }
+                            String localM = prefs.getString("localMD5", "");
+                            if (localM.isEmpty()) {
+                                localM = downloadedMD5;
+                            } else {
+                                localM = localN + "," + downloadedMD5;
+                            }
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("localMD5", localM);
+                            editor.putString("localNames", localN);
+                            editor.apply();
+
+                            Log.d("unTag_down", "Download complete: " + String.valueOf(downCount));
+                            return;
+                        } else {
+                            downCount++;
+                            Log.d("unTag_down", "Error saving down file: " + String.valueOf(downCount) + " MS5 not matched.");
+                            return;
+                        }
                     } catch (IOException e) {
                         downCount++;
                         Log.d("count exc", String.valueOf(downCount));

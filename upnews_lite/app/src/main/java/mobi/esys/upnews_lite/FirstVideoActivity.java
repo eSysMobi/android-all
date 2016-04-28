@@ -40,11 +40,10 @@ import mobi.esys.tasks.SendStatisticsToGD;
 
 public class FirstVideoActivity extends Activity {
     private transient VideoView video;
-    private transient String uriPath;
+    private transient String uriPath = "";
     private transient MediaController controller;
 
     private transient SharedPreferences prefs;
-    private transient String md5sApp;
 
     private transient boolean isFirstRSS;
     private transient MarqueeTextView textView;
@@ -70,9 +69,6 @@ public class FirstVideoActivity extends Activity {
 
 //        CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(FirstVideoActivity.this, false, mApp, false);
 //        createDriveFolderTask.execute();
-
-//        isDown = prefs.getBoolean("isDownload", true);
-        uriPath = "";
 
         setContentView(R.layout.activity_firstvideo);
         mLogo = (ImageView) findViewById(R.id.logo_first);
@@ -103,18 +99,18 @@ public class FirstVideoActivity extends Activity {
 
             @Override
             public void onCompletion(MediaPlayer mp) {
+
+                String localNames = prefs.getString("localNames", "");
+
                 DirectoryWorks directoryWorks = new DirectoryWorks(
                         UNLConsts.VIDEO_DIR_NAME +
                                 UNLConsts.GD_STORAGE_DIR_NAME +
                                 "/");
-                md5sApp = prefs.getString("md5sApp", "");
-                Log.d("unTag_FirstScreenAct", "md5sApp: " + md5sApp.toString());
-
                 String[] files = directoryWorks.getDirFileList("first");
                 boolean haveVideoFile = false;
                 for (int i = 0; i < files.length; i++) {
                     FileWorks fileWorks = new FileWorks(files[i]);
-                    if (md5sApp.contains(fileWorks.getFileMD5()) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
+                    if (localNames.contains(files[i]) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
                         startActivity(new Intent(FirstVideoActivity.this,
                                 FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
                         finish();
@@ -123,6 +119,7 @@ public class FirstVideoActivity extends Activity {
                     }
                     //stopDownload();
                 }
+
                 if (!haveVideoFile) {
                     play();
                     restartTasks();

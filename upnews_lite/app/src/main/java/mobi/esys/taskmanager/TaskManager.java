@@ -46,6 +46,9 @@ public class TaskManager extends Handler {
     private byte rssCurrCount = 0;
     private byte rssMaxCount = 20;
 
+    private byte statCurrCount = 2;
+    private byte statMaxCount = 7;
+
     //constructor
     private TaskManager() {
         tasks = new boolean[5];
@@ -175,11 +178,18 @@ public class TaskManager extends Handler {
                     downloadVideoTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case 4:
-                    Log.d(TAG, "Start task 4 (SEND STATISTICS)");
-                    SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp, this);
-                    sstGD.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    //Thread threadSend = new Thread(sstGD, "SendStatisticsToGD");
-                    //threadSend.start();
+                    if (statCurrCount <= 0) {
+                        Log.d(TAG, "Start task 4 (SEND STATISTICS)");
+                        statCurrCount = statMaxCount;
+                        SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp, this);
+                        sstGD.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        //Thread threadSend = new Thread(sstGD, "SendStatisticsToGD");
+                        //threadSend.start();
+                    } else {
+                        Log.d(TAG, "Send statistic task 4 started after " + statCurrCount + " videos");
+                        statCurrCount--;
+                        nextTask();
+                    }
                     break;
             }
         } else {
@@ -198,6 +208,10 @@ public class TaskManager extends Handler {
 
     public void needRssNOW() {
         rssCurrCount = 0;
+    }
+
+    public void needSendStatNOW() {
+        statCurrCount = 0;
     }
 
     private void nextTask() {

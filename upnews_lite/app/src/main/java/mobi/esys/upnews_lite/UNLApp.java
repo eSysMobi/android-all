@@ -6,7 +6,11 @@ import android.util.Log;
 
 import com.google.api.services.drive.Drive;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import mobi.esys.system.HashCache;
 
 
 /**
@@ -23,6 +27,7 @@ public class UNLApp extends Application {
     private static String fullDeviceIdForStatistic;
     private static String appExtCachePath;
     private static Integer[] camerasID = null;
+    private static List<HashCache> hashCaches;
 
     public static void setFullDeviceIdForStatistic(String incDeviceId) {
         Log.d("unTag_UNLApp", "Set fullDeviceIdForStatistic " + incDeviceId);
@@ -117,6 +122,7 @@ public class UNLApp extends Application {
         isCreatingDriveFolder = new AtomicBoolean(false);
         isCamerasWorking = new AtomicBoolean(false);
         isStatNetFileWriting = new AtomicBoolean(false);
+        hashCaches = new ArrayList<>();
     }
 
     @Override

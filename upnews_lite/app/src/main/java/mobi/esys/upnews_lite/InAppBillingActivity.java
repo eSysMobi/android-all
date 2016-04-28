@@ -101,7 +101,7 @@ public class InAppBillingActivity extends Activity {
         };
 
         //check cameras
-        Log.d("unTag_InAppBillingAct", "SDK version is " + Build.VERSION.SDK_INT);
+        Log.w("unTag_InAppBillingAct", "SDK version is " + Build.VERSION.SDK_INT);
         /*
         //camera2 api
         if (Build.VERSION.SDK_INT >= 21) {
@@ -121,7 +121,7 @@ public class InAppBillingActivity extends Activity {
         //if (Build.VERSION.SDK_INT >= 14 && Build.VERSION.SDK_INT < 21) {
         if (Build.VERSION.SDK_INT >= 11) {
             int numCameras = android.hardware.Camera.getNumberOfCameras();
-            Log.d("unTag_InAppBillingAct", "numCameras version is " + numCameras);
+            Log.w("unTag_InAppBillingAct", "numCameras version is " + numCameras);
 
             if (numCameras > 0) {
                 List<Integer> cameraIdList = new ArrayList<>();
@@ -187,6 +187,7 @@ public class InAppBillingActivity extends Activity {
         SharedPreferences prefs = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE);
         if(prefs.getInt("lastAppVersion",0)!=versionCode){
             //clear all saved data
+            Log.w("unTag_InAppBillingAct", "Version not matched. Clearing SharedPreferences.");
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt("lastAppVersion", versionCode);
             editor.putString("accName", "");  //may be not need clear
@@ -194,13 +195,15 @@ public class InAppBillingActivity extends Activity {
             editor.putString("md5sApp", "");
             editor.putString("folderId", "");
             editor.putString("deviceFolderIdStatistics", "");
-
+            editor.putString("localMD5", "");
+            editor.putString("localNames", "");
             editor.apply();
         }
     }
 
     void allOK() {
         if (buyOK && permWriteOK && permAccOK && permCamOK) {
+            checkVersion();
             startActivity(new Intent(InAppBillingActivity.this, DriveAuthActivity.class));
             finish();
         }
