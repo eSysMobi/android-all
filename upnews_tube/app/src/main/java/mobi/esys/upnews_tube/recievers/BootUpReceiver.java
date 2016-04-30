@@ -22,9 +22,8 @@ public class BootUpReceiver extends BroadcastReceiver {
                 @Override
                 public void run() {
                     SharedPreferences prefs = context.getSharedPreferences(OtherConst.APP_PREF, Context.MODE_PRIVATE);
-                    String instHashtag = prefs.getString("instHashTag", "");
-                    String ytPlaylistID = prefs.getString(OtherConst.APP_PREF_PLAYLIST, "");
-                    if (!instHashtag.isEmpty() && !ytPlaylistID.isEmpty()) {
+                    String ytPlaylistID = prefs.getString("YouTubeChannelName", "");
+                    if (!ytPlaylistID.isEmpty()) {
                         context.startActivity(new Intent(context, YouTubeSelectActivity.class)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     }
