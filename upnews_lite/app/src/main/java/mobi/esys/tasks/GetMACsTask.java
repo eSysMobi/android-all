@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -90,18 +89,22 @@ public class GetMACsTask implements Runnable {
             String currentTime = sdf.format(new Date());
 
             //write
-            try {
-                UNLApp.setIsStatNetFileWriting(true);
-                BufferedWriter output = new BufferedWriter(new FileWriter(statisticFile, true));
-                for(int i=0;i<macs.size();i++){
-                    output.newLine();
-                    output.append(currentTime + "," + macs.get(i));
+            if (!UNLApp.getIsStatNetFileWriting()) {
+                try {
+                    UNLApp.setIsStatNetFileWriting(true);
+                    BufferedWriter output = new BufferedWriter(new FileWriter(statisticFile, true));
+                    for (int i = 0; i < macs.size(); i++) {
+                        output.newLine();
+                        output.append(currentTime + "," + macs.get(i));
+                    }
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    UNLApp.setIsStatNetFileWriting(false);
                 }
-                output.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                UNLApp.setIsStatNetFileWriting(false);
+            } else {
+                Log.d(TAG, "Do not write in net-statistics files because statistics is sending");
             }
         }
     }

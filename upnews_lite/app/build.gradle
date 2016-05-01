@@ -1,4 +1,19 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
 android {
     signingConfigs {
         config {
@@ -15,8 +30,8 @@ android {
         minSdkVersion 12
         targetSdkVersion 23
         signingConfig signingConfigs.config
-        versionCode 14
-        versionName '2.6.1'
+        versionCode 15
+        versionName '2.7.0'
     }
     buildTypes {
         release {
@@ -43,4 +58,7 @@ android {
 }
 
 dependencies {
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+        transitive = true;
+    }
 }

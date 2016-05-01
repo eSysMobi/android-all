@@ -3,7 +3,6 @@ package mobi.esys.tasks;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -27,7 +26,6 @@ import mobi.esys.constants.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.system.StremsUtils;
-import mobi.esys.taskmanager.TaskManager;
 import mobi.esys.upnews_lite.UNLApp;
 
 /**
@@ -62,7 +60,7 @@ public class SendStatisticsToGD extends AsyncTask<Void, Void, Void> {
                 String todayNetStatFileName = dateToday + "-net.csv";
                 String serialNumber = UNLApp.getFullDeviceIdForStatistic(); //old version   Build.SERIAL;
 
-                java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "tmp.tmp");
+                java.io.File tmpFile = new java.io.File(UNLApp.getAppExtCachePath() + UNLConsts.VIDEO_DIR_NAME, "tmp_send_stat.tmp");
                 try {
                     List<com.google.api.services.drive.model.File> statFilesOnGD = new ArrayList<>();
                     Drive.Children.List commonStatisticsFileList = drive.children().list(statisticsGDDirID);
@@ -77,12 +75,26 @@ public class SendStatisticsToGD extends AsyncTask<Void, Void, Void> {
                     DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.STATISTICS_DIR_NAME);
                     List<File> statFilesOnDevice = new ArrayList<>();
 
-                    File[] statFiles = directoryWorks.getStatisticsFiles();
-                    statFilesOnDevice.addAll(Arrays.asList(statFiles));
+                    //add all statistics-files
+                    if (!UNLApp.getIsStatFileWriting()) {
+                        //lock files
+                        UNLApp.setIsStatFileWriting(true);
+                        //add
+                        File[] statFiles = directoryWorks.getStatisticsFiles();
+                        statFilesOnDevice.addAll(Arrays.asList(statFiles));
+                    } else {
+                        Log.w(TAG, "Do not add statistics files because camera writing statistics to that files");
+                    }
 
+                    //add all NET statistics-files
                     if (!UNLApp.getIsStatNetFileWriting()) {
+                        //lock files
+                        UNLApp.setIsStatNetFileWriting(true);
+                        //add
                         File[] statNetFiles = directoryWorks.getNetworkStatisticsFiles();
                         statFilesOnDevice.addAll(Arrays.asList(statNetFiles));
+                    } else {
+                        Log.w(TAG, "Do not add statistics files because net scan writing statistics to that files");
                     }
 
                     for (int i = 0; i < statFilesOnDevice.size(); i++) {
@@ -146,6 +158,8 @@ public class SendStatisticsToGD extends AsyncTask<Void, Void, Void> {
                     if (tmpFile.exists()) {
                         tmpFile.delete();
                     }
+                    UNLApp.setIsStatFileWriting(false);
+                    UNLApp.setIsStatNetFileWriting(false);
                     sendEndingSignal();
                 }
             } else {

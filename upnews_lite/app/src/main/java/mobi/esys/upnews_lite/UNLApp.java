@@ -4,8 +4,10 @@ import android.app.Application;
 import android.content.res.Configuration;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.api.services.drive.Drive;
 
+import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,6 +24,7 @@ public class UNLApp extends Application {
     private static AtomicBoolean isCreatingDriveFolder;
     private static AtomicBoolean isDeleting;
     private static AtomicBoolean isCamerasWorking;
+    private static AtomicBoolean isStatFileWriting;
     private static AtomicBoolean isStatNetFileWriting;
     private static String curPlayFile;
     private static String fullDeviceIdForStatistic;
@@ -88,6 +91,15 @@ public class UNLApp extends Application {
         return isDeleting.get();
     }
 
+    public static void setIsStatFileWriting(boolean state) {
+        Log.d("unTag_UNLApp", "Set isStatFileWriting " + state);
+        isStatFileWriting.set(state);
+    }
+
+    public static boolean getIsStatFileWriting() {
+        return isStatFileWriting.get();
+    }
+
     public static void setIsStatNetFileWriting(boolean state) {
         Log.d("unTag_UNLApp", "Set isStatNetFileWriting " + state);
         isStatNetFileWriting.set(state);
@@ -124,10 +136,12 @@ public class UNLApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         isDownloadTaskRunning = new AtomicBoolean(false);
         isDeleting = new AtomicBoolean(false);
         isCreatingDriveFolder = new AtomicBoolean(false);
         isCamerasWorking = new AtomicBoolean(false);
+        isStatFileWriting = new AtomicBoolean(false);
         isStatNetFileWriting = new AtomicBoolean(false);
         hashCaches = new ArrayList<>();
     }
