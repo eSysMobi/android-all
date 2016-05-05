@@ -1,6 +1,7 @@
 package mobi.esys.fileworks;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -34,9 +35,9 @@ public class DirectoryWorks {
 
     public boolean checkDirs() {
         boolean res = true;
-        File videoDir = new File(UNLApp.getAppExtCachePath() + UNLConsts.DIR_NAME);
-        if (!videoDir.exists()) {
-            res = videoDir.mkdir();
+        File audioDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + UNLConsts.DIR_NAME);
+        if (!audioDir.exists()) {
+            res = audioDir.mkdir();
         }
         return res;
     }
@@ -44,7 +45,7 @@ public class DirectoryWorks {
 
     public String[] getDirFileList(boolean onlyAudio) {
         checkDirs();
-        File videoDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
+        File videoDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath().concat(this.directoryPath));
         List<String> filePaths = new ArrayList<>();
         //get only video files from directory
         File[] files = videoDir.listFiles();
@@ -64,8 +65,8 @@ public class DirectoryWorks {
     }
 
     public void deleteFilesFromDir(List<String> maskList) {
-        File audioDir = new File(UNLApp.getAppExtCachePath().concat(this.directoryPath));
-        Log.d(DIR_WORKS_TAG, "deleteFilesFromDir " + UNLApp.getAppExtCachePath().concat(this.directoryPath) + " Deleting " + maskList.size() + " files");
+        File audioDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath().concat(this.directoryPath));
+        Log.d(DIR_WORKS_TAG, "deleteFilesFromDir " + Environment.getExternalStorageDirectory().getAbsolutePath().concat(this.directoryPath) + " Deleting " + maskList.size() + " files");
         Log.d(DIR_WORKS_TAG, "mask list task" + maskList.toString());
         if (audioDir.exists()) {
             File[] files = audioDir.listFiles();

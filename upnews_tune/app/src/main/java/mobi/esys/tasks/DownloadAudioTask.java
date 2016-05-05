@@ -144,7 +144,7 @@ public class DownloadAudioTask extends AsyncTask<Void, Void, Void> {
             if (!folderMD5.contains(file.getMd5Checksum())) {
                 if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0) {
                     try {
-                        String root_dir = UNLApp.getAppExtCachePath() + UNLConsts.DIR_NAME;
+                        String root_dir = Environment.getExternalStorageDirectory().getAbsolutePath() + UNLConsts.DIR_NAME;
                         String fileName = file.getTitle().replace(",", "").substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
 
                         //checking duplicate name in different files

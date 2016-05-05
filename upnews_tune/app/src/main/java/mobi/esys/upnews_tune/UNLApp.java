@@ -25,10 +25,33 @@ public class UNLApp extends Application {
     private static AtomicBoolean isDeleting;
     private static String curPlayFile;
     private static String lastPlayedFile;
-    private static String appExtCachePath;
-    private static boolean randomPlaylist = false;
+    private static boolean isPlaying = false;
+    private static boolean firstStart = true;
     private static Uri defaultAudio = null;
     private static SharedPreferences preferences;
+    private static UNLApp mApp;
+
+    public static boolean isFirstStart() {
+        boolean result = firstStart;
+        firstStart = false;
+        return result;
+    }
+
+    public static void setmApp(UNLApp mApp) {
+        UNLApp.mApp = mApp;
+    }
+
+    public static UNLApp getmApp() {
+        return UNLApp.mApp;
+    }
+
+    public static void setIsPlaying(boolean isPlaying) {
+        UNLApp.isPlaying = isPlaying;
+    }
+
+    public static boolean getIsPlaying() {
+        return isPlaying;
+    }
 
     public static void setIsCreatingDriveFolder(boolean state) {
         UNLApp.isCreatingDriveFolder.set(state);
@@ -36,14 +59,6 @@ public class UNLApp extends Application {
 
     public static boolean getIsCreatingDriveFolder() {
         return isCreatingDriveFolder.get();
-    }
-
-    public static String getAppExtCachePath() {
-        return appExtCachePath;
-    }
-
-    public static void setAppExtCachePath(String newPath) {
-        appExtCachePath = newPath;
     }
 
     public static void setIsDownloadTaskRunning(boolean state) {
@@ -78,14 +93,6 @@ public class UNLApp extends Application {
 
     public static Drive getDriveService() {
         return driveService;
-    }
-
-    public static void setRandomPlaylist(boolean randomPlaylist) {
-        UNLApp.randomPlaylist = randomPlaylist;
-    }
-
-    public static boolean getRandomPlaylist() {
-        return randomPlaylist;
     }
 
     public static Uri getDefaultAudio() {

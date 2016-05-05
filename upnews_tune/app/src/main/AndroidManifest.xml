@@ -46,8 +46,14 @@
             android:screenOrientation="landscape">
             <meta-data
                 android:name="com.google.android.apps.drive.APP_ID"
-                android:value="id=74772343754-393l3jpjjro1buafg78n7v25netqiecs"
+                android:value="id=74772343754-8dv78sqmlv3cujudep6nr9g652ch1ld8"
                  />
+            <intent-filter>
+                <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
+                <data android:mimeType="audio/mpeg3" />
+                <data android:mimeType="audio/x-mpeg-3" />
+            </intent-filter>
+
         </activity>
 
         <receiver

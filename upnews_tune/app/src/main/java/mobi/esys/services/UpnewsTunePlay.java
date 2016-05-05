@@ -31,8 +31,6 @@ import mobi.esys.upnews_tune.UNLApp;
 
 public class UpnewsTunePlay extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
 
-    public static boolean IS_SERVICE_RUNNING = false;
-
     private final String TAG = "unTag_TunePlay";
     private boolean isFirstSession = true;
     private int audiofileLocalIndex;
@@ -43,42 +41,25 @@ public class UpnewsTunePlay extends Service implements MediaPlayer.OnPreparedLis
 
     private MediaPlayer mMediaPlayer = null;
     private WifiManager.WifiLock wifiLock = null;
+    private Notification.Builder builder;
 
 
     public UpnewsTunePlay() {
-        mApp = (UNLApp) getApplication();
+        mApp = UNLApp.getmApp();
         defaultURI = UNLApp.getDefaultAudio();
         preferences = UNLApp.getPreferences();
+        builder = new Notification.Builder(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         switch (intent.getAction()) {
             case UNLConsts.ACTION_PLAY:
+                UNLApp.setIsPlaying(true);
                 wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
                         .createWifiLock(WifiManager.WIFI_MODE_FULL, "UpnewsTuneWiFiLock");
 
-
-                PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
-                        new Intent(getApplicationContext(), StartPlayerActivity.class),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-
-                Notification.Builder builder = new Notification.Builder(this);
-
-                builder.setAutoCancel(false);
-                builder.setTicker("upnews | TUNE");
-                builder.setContentTitle("upnews | TUNE");
-                //builder.setContentText("You have a new message");
-                builder.setSmallIcon(R.drawable.ic_launcher);
-                builder.setContentIntent(pi);
-                builder.setOngoing(true);
-                builder.setSubText("This is subtext...");   //API level 16
-                builder.setNumber(100);
-                builder.build();
-
-                Notification notification = builder.getNotification();
-
-                startForeground(42, notification);
+                sendNotif(0, "Playing default file");
 
                 mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -90,17 +71,42 @@ public class UpnewsTunePlay extends Service implements MediaPlayer.OnPreparedLis
                 nextTrack();
                 break;
             case UNLConsts.ACTION_STOP:
+                UNLApp.setIsPlaying(false);
                 stopForeground(true);
                 stopSelf();
                 break;
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
+    }
+
+    private void sendNotif(int count, String text) {
+        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 0,
+                new Intent(getApplicationContext(), StartPlayerActivity.class),
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setAutoCancel(false);
+        builder.setTicker("upnews | TUNE");
+        builder.setContentTitle("upnews | TUNE");
+        //builder.setContentText("You have a new message");
+        builder.setSmallIcon(R.drawable.ic_launcher);
+        builder.setOnlyAlertOnce(true);
+        builder.setContentIntent(pi);
+        builder.setOngoing(true);
+        builder.setSubText(text);   //API level 16
+        builder.setNumber(count);
+        builder.build();
+
+        Notification notification = builder.getNotification();
+
+        startForeground(42, notification);
     }
 
     void nextTrack() {
-        //DownloadAudioTask downloadVideoTask = new DownloadAudioTask(mApp);
-        //downloadVideoTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        mMediaPlayer.reset();
+
+        DownloadAudioTask downloadVideoTask = new DownloadAudioTask(mApp);
+        downloadVideoTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
 
         Log.d(TAG, "MediaPlayer nextTrack");
 
@@ -110,107 +116,66 @@ public class UpnewsTunePlay extends Service implements MediaPlayer.OnPreparedLis
         List<String> audiofiles = Arrays.asList(files);
 
         if (audiofiles.size() > 0) {
-            if (!UNLApp.getRandomPlaylist()) {
-                //alphabetic
-                Collections.sort(audiofiles);
-                //------------------------------------
-                //looking for index of last played file
-                if (isFirstSession) {
-                    String lastPlayed = preferences.getString("lastPlayedFile", "");
-                    if (!lastPlayed.isEmpty()) {
-                        int lastPlayedFileIndex = 0;
-                        for (int i = 0; i < audiofiles.size(); i++) {
-                            if (audiofiles.get(i).equals(lastPlayed)) {
-                                lastPlayedFileIndex = i;
-                                break;
-                            }
-                        }
-                        audiofileLocalIndex = lastPlayedFileIndex;
-                    }
-                    isFirstSession = false;
-                }
-
-                //checking
-                if (audiofileLocalIndex >= audiofiles.size()) {
-                    audiofileLocalIndex = 0;
-                }
-
-                File fs = new File(audiofiles.get(audiofileLocalIndex));
-                if (fs.exists()) {
-                    try {
-                        //save name of current played file
-                        UNLApp.setCurPlayFile(fs.getPath());
-                        //save lastPlayedFile
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putString("lastPlayedFile", fs.getPath());
-                        editor.apply();
-
-                        mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(fs.getPath()));
-                        mMediaPlayer.prepareAsync(); // prepare async to not block main thread
-                        audiofileLocalIndex++;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "MediaPlayer error prepareAsync: " + e.getMessage());
-                        audiofileLocalIndex++;
-                        nextTrack();
-                    }
-                } else {
-                    Log.d(TAG, "We have no files associated with this audiofileLocalIndex");
-                    audiofileLocalIndex++;
-                    nextTrack();
-                }
-                //------------------------------------
-            } else{
-                //random
+            if (preferences.getBoolean("RandomPlaylist",false)) {
+                //yes, random
+                Log.d(TAG, "Set Random");
                 Collections.shuffle(audiofiles);
-                //------------------------------------
-                //looking for index of last played file
-                if (isFirstSession) {
-                    String lastPlayed = preferences.getString("lastPlayedFile", "");
-                    if (!lastPlayed.isEmpty()) {
-                        int lastPlayedFileIndex = 0;
-                        for (int i = 0; i < audiofiles.size(); i++) {
-                            if (audiofiles.get(i).equals(lastPlayed)) {
-                                lastPlayedFileIndex = i;
-                                break;
-                            }
+            } else {
+                Log.d(TAG, "Set Alphabetic");
+                //not, not random. Alphabetic
+                Collections.sort(audiofiles);
+            }
+            //------------------------------------
+            //looking for index of last played file
+            if (isFirstSession) {
+                String lastPlayed = preferences.getString("lastPlayedFile", "");
+                if (!lastPlayed.isEmpty()) {
+                    int lastPlayedFileIndex = 0;
+                    for (int i = 0; i < audiofiles.size(); i++) {
+                        if (audiofiles.get(i).equals(lastPlayed)) {
+                            lastPlayedFileIndex = i;
+                            break;
                         }
-                        audiofileLocalIndex = lastPlayedFileIndex;
                     }
-                    isFirstSession = false;
+                    audiofileLocalIndex = lastPlayedFileIndex;
                 }
+                isFirstSession = false;
+            }
 
-                //checking
-                if (audiofileLocalIndex >= audiofiles.size()) {
-                    audiofileLocalIndex = 0;
-                }
+            //checking
+            if (audiofileLocalIndex >= audiofiles.size()) {
+                audiofileLocalIndex = 0;
+            }
 
-                File fs = new File(audiofiles.get(audiofileLocalIndex));
-                if (fs.exists()) {
-                    try {
-                        //save name of current played file
-                        UNLApp.setCurPlayFile(fs.getPath());
-                        //save lastPlayedFile
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putString("lastPlayedFile", fs.getPath());
-                        editor.apply();
+            File fs = new File(audiofiles.get(audiofileLocalIndex));
+            if (fs.exists()) {
+                try {
+                    //save name of current played file
+                    UNLApp.setCurPlayFile(fs.getPath());
+                    //save lastPlayedFile
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("lastPlayedFile", fs.getPath());
+                    editor.apply();
 
-                        mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(fs.getPath()));
-                        mMediaPlayer.prepareAsync(); // prepare async to not block main thread
-                        audiofileLocalIndex++;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.d(TAG, "MediaPlayer error prepareAsync: " + e.getMessage());
-                        audiofileLocalIndex++;
-                        nextTrack();
-                    }
-                } else {
-                    Log.d(TAG, "We have no files associated with this audiofileLocalIndex");
+                    Log.w(TAG, "Play file " + fs.getName());
+                    mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(fs.getPath()));
+                    mMediaPlayer.prepareAsync(); // prepare async to not block main thread
+                    audiofileLocalIndex++;
+
+                    sendNotif(audiofileLocalIndex, fs.getName());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "MediaPlayer error prepareAsync: " + e.getMessage());
                     audiofileLocalIndex++;
                     nextTrack();
                 }
-                //------------------------------------
+            } else {
+                Log.d(TAG, "We have no files associated with this audiofileLocalIndex");
+                audiofileLocalIndex++;
+                nextTrack();
             }
+            //------------------------------------
+
         } else {
             Log.d(TAG, "We have no audio files");
             try {

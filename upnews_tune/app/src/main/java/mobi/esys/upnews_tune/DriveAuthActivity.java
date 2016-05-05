@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,14 +22,10 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 
 import mobi.esys.constants.UNLConsts;
-import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
@@ -54,10 +49,15 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     private transient boolean externalStorageIsAvailable = false;
     private transient boolean buttonPressed = false;
 
+    //autostart
+    private transient final Handler startHandler = new Handler();
+    private transient Runnable loadOldAccName = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mApp = (UNLApp) getApplication();
+        UNLApp.setmApp(mApp);
         isFirstAuth = true;
         prefs = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE);
 
@@ -75,6 +75,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         gdAuthBtn.setOnClickListener(this);
 
         if (externalStorageIsAvailable) {
+            //check inet for set/change acc in GD
             if (NetWork.isNetworkAvailable(mApp)) {
                 Log.d("unTag_DriveAuthActivity", "Account name: " + accName);
                 if (accName.isEmpty()) {
@@ -85,8 +86,8 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                     //mtvDriveAuthActivity.setText(R.string.autostart_drive10);
                     gdAuthBtn.setText(R.string.change_profile);
 
-                    final Handler startHandler = new Handler();
-                    final Runnable loadOldAccName = new Runnable() {
+
+                    loadOldAccName = new Runnable() {
                         @Override
                         public void run() {
                             if (!buttonPressed) {
@@ -157,13 +158,6 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                         editor.putString("accName", accountName);
                         editor.apply();
 
-                        JSONObject props = new JSONObject();
-                        try {
-                            props.put("gd_account_add", "Google drive account has been added");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
                         credential.setSelectedAccountName(accountName);
                         drive = getDriveService(credential);
                         mApp.registerGoogle(drive);
@@ -195,14 +189,6 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                         editor.putString("accName", accountName);
                         editor.apply();
 
-                        JSONObject props = new JSONObject();
-                        try {
-                            props.put("gd_account_add", "Google drive account has been added");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-
                         credential.setSelectedAccountName(accountName);
                         drive = getDriveService(credential);
                         mApp.registerGoogle(drive);
@@ -229,6 +215,9 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     @Override
     protected void onStop() {
         super.onStop();
+        if(loadOldAccName!=null){
+            startHandler.removeCallbacks(loadOldAccName);
+        }
     }
 
     public void catchUSERException(Intent intent) {
@@ -248,11 +237,10 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
             externalStorageIsAvailable = true;
-            UNLApp.setAppExtCachePath(Environment.getExternalStorageDirectory().getAbsolutePath());
             //checking existing all directories
-            File videoDir = new File(UNLApp.getAppExtCachePath() + UNLConsts.DIR_NAME);
-            if (!videoDir.exists()) {
-                externalStorageIsAvailable = videoDir.mkdir();
+            File audioDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath().concat(UNLConsts.DIR_NAME));
+            if (!audioDir.exists()) {
+                externalStorageIsAvailable = audioDir.mkdir();
             }
         }
     }
