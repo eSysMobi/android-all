@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="app_name" tools:ignore="MissingTranslation">upnews | TUNE</string>
+    <string name="dummy_button" tools:ignore="MissingTranslation,MissingTranslation">Dummy Button</string>
+    <string name="dummy_content" tools:ignore="MissingTranslation">DUMMY\nCONTENT</string>
+    <string name="todo" tools:ignore="MissingTranslation">TODO</string>
+    <string name="add_gd" tools:ignore="MissingTranslation">Добавить аккаунт Google Drive</string>
+    <string name="geting_gd" tools:ignore="MissingTranslation">Получение данных с Google Drive…</string>
+    <string name="empty_space" tools:ignore="MissingTranslation">На носителе не осталось свободной памяти. Новые файлы не будут скачиваться пока вы не освободите место.</string>
+    <string name="no_inet" tools:ignore="MissingTranslation">Отсутствует подключение к сети интернет.</string>
+    <string name="processing" tools:ignore="MissingTranslation">Обработка…</string>
+
+
+    <string name="autostart_accdrive_message_p1">"Профиль "</string>
+    <string name="autostart_accdrive_message_p2">" будет запущен через 10 секунд…"</string>
+    <string name="change_profile">Сменить профиль</string>
+    <string name="autostart_drive10">Автостарт через 10 секунд…</string>
+    <string name="select_order">Выберите порядок воспроизведения:</string>
+    <string name="order_alphabetical">По алфавиту</string>
+    <string name="order_random">Случайный</string>
+
+</resources>

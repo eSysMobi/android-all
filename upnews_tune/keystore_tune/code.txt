@@ -1,0 +1,5 @@
+D:\esys-mobi\android-all\upnews_tune\keystore_tune\upnews_tune_key.jks
+upnews_tune_key_1
+8521456unTag/Ra
+MD5: AA:24:05:65:BF:A8:95:D5:D6:56:DC:F9:13:2D:F3:0F
+SHA1: 27:AA:23:21:9F:7E:98:38:2D:A9:5E:2B:87:06:86:97:D5:39:8B:EA
