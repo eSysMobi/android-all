@@ -1,15 +1,12 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpResponse;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 
@@ -31,7 +28,6 @@ import mobi.esys.server.UNLServer;
 import mobi.esys.upnews_tune.UNLApp;
 
 public class DownloadAudioTask extends AsyncTask<Void, Void, Void> {
-    private transient Handler handler;
     private transient List<GDFile> gdFiles;
     private transient List<String> serverMD5;
     private transient int downCount;

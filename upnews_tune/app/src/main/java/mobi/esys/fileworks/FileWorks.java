@@ -1,7 +1,5 @@
 package mobi.esys.fileworks;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedInputStream;

@@ -11,8 +11,6 @@ public final class UNLConsts {
     public static final String PREFIX_USER_VIDEOFILES = "dd";
 
     public static final String[] UNL_ACCEPTED_FILE_EXTS = {"mp3", "wav", "ogg", "mid", "flac", "3gp"};
-    public static final String SIGNAL_TO_FULLSCREEN = "status";
-    public static final String BROADCAST_ACTION = "com.moby.esys.backbroadcast";
 
     //signals
     public static final String ACTION_PLAY = "mobi.esys.action.PLAY";

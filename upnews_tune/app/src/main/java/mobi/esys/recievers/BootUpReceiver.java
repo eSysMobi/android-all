@@ -18,7 +18,7 @@ public class BootUpReceiver extends BroadcastReceiver {
             } catch (InterruptedException e) {
             }
             SharedPreferences prefs = context.getSharedPreferences(UNLConsts.APP_PREF, 0);
-            String accName = prefs.getString("accName", "");
+            String accName = prefs.getString("accountName", "");
             if (!accName.isEmpty()){
                 context.startActivity(new Intent(context, DriveAuthActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));

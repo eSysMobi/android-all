@@ -128,7 +128,7 @@ public class InAppBillingActivity extends Activity {
             Log.w("unTag_InAppBillingAct", "Version not matched. Clearing SharedPreferences.");
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt("lastAppVersion", versionCode);
-            editor.putString("accName", "");  //may be not need clear
+            editor.putString("accountName", "");  //may be not need clear
             editor.putString("lastPlayedFile", "");
             editor.putString("md5sApp", "");
             editor.putString("folderId", "");
