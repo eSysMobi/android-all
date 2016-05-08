@@ -106,8 +106,8 @@ public class DriveAuthActivity extends Activity implements EasyPermissions.Permi
         if (externalStorageIsAvailable) {
             //check inet for set/change acc in GD
             if (NetWork.isNetworkAvailable(mApp)) {
-                String accountName = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
-                if (accountName != null) {
+                String accountName = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, "");
+                if (!accountName.isEmpty()) {
                     gdAuthBtn.setText(getResources().getText(R.string.change_profile));
                     String txt = getString(R.string.autostart_accdrive_message_p1) + accountName + getString(R.string.autostart_accdrive_message_p2);
                     mtvDriveAuthActivity.setText(txt);
@@ -197,8 +197,8 @@ public class DriveAuthActivity extends Activity implements EasyPermissions.Permi
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount(boolean needChangeAcc) {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
-            if (accountName != null && needChangeAcc == false) {
+            String accountName = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, "");
+            if (!accountName.isEmpty() && needChangeAcc == false) {
                 mCredential.setSelectedAccountName(accountName);
                 getResultsFromApi();
             } else {
