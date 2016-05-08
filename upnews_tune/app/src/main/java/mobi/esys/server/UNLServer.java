@@ -5,10 +5,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.Drive.Children;
-import com.google.api.services.drive.model.ChildList;
-import com.google.api.services.drive.model.ChildReference;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +58,7 @@ public class UNLServer {
                     resultMD5 = resultMD5 + "," + gdFiles.get(i).getGdFileMD5();
                 }
             }
-            Log.d(TAG, "md5 from server size " + String.valueOf(gdFiles.size()));
+            Log.d(TAG, "MD5 from server size " + String.valueOf(gdFiles.size()));
         } else {
             //if getting GDfiles in saveURLS() is fail return old MD5
             resultMD5 = prefs.getString("md5sApp", defaultString);
@@ -96,21 +94,27 @@ public class UNLServer {
 
     private void printFilesInFolder(String folderId)
             throws IOException, NullPointerException {
-        Log.d(TAG, "print google drive folder");
-        Children.List request = drive.children().list(folderId);
+        Log.d(TAG, "Print google drive folder " + folderId);
+        String q = "'" + folderId + "' in parents and trashed = false";
+        Drive.Files.List request = drive
+                .files()
+                .list()
+                .setQ(q)
+                .setFields("nextPageToken, files(id, name, explicitlyTrashed, fileExtension, md5Checksum, size)");
 
         do {
             try {
-                ChildList children = request.execute();
-                for (ChildReference child : children.getItems()) {
-                    File file = drive.files().get(child.getId()).execute();
-                    if (!file.getExplicitlyTrashed() && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(file.getFileExtension())) {
+                FileList children = request.execute();
+                List<File> childrens = children.getFiles();
+                for(int i = 0; i<childrens.size();i++){
+                    File file = childrens.get(i);
+                    if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(file.getFileExtension())) {
                         gdFiles.add(new GDFile(file.getId(),
-                                file.getTitle(),
-                                file.getDownloadUrl(),
-                                String.valueOf(file.getFileSize()),
+                                file.getName(),
+                                String.valueOf(file.getSize()),
                                 file.getFileExtension(),
-                                file.getMd5Checksum(), file));
+                                file.getMd5Checksum(),
+                                file));
                     }
                 }
                 request.setPageToken(children.getNextPageToken());

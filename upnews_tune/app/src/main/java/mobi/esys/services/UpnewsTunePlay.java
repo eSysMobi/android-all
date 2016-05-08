@@ -48,13 +48,13 @@ public class UpnewsTunePlay extends Service implements MediaPlayer.OnPreparedLis
         mApp = UNLApp.getmApp();
         defaultURI = UNLApp.getDefaultAudio();
         preferences = UNLApp.getPreferences();
-        builder = new Notification.Builder(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         switch (intent.getAction()) {
             case UNLConsts.ACTION_PLAY:
+                builder = new Notification.Builder(this);
                 UNLApp.setIsPlaying(true);
                 wifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
                         .createWifiLock(WifiManager.WIFI_MODE_FULL, "UpnewsTuneWiFiLock");

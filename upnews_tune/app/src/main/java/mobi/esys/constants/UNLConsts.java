@@ -26,5 +26,5 @@ public final class UNLConsts {
     public final static int PERMISSIONS_REQUEST = 330;
 
     //debug
-    public static boolean ALLOW_TOAST = false;
+    public static boolean ALLOW_TOAST = true;
 }

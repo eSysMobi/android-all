@@ -68,12 +68,15 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                         .files()
                         .list()
                         .setQ(UNLConsts.GD_FOLDER_QUERY);
-                FileList files = request.execute();
+                FileList result = request.execute();
 
-                //convert GD FileList to List
-                for (File file : files.getItems()) {
-                    fileName.add(file.getTitle());
-                    Log.d(TAG, "Folder in GD" + file.getTitle() + ":" + file.getId());
+                //convert GD FileList names to List
+                List<File> files = result.getFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        fileName.add(file.getName());
+                        Log.d(TAG, "Folder in GD" + file.getName() + ":" + file.getId());
+                    }
                 }
 
                 Editor editor = prefs.edit();
@@ -81,24 +84,33 @@ public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
                 if (!fileName.contains(UNLConsts.GD_DIR_NAME)) {
                     //NOT FOUND. Create "upnewstune"  folder in GD
                     File body = new File();
-                    body.setTitle(UNLConsts.GD_DIR_NAME);
+                    body.setName(UNLConsts.GD_DIR_NAME);
                     body.setMimeType("application/vnd.google-apps.folder");
-                    File unlFolder = drive.files().insert(body).execute();
+                    File unlFolder = drive.files()
+                            .create(body)
+                            .setFields("id")
+                            .execute();
                     Log.d(TAG, "ID unlFolder in GD" + unlFolder.getId());
                     editor.putString("folderId", unlFolder.getId());
                     editor.apply();
+                    isAuthSuccess = true;
                 } else {
                     //FOUND. Get folder upnewstune id in GD
-                    String folderID = files.getItems()
-                            .get(fileName.indexOf(UNLConsts.GD_DIR_NAME))
-                            .getId();
-                    Log.d(TAG, "GD contain upnewstune folder. It ID is: " + folderID);
-                    editor.putString("folderId",
-                                     files.getItems().get(fileName.indexOf(UNLConsts.GD_DIR_NAME)).getId()
-                                    );
-                    editor.apply();
+                    if (files != null) {
+                        String folderID = files
+                                .get(fileName.indexOf(UNLConsts.GD_DIR_NAME))
+                                .getId();
+                        Log.d(TAG, "GD contain upnewstune folder. It ID is: " + folderID);
+                        editor.putString("folderId",
+                                files.get(fileName.indexOf(UNLConsts.GD_DIR_NAME)).getId()
+                        );
+                        editor.apply();
+                        isAuthSuccess = true;
+                    } else {
+                        isAuthSuccess = false;
+                    }
                 }
-                isAuthSuccess = true;
+
 
             } catch (UserRecoverableAuthIOException e) {
                 Log.d(TAG, "Error");

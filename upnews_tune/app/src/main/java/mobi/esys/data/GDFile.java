@@ -6,19 +6,17 @@ import com.google.api.services.drive.model.File;
 public class GDFile {
     private String gdFileId;
     private String gdFileName;
-    private String gdFileURL;
     private String gdFileSize;
     private String gdFileExt;
     private String gdFileMD5;
     private File gdFileInst;
 
-    public GDFile(String gdFileId, String gdFileName, String gdFileURL,
-                  String gdFileSize, String gdFileExt, String gdFileMD5,
-                  File gdFileInst) {
+    public GDFile(String gdFileId, String gdFileName,
+                  String gdFileSize, String gdFileExt,
+                  String gdFileMD5, File gdFileInst) {
         super();
         this.gdFileId = gdFileId;
         this.gdFileName = gdFileName;
-        this.gdFileURL = gdFileURL;
         this.gdFileSize = gdFileSize;
         this.gdFileExt = gdFileExt;
         this.gdFileMD5 = gdFileMD5;
@@ -33,7 +31,6 @@ public class GDFile {
         super();
         this.gdFileId = gdFile.gdFileId;
         this.gdFileName = gdFile.gdFileName;
-        this.gdFileURL = gdFile.gdFileURL;
         this.gdFileSize = gdFile.gdFileSize;
         this.gdFileExt = gdFile.gdFileExt;
         this.gdFileMD5 = gdFile.gdFileMD5;
@@ -46,10 +43,6 @@ public class GDFile {
 
     public String getGdFileName() {
         return gdFileName;
-    }
-
-    public String getGdFileURL() {
-        return gdFileURL;
     }
 
     public String getGdFileSize() {
@@ -73,10 +66,12 @@ public class GDFile {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.delete(0, builder.length());
-        builder.append("GDFile [getGdFileId()=").append(getGdFileId()).append(", getGdFileName()="
-        ).append(getGdFileName()).append(", getGdFileURL()=").append(getGdFileURL()
-        ).append(", getGdFileSize()=").append(getGdFileSize()).append(", getGdFileExt()="
-        ).append(getGdFileExt()).append(", getGdFileMD5()=").append(getGdFileMD5()).append("]");
+        builder
+                .append("GDFile [getGdFileId()=").append(getGdFileId())
+                .append(", getGdFileName()=").append(getGdFileName())
+                .append(", getGdFileSize()=").append(getGdFileSize())
+                .append(", getGdFileExt()=").append(getGdFileExt())
+                .append(", getGdFileMD5()=").append(getGdFileMD5()).append("]");
         return builder.toString();
     }
 

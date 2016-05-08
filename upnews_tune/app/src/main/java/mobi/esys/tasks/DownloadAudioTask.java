@@ -139,16 +139,16 @@ public class DownloadAudioTask extends AsyncTask<Void, Void, Void> {
 
     private void downloadFile(Drive service, File file) {
 
-        if (file.getFileSize() < (Environment.getExternalStorageDirectory().getUsableSpace() - 209715200)) {  // +200MB to Environment
+        if (file.getSize() < (Environment.getExternalStorageDirectory().getUsableSpace() - 209715200)) {  // +200MB to Environment
             Log.d("unTag_down", "start down file number " + downCount);
             if (!folderMD5.contains(file.getMd5Checksum())) {
-                if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0) {
+                if (file.getId() != null) {
                     try {
                         String root_dir = Environment.getExternalStorageDirectory().getAbsolutePath() + UNLConsts.DIR_NAME;
-                        String fileName = file.getTitle().replace(",", "").substring(0, file.getTitle().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
+                        String fileName = file.getName().replace(",", "").substring(0, file.getName().lastIndexOf(".")).concat(".").concat(UNLConsts.TEMP_FILE_EXT);
 
                         //checking duplicate name in different files
-                        String fileTrueName = file.getTitle().replace(",", "");
+                        String fileTrueName = file.getName().replace(",", "");
                         java.io.File checkingFile = new java.io.File(root_dir, fileTrueName);
                         if (checkingFile.exists()) {
                             Log.d("unTag_down", "Another file with name " + fileName + " already exists. Rename new file.");
@@ -164,22 +164,24 @@ public class DownloadAudioTask extends AsyncTask<Void, Void, Void> {
                             if (downFile.delete()) {
                                 Log.d("unTag_down", "TMP file deleted download again");
                             }
+                            downFile.createNewFile();
+                        } else {
+                            downFile.createNewFile();
                         }
 
                         //download
                         Log.d("unTag_down", "Start downloading in the " + fileName);
-                        HttpResponse resp = service
-                                .getRequestFactory()
-                                .buildGetRequest(
-                                        new GenericUrl(file.getDownloadUrl()))
-                                .execute();
+                        String fileId = file.getId();
+
                         FileOutputStream output = new FileOutputStream(downFile);
-                        int bufferSize = 1024;
-                        byte[] buffer = new byte[bufferSize];
-                        int len = 0;
-                        while ((len = resp.getContent().read(buffer)) != -1) {
-                            output.write(buffer, 0, len);
-                        }
+                        service.files().get(fileId).executeMediaAndDownloadTo(output);
+
+//                        int bufferSize = 1024;
+//                        byte[] buffer = new byte[bufferSize];
+//                        int len = 0;
+//                        while ((len = resp.getContent().read(buffer)) != -1) {
+//                            output.write(buffer, 0, len);
+//                        }
                         output.flush();
                         output.close();
 
@@ -225,7 +227,7 @@ public class DownloadAudioTask extends AsyncTask<Void, Void, Void> {
                         e.printStackTrace();
                     }
                 } else {
-                    Log.d("unTag_down", "Error when download file. Can't get Download Url from GD");
+                    Log.d("unTag_down", "Error when download file. Can't get file ID from GD");
                     downCount++;
                     return;
                 }
