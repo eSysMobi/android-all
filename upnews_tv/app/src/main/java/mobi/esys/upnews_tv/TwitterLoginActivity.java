@@ -11,13 +11,9 @@ import android.view.WindowManager;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
-
-import io.fabric.sdk.android.Fabric;
-import mobi.esys.upnews_tv.constants.DevelopersKeys;
 
 public class TwitterLoginActivity extends Activity {
     private transient TwitterLoginButton loginButton;
@@ -25,8 +21,6 @@ public class TwitterLoginActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(DevelopersKeys.TWITTER_KEY, DevelopersKeys.TWITTER_SECRET);
-        Fabric.with(this, new Twitter(authConfig));
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);

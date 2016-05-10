@@ -3,13 +3,23 @@ package mobi.esys.upnews_tv;
 import android.app.Activity;
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import io.fabric.sdk.android.Fabric;
 import java.io.File;
 
+import mobi.esys.upnews_tv.constants.DevelopersKeys;
 import mobi.esys.upnews_tv.constants.Folders;
 import mobi.esys.upnews_tv.filesystem.FolderHelper;
 
 
 public class UpnewsOnlineApp extends Application {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = DevelopersKeys.TWITTER_KEY;
+    private static final String TWITTER_SECRET = DevelopersKeys.TWITTER_SECRET;
+
     private transient Activity currentActivityInstance;
     private static final String[] folders = {
             Folders.BASE_FOLDER,
@@ -23,6 +33,8 @@ public class UpnewsOnlineApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
         createFolders();
     }
 

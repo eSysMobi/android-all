@@ -112,9 +112,8 @@
             </intent-filter>
         </receiver>
 
-
         <meta-data
-            android:name="com.crashlytics.ApiKey"
+            android:name="io.fabric.ApiKey"
             android:value="c4b844cc94ec6cbfcc07c4a337ad37857a6fb89d" />
     </application>
 
