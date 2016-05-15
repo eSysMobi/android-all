@@ -943,6 +943,8 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     @Override
     protected void onDestroy() {
+        //do not return result in destroyed activity
+        mYahooWeather.noNeedResult();
         super.onDestroy();
     }
 
