@@ -49,6 +49,7 @@
             android:id="@+id/ibYouTubeSelect"
             android:src="@drawable/youtube_edit_background_selector"
             android:background="@android:color/black"
+            android:nextFocusDown="@+id/rvYouTubeSelect"
             android:focusable="true"
             android:focusableInTouchMode="true">
             <requestFocus/>
@@ -76,10 +77,12 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
+        android:descendantFocusability="afterDescendants"
+        android:nextFocusUp="@+id/ibYouTubeSelect"
         android:paddingTop="4dp"
         android:visibility="visible"
-        android:focusable="false"
-        android:focusableInTouchMode="false"/>
+        android:focusable="true"
+        android:focusableInTouchMode="true"/>
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
@@ -88,10 +91,10 @@
         android:id="@+id/pbYouTubeSelect"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:indeterminate="false"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
