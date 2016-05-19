@@ -16,8 +16,16 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ff4c4b"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:background="#ab0909"
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/logo_navi_bar"
+                android:layout_gravity="center"
+                android:id="@+id/toolbar_title" />
+            </android.support.v7.widget.Toolbar>
+
 
     </android.support.design.widget.AppBarLayout>
 
