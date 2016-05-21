@@ -21,14 +21,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d(TAG, "--- onCreate database ---");
-        // create table
+
+        // create table cuisines
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_CUISINES);
         db.execSQL("create table " + Constants.DB_TABLE_CUISINES + " ("
                 + "_id integer primary key autoincrement,"
-                //+ "id integer primary key autoincrement,"
                 + "server_id integer,"
                 + "ru_name text,"
                 + "en_name text,"
                 + "approved integer"
+                + ");");
+
+        // create table restaurants
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_RESTAURANTS);
+        db.execSQL("create table " + Constants.DB_TABLE_RESTAURANTS + " ("
+                + "_id integer primary key autoincrement,"
+                + "server_id integer,"
+                + "ru_name text,"
+                + "en_name text,"
+                + "city_id integer,"
+                + "district_id integer,"
+                + "min_order integer,"
+                + "del_cost integer,"
+                + "schedule text,"
+                + "time1 text,"
+                + "time2 text,"
+                + "del_time text,"
+                + "payment_methods text,"
+                + "contact_name_ru text,"
+                + "contact_name_en text,"
+                + "phone text,"
+                + "mobile text,"
+                + "email1 text,"
+                + "email2 text,"
+                + "total_rating integer,"
+                + "total_votes integer,"
+                + "contact_email text,"
+                + "order_phone text,"
+                + "additional_ru text,"
+                + "additional_en text,"
+                + "picture text,"
+                + "vegetarian integer,"
+                + "featured integer,"
+                + "approved integer,"
+                + "cuisines text"
                 + ");");
     }
 

@@ -1,8 +1,5 @@
 package mobi.esys.dastarhan;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,10 +24,10 @@ import mobi.esys.dastarhan.tasks.GetCuisines;
 import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.RVCuisinesAdapter;
 
-public class Restorans extends AppCompatActivity
+public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private final String TAG = "dtagRestorans";
+    private final String TAG = "dtagMainActivity";
     private Handler handlerCuisines;
     ProgressBar mpbCuisines;
     RecyclerView mrvCuisines;
@@ -38,7 +35,7 @@ public class Restorans extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_restorans);
+        setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -54,6 +51,7 @@ public class Restorans extends AppCompatActivity
 
         mpbCuisines = (ProgressBar) findViewById(R.id.pbCuisines);
         mrvCuisines = (RecyclerView) findViewById(R.id.rvCuisines);
+
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvCuisines.setLayoutManager(llm);
 
@@ -69,14 +67,10 @@ public class Restorans extends AppCompatActivity
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == Constants.CALLBACK_GET_CUISINES_SUCCESS) {  //all ok
-                //TODO refresh
-                //TODO Hide progress bar and hide cuisines
                 Log.d(TAG, "Cuisines data received");
                 updateCuisines();
             }
             if (msg.what == Constants.CALLBACK_GET_CUISINES_FAIL) {  //not ok
-                //TODO refresh
-                //TODO Hide progress bar and hide cuisines
                 Log.d(TAG, "Cuisines data NOT receive");
                 updateCuisines();
             }
@@ -89,8 +83,9 @@ public class Restorans extends AppCompatActivity
     }
 
     private void updateCuisines() {
+        String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVCuisinesAdapter adapter = new RVCuisinesAdapter(dbHelper, this);
+        RVCuisinesAdapter adapter = new RVCuisinesAdapter(dbHelper, this, locale);
         if (mrvCuisines.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvCuisines");
             mrvCuisines.setAdapter(adapter);
@@ -98,10 +93,7 @@ public class Restorans extends AppCompatActivity
             Log.d(TAG, "Swap adapter in mrvCuisines");
             mrvCuisines.swapAdapter(adapter, true);
         }
-        Log.w(TAG, "CLOSE DB");
 
-
-        //TODO refresh RecyclerView
         mpbCuisines.setVisibility(View.GONE);
         mrvCuisines.setVisibility(View.VISIBLE);
     }
@@ -123,7 +115,7 @@ public class Restorans extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            // Handle the camera action
+            // Handle the action
         } else if (id == R.id.nav_action_favorites) {
 
         } else if (id == R.id.nav_action_bucket) {

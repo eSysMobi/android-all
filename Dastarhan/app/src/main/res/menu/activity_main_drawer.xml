@@ -4,25 +4,25 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_action_menu"
-            android:title="Меню" />
+            android:title="@string/menu" />
         <item
             android:id="@+id/nav_action_favorites"
-            android:title="Избранное" />
+            android:title="@string/favorites" />
         <item
             android:id="@+id/nav_action_bucket"
-            android:title="Корзина" />
+            android:title="@string/basket" />
         <item
             android:id="@+id/nav_action_history"
-            android:title="История заказов" />
+            android:title="@string/history_of_orders" />
         <item
             android:id="@+id/nav_action_promo"
-            android:title="Акции" />
+            android:title="@string/promo" />
         <item
             android:id="@+id/nav_action_settings"
-            android:title="Настройки" />
+            android:title="@string/action_settings" />
         <item
             android:id="@+id/nav_action_info"
-            android:title="Информация" />
+            android:title="@string/info" />
     </group>
 
 </menu>

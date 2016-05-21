@@ -79,31 +79,43 @@ public class GetCuisines extends AsyncTask<Void, Void, Void> {
                     for (int i = 0; i < cuisunesElements.length(); i++) {
                         JSONObject c = cuisunesElements.getJSONObject(i);
 
-                        int cuisine_id = c.getInt("id");
-                        String ru_name = c.getString("ru_name");
-                        String en_name = c.getString("en_name");
                         int approved = c.getInt("approved");
 
-                        //TODO check data from server
+                        if (approved == 1) {
+                            int cuisine_id = c.getInt("id");
+                            String ru_name = c.getString("ru_name");
+                            String en_name = c.getString("en_name");
 
-                        Cursor cursor = db.query(Constants.DB_TABLE_CUISINES, null, null, null, null, null, null);
+                            Cursor cursor = db.query(Constants.DB_TABLE_CUISINES, null, null, null, null, null, null);
 
-                        //check rows in db
-                        if (cursor.moveToFirst()) {
-                            int idColIndex = cursor.getColumnIndex("server_id");
-                            boolean needInsert = true;
+                            //check rows in db
+                            if (cursor.moveToFirst()) {
+                                int idColIndex = cursor.getColumnIndex("server_id");
+                                boolean needInsert = true;
 
-                            //check db for this id
-                            do {
-                                int idInDB = cursor.getInt(idColIndex);
-                                if (idInDB == cuisine_id) {
-                                    needInsert = false;
-                                    break;
+                                //check db for this id
+                                do {
+                                    int idInDB = cursor.getInt(idColIndex);
+                                    if (idInDB == cuisine_id) {
+                                        needInsert = false;
+                                        break;
+                                    }
+                                } while (cursor.moveToNext());
+
+                                if (needInsert) {
+                                    Log.d(TAG, "This cuisine id not found, insert data");
+                                    ContentValues cv = new ContentValues();
+                                    cv.put("server_id", cuisine_id);
+                                    cv.put("ru_name", ru_name);
+                                    cv.put("en_name", en_name);
+                                    cv.put("approved", approved);
+                                    // insert row
+                                    long rowID = db.insert(Constants.DB_TABLE_CUISINES, null, cv);
+                                    Log.d(TAG, "row inserted, ID = " + rowID);
                                 }
-                            } while (cursor.moveToNext());
 
-                            if (needInsert) {
-                                Log.d(TAG, "This cuisine id not found, insert data");
+                            } else {
+                                Log.d(TAG, "0 rows, insert data");
                                 ContentValues cv = new ContentValues();
                                 cv.put("server_id", cuisine_id);
                                 cv.put("ru_name", ru_name);
@@ -113,28 +125,15 @@ public class GetCuisines extends AsyncTask<Void, Void, Void> {
                                 long rowID = db.insert(Constants.DB_TABLE_CUISINES, null, cv);
                                 Log.d(TAG, "row inserted, ID = " + rowID);
                             }
-
-                        } else {
-                            Log.d(TAG, "0 rows, insert data");
-                            ContentValues cv = new ContentValues();
-                            cv.put("server_id", cuisine_id);
-                            cv.put("ru_name", ru_name);
-                            cv.put("en_name", en_name);
-                            cv.put("approved", approved);
-                            // insert row
-                            long rowID = db.insert(Constants.DB_TABLE_CUISINES, null, cv);
-                            Log.d(TAG, "row inserted, ID = " + rowID);
+                            cursor.close();
                         }
-                        cursor.close();
                     }
                 } finally {
                     //close bd
-                    Log.d(TAG, "Close DB");
+                    Log.d(TAG, "Close DB (cuisines)");
                     db.close();
                 }
             }
-
-            Log.e(TAG, "End");
             result = true;
 
         } catch (IOException e) {

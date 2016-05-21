@@ -10,7 +10,7 @@
     tools:openDrawer="start">
 
     <include
-        layout="@layout/app_bar_restorans"
+        layout="@layout/app_bar_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -22,7 +22,7 @@
         android:fitsSystemWindows="true"
         android:background="#88000000"
         app:itemTextColor="#ffffff"
-        app:menu="@menu/activity_restorans_drawer" />
+        app:menu="@menu/activity_main_drawer" />
         <!-- android:background="#88676767" -->
         <!-- android:background="@drawable/smooth_background" -->
         <!--app:headerLayout="@layout/nav_header_restorans" -->

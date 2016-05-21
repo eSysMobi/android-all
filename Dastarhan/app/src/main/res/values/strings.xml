@@ -5,7 +5,17 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
-    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login">Authorization</string>
     <string name="search">Search</string>
     <string name="all_cuisines">All cuisines</string>
+    <string name="all_restaurants">All restaurants</string>
+    <string name="recommended">Recommended</string>
+
+    <string name="menu">Menu</string>
+    <string name="favorites">Favorites</string>
+    <string name="basket">Basket</string>
+    <string name="history_of_orders">History of orders</string>
+    <string name="promo">Promo</string>
+    <string name="info">Info</string>
+    <string name="title_activity_restaurants">Restaurants</string>
 </resources>

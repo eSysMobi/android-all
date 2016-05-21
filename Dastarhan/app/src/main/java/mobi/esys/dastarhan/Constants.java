@@ -7,7 +7,10 @@ public class Constants {
     public static final int CALLBACK_GET_CUISINES_SUCCESS = 42;
     public static final int CALLBACK_GET_CUISINES_FAIL = 41;
     public static final int CALLBACK_GET_CUISINES_SHOW_PROGRESS_BAR = 44;
-    public static final int CALLBACK_GET_CUISINES_HIDE_PROGRESS_BAR = 45;
+    public static final int CALLBACK_GET_RESTAURANTS_SUCCESS = 52;
+    public static final int CALLBACK_GET_RESTAURANTS_FAIL = 51;
+    public static final int CALLBACK_GET_RESTAURANTS_SHOW_PROGRESS_BAR = 54;
+
 
     //api
     public static final String URL_CUISINES = "http://dastarhan.net/index.php/user_api/cui/format/json";
@@ -16,4 +19,5 @@ public class Constants {
     //DB
     public static final String DB_NAME = "dastarhanDB";
     public static final String DB_TABLE_CUISINES = "cuisines";
+    public static final String DB_TABLE_RESTAURANTS = "restaurants";
 }

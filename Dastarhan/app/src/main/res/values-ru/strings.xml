@@ -1,0 +1,16 @@
+<resources>
+
+    <string name="action_settings">Настроки</string>
+    <string name="title_activity_login">Авторизация</string>
+    <string name="search">Поиск</string>
+    <string name="all_cuisines">Все кухни</string>
+    <string name="all_restaurants">Все рестораны</string>
+    <string name="recommended">Рекомендуем</string>
+
+    <string name="menu">Меню</string>
+    <string name="favorites">Избранное</string>
+    <string name="basket">Корзина</string>
+    <string name="history_of_orders">История заказов</string>
+    <string name="promo">Акции</string>
+    <string name="info">Информация</string>
+</resources>
