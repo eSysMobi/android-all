@@ -12,7 +12,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
@@ -31,6 +31,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="mobi.esys.dastarhan.MainActivity" />
+        </activity>
+        <activity
+            android:name=".FoodActivity"
+            android:label="@string/title_activity_food"
+            android:parentActivityName=".Restaurants"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="mobi.esys.dastarhan.Restaurants" />
         </activity>
     </application>
 

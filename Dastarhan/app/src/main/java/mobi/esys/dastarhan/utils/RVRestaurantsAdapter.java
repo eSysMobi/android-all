@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import mobi.esys.dastarhan.Constants;
+import mobi.esys.dastarhan.FoodActivity;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.Restaurants;
 
@@ -25,18 +27,14 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
     private Context mContext;
     private SQLiteDatabase db;
     private String locale;
-    private int cuisineID;
 
     //constructor
     public RVRestaurantsAdapter(DatabaseHelper dbHelper, Context mContext, String locale, int cuisineID) {
         this.mContext = mContext;
         this.locale = locale;
-        this.cuisineID = cuisineID;
         db = dbHelper.getReadableDatabase();
 
-        //TODO
-
-        Log.d("dTagRecyclerView", "String.valueOf(cuisineID) = " + String.valueOf(cuisineID));
+        Log.d("dtagRecyclerView", "cuisineID = " + String.valueOf(cuisineID));
 
         String selectQuery;
         if (cuisineID == -42) {
@@ -141,10 +139,10 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
         @Override
         public void onClick(View v) {
-            Log.d("dTagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
-//            Intent intent = new Intent(mContext, Restaurants.class);
-//            intent.putExtra("restarauntID",id);
-//            mContext.startActivity(intent);
+            Log.d("dtagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
+            Intent intent = new Intent(mContext, FoodActivity.class);
+            intent.putExtra("restID",id);
+            mContext.startActivity(intent);
         }
     }
 
@@ -159,7 +157,10 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
         @Override
         public boolean onLongClick(View v) {
-            Log.d("dTagRecyclerView", "Long click RESTARAUNT in RecyclerView with id = " + id);
+            Log.d("dtagRecyclerView", "Long click RESTARAUNT in RecyclerView with id = " + id);
+
+            //TODO implement onLongClick
+            Toast.makeText(mContext,"Long click to restaurant with ID " + id,Toast.LENGTH_SHORT).show();
 //            Intent intent = new Intent(mContext, Restaurants.class);
 //            intent.putExtra("restarauntID",id);
 //            mContext.startActivity(intent);

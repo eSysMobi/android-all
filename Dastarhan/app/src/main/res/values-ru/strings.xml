@@ -13,4 +13,5 @@
     <string name="history_of_orders">История заказов</string>
     <string name="promo">Акции</string>
     <string name="info">Информация</string>
+    <string name="price">Цена:</string>
 </resources>

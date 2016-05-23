@@ -18,4 +18,6 @@
     <string name="promo">Promo</string>
     <string name="info">Info</string>
     <string name="title_activity_restaurants">Restaurants</string>
+    <string name="title_activity_food">FoodActivity</string>
+    <string name="price">Price:</string>
 </resources>

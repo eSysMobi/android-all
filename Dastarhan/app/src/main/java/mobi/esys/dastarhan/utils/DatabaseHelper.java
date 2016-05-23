@@ -66,6 +66,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "approved integer,"
                 + "cuisines text"
                 + ");");
+
+        // create table food
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_FOOD);
+        db.execSQL("create table " + Constants.DB_TABLE_FOOD + " ("
+                + "_id integer primary key autoincrement,"
+                + "server_id integer,"
+                + "res_id integer,"
+                + "cat_id integer,"
+                + "ru_name text,"
+                + "en_name text,"
+                + "picture text,"
+                + "ru_descr text,"
+                + "en_descr text,"
+                + "price real,"
+                + "min_amount integer,"
+                + "units text,"
+                + "ordered integer,"
+                + "offer integer,"
+                + "vegetarian integer,"
+                + "featured integer"
+                + ");");
     }
 
     @Override
