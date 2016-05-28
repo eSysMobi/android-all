@@ -20,4 +20,8 @@
     <string name="title_activity_restaurants">Restaurants</string>
     <string name="title_activity_food">FoodActivity</string>
     <string name="price">Price:</string>
+    <string name="title_activity_current_food">CurrentFoodActivity</string>
+    <string name="food_not_found">Sorry, but this food not found in Database</string>
+    <string name="to_order">Add to shopping list</string>
+    <string name="title_activity_favorite">FavoriteActivity</string>
 </resources>

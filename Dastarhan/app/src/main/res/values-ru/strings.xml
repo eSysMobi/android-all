@@ -14,4 +14,6 @@
     <string name="promo">Акции</string>
     <string name="info">Информация</string>
     <string name="price">Цена:</string>
+    <string name="food_not_found">Извините, но данная еда не найдена в базе данных</string>
+    <string name="to_order">Заказать</string>
 </resources>

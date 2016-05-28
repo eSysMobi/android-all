@@ -1,5 +1,6 @@
 package mobi.esys.dastarhan;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -90,12 +91,12 @@ public class FoodActivity extends AppCompatActivity
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, restID);
+        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, false, restID);
         if (mrvFood.getAdapter() == null) {
-            Log.d(TAG, "New adapter in mrvRestaurants");
+            Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);
         } else {
-            Log.d(TAG, "Swap adapter in mrvRestaurants");
+            Log.d(TAG, "Swap adapter in mrvFood");
             mrvFood.swapAdapter(adapter, true);
         }
 
@@ -120,9 +121,11 @@ public class FoodActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            // Handle the action
+            Intent intent = new Intent(FoodActivity.this,MainActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_favorites) {
-
+            Intent intent = new Intent(FoodActivity.this,FavoriteActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
 
         } else if (id == R.id.nav_action_history) {

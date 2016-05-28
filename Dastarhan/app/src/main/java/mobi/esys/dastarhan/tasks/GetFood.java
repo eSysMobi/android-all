@@ -137,6 +137,7 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                                 cv.put("ordered", ordered);
                                 cv.put("offer", offer);
                                 cv.put("vegetarian", vegetarian);
+                                cv.put("favorite", 0);
                                 cv.put("featured", featured);
                                 // insert row
                                 long rowID = db.insert(Constants.DB_TABLE_FOOD, null, cv);
@@ -160,6 +161,7 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                             cv.put("ordered", ordered);
                             cv.put("offer", offer);
                             cv.put("vegetarian", vegetarian);
+                            cv.put("favorite", 0);
                             cv.put("featured", featured);
                             // insert row
                             long rowID = db.insert(Constants.DB_TABLE_FOOD, null, cv);

@@ -12,11 +12,23 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal">
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="90dp"
-            android:id="@+id/ivFoodRV"
-            android:background="@drawable/def_food" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="90dp"
+                android:id="@+id/ivFoodRV"
+                android:background="@drawable/def_food" />
+
+            <ImageView
+                android:layout_width="21dp"
+                android:layout_height="18dp"
+                android:id="@+id/ivFoodRVFav"
+                android:background="@drawable/favorite_full"
+                android:layout_margin="5dp" />
+        </RelativeLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -63,5 +75,7 @@
 
             </LinearLayout>
         </FrameLayout>
+
     </LinearLayout>
+
 </LinearLayout>

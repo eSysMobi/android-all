@@ -81,6 +81,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
         }
 
         if (i == getItemCount() - 1) {
+            //cursor.close();
             db.close();
         }
     }

@@ -124,6 +124,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         viewHolder.itemView.setOnLongClickListener(customLongClickListener);
 
         if (i == getItemCount() - 1) {
+            //cursor.close();
             db.close();
         }
     }

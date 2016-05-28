@@ -85,6 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "ordered integer,"
                 + "offer integer,"
                 + "vegetarian integer,"
+                + "favorite integer,"
                 + "featured integer"
                 + ");");
     }

@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import mobi.esys.dastarhan.Constants;
+import mobi.esys.dastarhan.CurrentFoodActivity;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.Restaurants;
 
@@ -24,23 +25,25 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private Context mContext;
     private SQLiteDatabase db;
     private String locale;
-    private int restID;
 
     //constructor
-    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, int restID) {
+    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, boolean needOnlyFavorites, int restID) {
         this.mContext = mContext;
         this.locale = locale;
-        this.restID = restID;
         db = dbHelper.getReadableDatabase();
-        //cursor = db.query(Constants.DB_TABLE_FOOD, null, null, null, null, null, null);
-
-        Log.d("dtagRecyclerView", "restID = " + String.valueOf(restID));
 
         String selectQuery;
-        if (restID == -42) {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
+        if (!needOnlyFavorites) {
+            Log.d("dtagRecyclerView", "restID = " + String.valueOf(restID));
+
+            if (restID == -42) {
+                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
+            } else {
+                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
+            }
         } else {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
+            Log.d("dtagRecyclerView", "Need only favorites ");
+            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
         }
 
         cursor = db.rawQuery(selectQuery, null);
@@ -51,6 +54,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         TextView tvFoodNameRV;
         TextView tvFoodPriceRV;
         ImageView ivFoodRV;
+        ImageView ivFoodRVFav;
         int food_id = 0;
 
         FoodViewHolder(View itemView) {
@@ -58,6 +62,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             tvFoodNameRV = (TextView) itemView.findViewById(R.id.tvFoodNameRV);
             tvFoodPriceRV = (TextView) itemView.findViewById(R.id.tvFoodPriceRV);
             ivFoodRV = (ImageView) itemView.findViewById(R.id.ivFoodRV);
+            ivFoodRVFav = (ImageView) itemView.findViewById(R.id.ivFoodRVFav);
         }
     }
 
@@ -84,8 +89,13 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.food_id);
         viewHolder.itemView.setOnClickListener(customClickListener);
 
+        int fav = cursor.getInt(cursor.getColumnIndex("favorite"));
+        if (fav!=1){
+            viewHolder.ivFoodRVFav.setVisibility(View.GONE);
+        }
 
         if (i == getItemCount() - 1) {
+            //cursor.close();
             db.close();
         }
     }
@@ -102,9 +112,9 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         @Override
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Choose FOOD in RecyclerView with id = " + id);
-//            Intent intent = new Intent(mContext, Restaurants.class);
-//            intent.putExtra("cuisineID",id);
-//            mContext.startActivity(intent);
+            Intent intent = new Intent(mContext, CurrentFoodActivity.class);
+            intent.putExtra("currentFoodID", id);
+            mContext.startActivity(intent);
         }
     }
 

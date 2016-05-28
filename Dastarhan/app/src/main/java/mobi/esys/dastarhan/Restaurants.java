@@ -1,5 +1,6 @@
 package mobi.esys.dastarhan;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -121,9 +122,11 @@ public class Restaurants extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            // Handle the action
+            Intent intent = new Intent(Restaurants.this,MainActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_favorites) {
-
+            Intent intent = new Intent(Restaurants.this,FavoriteActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
 
         } else if (id == R.id.nav_action_history) {
