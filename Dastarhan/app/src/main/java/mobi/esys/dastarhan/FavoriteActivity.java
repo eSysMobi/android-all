@@ -52,6 +52,15 @@ public class FavoriteActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvFavorite.setLayoutManager(llm);
 
+    }
+
+    @Override
+    protected void onResume() {
+        updateFavoriteList();
+        super.onResume();
+    }
+
+    private void updateFavoriteList(){
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, true, 0);

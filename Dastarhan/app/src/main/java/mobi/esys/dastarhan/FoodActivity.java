@@ -63,9 +63,13 @@ public class FoodActivity extends AppCompatActivity
 
         restID = getIntent().getIntExtra("restID", -42);
         Log.d(TAG, "Restaurant ID from intent = " + restID);
+    }
 
+    @Override
+    protected void onResume() {
         GetFood gf = new GetFood(this, handlerFood, restID);
         gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        super.onResume();
     }
 
     private class HandleFood extends Handler {

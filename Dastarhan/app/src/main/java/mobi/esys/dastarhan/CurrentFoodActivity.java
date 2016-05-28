@@ -187,7 +187,7 @@ public class CurrentFoodActivity extends AppCompatActivity
                 cv.put("favorite", favorite);
                 cv.put("featured", featured);
 
-                db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID, null);
+                db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
                 db.close();
             }
         });
