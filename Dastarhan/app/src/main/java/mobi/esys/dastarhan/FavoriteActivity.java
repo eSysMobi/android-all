@@ -63,7 +63,7 @@ public class FavoriteActivity extends AppCompatActivity
     private void updateFavoriteList(){
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, true, 0);
+        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, true, null);
         if (mrvFavorite.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFavorite");
             mrvFavorite.setAdapter(adapter);

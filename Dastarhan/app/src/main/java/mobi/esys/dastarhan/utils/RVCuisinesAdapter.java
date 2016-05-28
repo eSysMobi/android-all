@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import mobi.esys.dastarhan.Constants;
+import mobi.esys.dastarhan.FoodActivity;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.Restaurants;
 
@@ -60,12 +61,24 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
             viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("dTagRecyclerView", "Choose ALL CUISINES in RecyclerView");
-                    Intent intent = new Intent(mContext, Restaurants.class);
-                    intent.putExtra("restID",-42);
+                    Log.d("dTagRecyclerView", "Choose ALL CUISINES in RecyclerView and go to Food");
+                    Intent intent = new Intent(mContext, FoodActivity.class);
+                    intent.putExtra("cuisineID", -42);
+                    intent.putExtra("restID", -50);
                     mContext.startActivity(intent);
                 }
             });
+            viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    Log.d("dTagRecyclerView", "Choose ALL CUISINES in RecyclerView and go to Restaurants");
+                    Intent intent = new Intent(mContext, Restaurants.class);
+                    intent.putExtra("restID", -42);
+                    mContext.startActivity(intent);
+                    return true;
+                }
+            });
+
         } else {
             cursor.moveToPosition(i - 1);
             viewHolder.cuisine_id = cursor.getInt(cursor.getColumnIndex("server_id"));
@@ -78,6 +91,9 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
 
             CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.cuisine_id);
             viewHolder.itemView.setOnClickListener(customClickListener);
+
+            CustomLongClickListener customLongClickListener = new CustomLongClickListener(mContext, viewHolder.cuisine_id);
+            viewHolder.itemView.setOnLongClickListener(customLongClickListener);
         }
 
         if (i == getItemCount() - 1) {
@@ -97,10 +113,30 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
 
         @Override
         public void onClick(View v) {
+            Log.d("dTagRecyclerView", "Choose CUISINE in RecyclerView with id = " + id + " Go to food");
+            Intent intent = new Intent(mContext, FoodActivity.class);
+            intent.putExtra("cuisineID",id);
+            intent.putExtra("restID", -50);
+            mContext.startActivity(intent);
+        }
+    }
+
+    private static class CustomLongClickListener implements View.OnLongClickListener {
+        private int id;
+        private Context mContext;
+
+        public CustomLongClickListener(Context mContext, int id){
+            this.mContext = mContext;
+            this.id = id;
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
             Log.d("dTagRecyclerView", "Choose CUISINE in RecyclerView with id = " + id);
             Intent intent = new Intent(mContext, Restaurants.class);
             intent.putExtra("cuisineID",id);
             mContext.startActivity(intent);
+            return true;
         }
     }
 

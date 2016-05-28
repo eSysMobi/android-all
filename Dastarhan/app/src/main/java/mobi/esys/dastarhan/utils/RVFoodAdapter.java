@@ -29,21 +29,26 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private DatabaseHelper dbHelper;
 
     //constructor
-    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, boolean needOnlyFavorites, int restID) {
+    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, boolean needOnlyFavorites, Integer[] restID) {
         this.mContext = mContext;
         this.locale = locale;
-        this.dbHelper = dbHelper;;
+        this.dbHelper = dbHelper;
+        ;
         db = dbHelper.getReadableDatabase();
 
         String selectQuery;
         if (!needOnlyFavorites) {
-            Log.d("dtagRecyclerView", "restID = " + String.valueOf(restID));
+            Log.d("dtagRecyclerView", "restIDs = " + restID.toString());
 
-            if (restID == -42) {
-                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
-            } else {
-                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
-            }
+                if (restID[0] == -42) {
+                    selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
+                } else {
+                    //selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
+                    selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID[0];
+                    for(int i = 1; i<restID.length;i++){
+                        selectQuery = selectQuery + " or res_id = " + restID[i];
+                    }
+                }
         } else {
             Log.d("dtagRecyclerView", "Need only favorites ");
             selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
@@ -120,7 +125,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         viewHolder.featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
 
         viewHolder.favorite = cursor.getInt(cursor.getColumnIndex("favorite"));
-        if (viewHolder.favorite!=1){
+        if (viewHolder.favorite != 1) {
             viewHolder.ivFoodRVFav.setVisibility(View.GONE);
         } else {
             viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
@@ -156,12 +161,12 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         }
     }
 
-    private static class CustomLongClickListener implements View.OnLongClickListener{
+    private static class CustomLongClickListener implements View.OnLongClickListener {
         Cursor cursor;
         DatabaseHelper dbHelper;
         FoodViewHolder viewHolder;
 
-        public CustomLongClickListener(Cursor cursor, DatabaseHelper dbHelper, FoodViewHolder viewHolder){
+        public CustomLongClickListener(Cursor cursor, DatabaseHelper dbHelper, FoodViewHolder viewHolder) {
             this.cursor = cursor;
             this.dbHelper = dbHelper;
             this.viewHolder = viewHolder;
@@ -186,7 +191,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             cv.put("ordered", viewHolder.ordered);
             cv.put("offer", viewHolder.offer);
             cv.put("vegetarian", viewHolder.vegetarian);
-            if (viewHolder.favorite!=1){
+            if (viewHolder.favorite != 1) {
                 //set fav to 1
                 viewHolder.favorite = 1;
                 cv.put("favorite", viewHolder.favorite);

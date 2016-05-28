@@ -143,6 +143,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
             Log.d("dtagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
             Intent intent = new Intent(mContext, FoodActivity.class);
             intent.putExtra("restID",id);
+            intent.putExtra("cuisineID", -50);
             mContext.startActivity(intent);
         }
     }
@@ -162,8 +163,8 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
             //TODO implement onLongClick
             Toast.makeText(mContext,"Long click to restaurant with ID " + id,Toast.LENGTH_SHORT).show();
-//            Intent intent = new Intent(mContext, Restaurants.class);
-//            intent.putExtra("restarauntID",id);
+//            Intent intent = new Intent(mContext, Restaurant.class);
+//            intent.putExtra("restaurantID",id);
 //            mContext.startActivity(intent);
             return true;
         }
