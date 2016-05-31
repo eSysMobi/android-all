@@ -69,7 +69,7 @@ public class FoodActivity extends AppCompatActivity
 
         cuisineID = getIntent().getIntExtra("cuisineID", -42);
         restaurantsID = new Integer[1];
-        restaurantsID[0] = getIntent().getIntExtra("restID", -42);;
+        restaurantsID[0] = getIntent().getIntExtra("restID", -42);
         Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
         Log.d(TAG, "Restaurant ID from intent = " + restaurantsID[0]);
     }

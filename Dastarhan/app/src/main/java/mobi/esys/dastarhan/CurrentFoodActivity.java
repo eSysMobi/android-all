@@ -2,6 +2,7 @@ package mobi.esys.dastarhan;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ public class CurrentFoodActivity extends AppCompatActivity
     private TextView mtvCurrFoodDescr;
     private ImageView mivCurrFoodFavorite;
     private ImageView mivCurrFoodAddShopping;
+    private ImageView mivCurrFoodVegan;
 
     private int currentFoodID;
     private int res_id = 0;
@@ -84,77 +86,179 @@ public class CurrentFoodActivity extends AppCompatActivity
         mtvCurrFoodDescr = (TextView) findViewById(R.id.tvCurrFoodDescr);
         mivCurrFoodFavorite = (ImageView) findViewById(R.id.ivCurrFoodFavorite);
         mivCurrFoodAddShopping = (ImageView) findViewById(R.id.ivCurrFoodAddShopping);
+        mivCurrFoodVegan = (ImageView) findViewById(R.id.ivCurrFoodVegan);
 
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        db = dbHelper.getReadableDatabase();
+        try {
+            DatabaseHelper dbHelper = new DatabaseHelper(this);
+            db = dbHelper.getReadableDatabase();
 
-        String selectQuery;
-        String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        if (currentFoodID != -42) {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE server_id = " + currentFoodID;
+            String selectQuery;
+            String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
+            if (currentFoodID != -42) {
+                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE server_id = " + currentFoodID;
 
-            cursor = db.rawQuery(selectQuery, null);
+                cursor = db.rawQuery(selectQuery, null);
 
-            String name = "";
-            String priceString = "";
-            if (cursor.getCount() == 1) {
-                cursor.moveToFirst();
+                String name = "";
+                String priceString = "";
+                if (cursor.getCount() == 1) {
+                    cursor.moveToFirst();
 
-                res_id = cursor.getInt(cursor.getColumnIndexOrThrow("res_id"));
-                cat_id = cursor.getInt(cursor.getColumnIndexOrThrow("cat_id"));
-                ru_name = cursor.getString(cursor.getColumnIndexOrThrow("ru_name"));
-                en_name = cursor.getString(cursor.getColumnIndexOrThrow("en_name"));
-                picture = cursor.getString(cursor.getColumnIndexOrThrow("picture"));
-                ru_descr = cursor.getString(cursor.getColumnIndexOrThrow("ru_descr"));
-                en_descr = cursor.getString(cursor.getColumnIndexOrThrow("en_descr"));
-                price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
-                min_amount = cursor.getInt(cursor.getColumnIndexOrThrow("min_amount"));
-                units = cursor.getString(cursor.getColumnIndexOrThrow("units"));
-                ordered = cursor.getInt(cursor.getColumnIndexOrThrow("ordered"));
-                offer = cursor.getInt(cursor.getColumnIndexOrThrow("offer"));
-                vegetarian = cursor.getInt(cursor.getColumnIndexOrThrow("vegetarian"));
-                favorite = cursor.getInt(cursor.getColumnIndexOrThrow("favorite"));
-                featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
+                    res_id = cursor.getInt(cursor.getColumnIndexOrThrow("res_id"));
+                    cat_id = cursor.getInt(cursor.getColumnIndexOrThrow("cat_id"));
+                    ru_name = cursor.getString(cursor.getColumnIndexOrThrow("ru_name"));
+                    en_name = cursor.getString(cursor.getColumnIndexOrThrow("en_name"));
+                    picture = cursor.getString(cursor.getColumnIndexOrThrow("picture"));
+                    ru_descr = cursor.getString(cursor.getColumnIndexOrThrow("ru_descr"));
+                    en_descr = cursor.getString(cursor.getColumnIndexOrThrow("en_descr"));
+                    price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
+                    min_amount = cursor.getInt(cursor.getColumnIndexOrThrow("min_amount"));
+                    units = cursor.getString(cursor.getColumnIndexOrThrow("units"));
+                    ordered = cursor.getInt(cursor.getColumnIndexOrThrow("ordered"));
+                    offer = cursor.getInt(cursor.getColumnIndexOrThrow("offer"));
+                    vegetarian = cursor.getInt(cursor.getColumnIndexOrThrow("vegetarian"));
+                    favorite = cursor.getInt(cursor.getColumnIndexOrThrow("favorite"));
+                    featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
 
-                if (locale.equals("ru")) {
-                    name = ru_name;
+                    if (locale.equals("ru")) {
+                        name = ru_name;
+                    } else {
+                        name = en_name;
+                    }
+
+                    mtvCurrFoodName.setText(name);
+
+                    priceString = String.valueOf(price); //String.valueOf(currentFoodPrice);
+                    priceString += " р.";
+                    mtvCurrFoodPrice.setText(priceString);
+
+                    String description = "";
+                    if (locale.equals("ru")) {
+                        description = ru_descr;
+                    } else {
+                        description = en_descr;
+                    }
+                    mtvCurrFoodDescr.setText(description);
+
+                    //favorite
+                    if (favorite != 0) {
+                        mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
+                    }
+
+                    if (vegetarian == 0) {
+                        mivCurrFoodVegan.setVisibility(View.GONE);
+                    }
+                    cursor.close();
+
+                    //get restaurant info
+                    selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS + " WHERE server_id = " + res_id;
+
+                    cursor = db.rawQuery(selectQuery, null);
+                    FrameLayout mflCurrFoodDescr = (FrameLayout) findViewById(R.id.flCurrFoodDescr);
+                    if (cursor.getCount() == 1) {
+                        cursor.moveToFirst();
+
+                        TextView mtvCurrFoodRest = (TextView) findViewById(R.id.tvCurrFoodRest);
+                        if (locale.equals("ru")) {
+                            mtvCurrFoodRest.setText(cursor.getString(cursor.getColumnIndexOrThrow("ru_name")));
+                        } else {
+                            mtvCurrFoodRest.setText(cursor.getString(cursor.getColumnIndexOrThrow("en_name")));
+                        }
+
+                        ImageView mivCurrFoodRatingRest = (ImageView) findViewById(R.id.ivCurrFoodRatingRest);
+                        int rating = cursor.getInt(cursor.getColumnIndexOrThrow("total_rating"));
+                        switch (rating) {
+                            case 0:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_0));
+                                break;
+                            case 1:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_1));
+                                break;
+                            case 2:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_2));
+                                break;
+                            case 3:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_3));
+                                break;
+                            case 4:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_4));
+                                break;
+                            case 5:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_5));
+                                break;
+                            case 6:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_6));
+                                break;
+                            case 7:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_7));
+                                break;
+                            case 8:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_8));
+                                break;
+                            case 9:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_9));
+                                break;
+                            case 10:
+                                mivCurrFoodRatingRest.setImageDrawable(getResources().getDrawable(R.drawable.rating_10));
+                                break;
+                        }
+
+
+                        if (mflCurrFoodDescr != null) {
+                            mflCurrFoodDescr.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Log.d(TAG, "Get mo info about restaraunt");
+
+                                    Intent intent = new Intent(CurrentFoodActivity.this, CurrentRestaurantActivity.class);
+                                    intent.putExtra("restID", res_id);
+                                    startActivity(intent);
+                                }
+                            });
+                        }
+
+                    } else {
+
+                        if (mflCurrFoodDescr != null) {
+                            mflCurrFoodDescr.setVisibility(View.GONE);
+                        }
+                        cursor.close();
+                    }
+                    cursor.close();
                 } else {
-                    name = en_name;
+                    cursor.close();
                 }
-
-                mtvCurrFoodName.setText(name);
-
-                priceString = String.valueOf(price); //String.valueOf(currentFoodPrice);
-                priceString += " р.";
-                mtvCurrFoodPrice.setText(priceString);
-
-                String description = "";
-                if (locale.equals("ru")) {
-                    description = ru_descr;
-                } else {
-                    description = en_descr;
-                }
-                mtvCurrFoodDescr.setText(description);
-
-                //favorite
-                if (favorite != 0) {
-                    mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
-                }
-
-                cursor.close();
-
             } else {
-                cursor.close();
+                LinearLayout mllCurrentFood = (LinearLayout) findViewById(R.id.llCurrentFood);
+                if (mllCurrentFood != null) {
+                    mllCurrentFood.setVisibility(View.GONE);
+                }
+                FrameLayout mflCurrentFood = (FrameLayout) findViewById(R.id.flCurrentFood);
+                if (mflCurrentFood != null) {
+                    mflCurrentFood.setVisibility(View.GONE);
+                }
+                TextView mtvCurrFoodNotFound = (TextView) findViewById(R.id.tvCurrFoodNotFound);
+                if (mtvCurrFoodNotFound != null) {
+                    mtvCurrFoodNotFound.setVisibility(View.VISIBLE);
+                }
             }
-        } else {
+            db.close();
+        } catch (Exception e) {
             LinearLayout mllCurrentFood = (LinearLayout) findViewById(R.id.llCurrentFood);
-            mllCurrentFood.setVisibility(View.GONE);
+            if (mllCurrentFood != null) {
+                mllCurrentFood.setVisibility(View.GONE);
+            }
             FrameLayout mflCurrentFood = (FrameLayout) findViewById(R.id.flCurrentFood);
-            mflCurrentFood.setVisibility(View.GONE);
+            if (mflCurrentFood != null) {
+                mflCurrentFood.setVisibility(View.GONE);
+            }
             TextView mtvCurrFoodNotFound = (TextView) findViewById(R.id.tvCurrFoodNotFound);
-            mtvCurrFoodNotFound.setVisibility(View.VISIBLE);
+            if (mtvCurrFoodNotFound != null) {
+                mtvCurrFoodNotFound.setVisibility(View.VISIBLE);
+            }
+            Log.e(TAG, "Error with DB: " + e.toString());
+            e.printStackTrace();
         }
-        db.close();
 
         mivCurrFoodFavorite.setOnClickListener(new View.OnClickListener() {
             @Override

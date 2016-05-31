@@ -13,47 +13,48 @@
     tools:showIn="@layout/app_bar_current_food">
 
     <FrameLayout
+        android:id="@+id/flCurrentFood"
         android:layout_width="300dp"
         android:layout_height="212dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/flCurrentFood"
         android:visibility="visible">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <ImageView
+                android:id="@+id/ivCurrFood"
                 android:layout_width="300dp"
                 android:layout_height="212dp"
-                android:id="@+id/ivCurrFood"
-                android:layout_centerVertical="true"
-                android:background="@drawable/def_food"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true" />
+                android:layout_alignParentRight="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/def_food" />
 
             <TextView
                 android:id="@+id/tvCurrFoodName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivCurrFood"
                 android:layout_alignBottom="@+id/ivCurrFood"
-                android:text="Food name"
-                android:textColor="#000000"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
+                android:layout_alignLeft="@+id/ivCurrFood"
                 android:layout_marginBottom="10dp"
-                android:textSize="18sp"
-                android:textStyle="bold"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="1dp"
+                android:layout_marginTop="1dp"
                 android:background="@drawable/rectangle"
                 android:gravity="center"
+                android:paddingBottom="5dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp"
-                android:paddingBottom="5dp" />
+                android:text="Food name"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCurrFoodPrice"
@@ -61,82 +62,90 @@
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/ivCurrFood"
                 android:layout_alignTop="@+id/ivCurrFood"
-                android:text="Price"
-                android:textColor="#ab0909"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="1dp"
                 android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:textStyle="bold"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="1dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/rectangle"
                 android:gravity="center"
+                android:paddingBottom="5dp"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="5dp"
-                android:paddingBottom="5dp" />
+                android:text="Price"
+                android:textColor="#ab0909"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
         </RelativeLayout>
     </FrameLayout>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/llCurrentFood"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/flCurrentFood"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/llCurrentFood"
-        android:visibility="visible"
-        android:layout_marginTop="8dp">
+        android:layout_below="@+id/flCurrentFood"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <RelativeLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
             android:id="@+id/rlCurrFoodAdding"
+            android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:background="@drawable/mask">
+            android:background="@drawable/mask"
+            android:orientation="vertical">
 
 
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:id="@+id/ivCurrFoodFavorite"
-                    android:background="@drawable/favorite_empty"
-                    android:layout_gravity="right|top"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_margin="10dp" />
+            <ImageView
+                android:id="@+id/ivCurrFoodFavorite"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="right|top"
+                android:layout_margin="10dp"
+                android:background="@drawable/favorite_empty" />
 
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:id="@+id/ivCurrFoodClock"
-                    android:background="@drawable/clock"
-                    android:layout_gravity="left|top"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="20dp" />
+            <ImageView
+                android:id="@+id/ivCurrFoodVegan"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_toLeftOf="@+id/ivCurrFoodFavorite"
+                android:layout_alignTop="@+id/ivCurrFoodFavorite"
+                android:background="@drawable/vegan" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="\???"
-                    android:textSize="20sp"
-                    android:id="@+id/textView"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@+id/ivCurrFoodClock"
-                    android:layout_marginTop="15dp"
-                    android:textColor="#ffffff" />
+            <ImageView
+                android:id="@+id/ivCurrFoodClock"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="left|top"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/clock" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="15dp"
+                android:layout_toRightOf="@+id/ivCurrFoodClock"
+                android:text="\???"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
 
             <FrameLayout
+                android:id="@+id/flCurrFoodAddShopping"
                 android:layout_width="200dp"
                 android:layout_height="48dp"
-                android:id="@+id/flCurrFoodAddShopping"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="10dp">
@@ -146,71 +155,129 @@
                     android:layout_height="match_parent">
 
                     <ImageView
+                        android:id="@+id/ivCurrFoodAddShopping"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/ivCurrFoodAddShopping"
-                        android:layout_centerVertical="true"
-                        android:background="@drawable/login_button_back"
-                        android:layout_alignParentRight="true"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true" />
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/login_button_back" />
 
                     <TextView
                         android:id="@+id/tvCurrFoodAddShopping"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/ivCurrFoodAddShopping"
-                        android:layout_alignTop="@+id/ivCurrFoodAddShopping"
-                        android:layout_alignRight="@+id/ivCurrFoodAddShopping"
                         android:layout_alignBottom="@+id/ivCurrFoodAddShopping"
+                        android:layout_alignLeft="@+id/ivCurrFoodAddShopping"
+                        android:layout_alignRight="@+id/ivCurrFoodAddShopping"
+                        android:layout_alignTop="@+id/ivCurrFoodAddShopping"
+                        android:layout_marginBottom="1dp"
+                        android:layout_marginLeft="1dp"
+                        android:layout_marginRight="1dp"
+                        android:layout_marginTop="1dp"
                         android:gravity="center"
                         android:text="@string/to_order"
                         android:textColor="#ffffff"
-                        android:layout_marginLeft="1dp"
-                        android:layout_marginTop="1dp"
-                        android:layout_marginRight="1dp"
-                        android:layout_marginBottom="1dp"
                         android:textSize="18sp" />
                 </RelativeLayout>
             </FrameLayout>
 
-
         </RelativeLayout>
 
         <RelativeLayout
-            android:orientation="vertical"
+            android:id="@+id/rlCurrFoodDescr"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/rlCurrFoodDescr"
+            android:layout_marginTop="8dp"
             android:background="@drawable/mask"
-            android:layout_marginTop="8dp">
+            android:orientation="vertical">
 
             <ScrollView
+                android:id="@+id/svCurrFoodDescr"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/svCurrFoodDescr"
-                android:layout_margin="10dp" >
+                android:layout_margin="10dp">
 
-                <TextView
+                <LinearLayout
+                    android:id="@+id/llCurrFoodDescr"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:id="@+id/tvCurrFoodDescr"
-                    android:textColor="#ffffff" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvCurrFoodDescr"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#ffffff"
+                        android:textSize="18sp" />
+
+                    <FrameLayout
+                        android:id="@+id/flCurrFoodDescr"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <ImageView
+                                android:id="@+id/ivCurrFoodRest"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_alignParentLeft="true"
+                                android:layout_alignParentRight="true"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:background="@drawable/def_restaurant" />
+
+                            <TextView
+                                android:id="@+id/tvCurrFoodRest"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignBottom="@+id/ivCurrFoodRest"
+                                android:layout_alignLeft="@+id/ivCurrFoodRest"
+                                android:layout_alignTop="@+id/ivCurrFoodRest"
+                                android:layout_marginBottom="1dp"
+                                android:layout_marginLeft="20dp"
+                                android:layout_marginTop="1dp"
+                                android:layout_toLeftOf="@+id/ivCurrFoodRatingRest"
+                                android:layout_toStartOf="@+id/ivCurrFoodRatingRest"
+                                android:gravity="center_vertical"
+                                android:singleLine="true"
+                                android:text="Restaurant"
+                                android:textColor="#ffffff"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/ivCurrFoodRatingRest"
+                                android:layout_width="100dp"
+                                android:layout_height="16dp"
+                                android:layout_alignBottom="@+id/ivCurrFoodRest"
+                                android:layout_alignRight="@+id/ivCurrFoodRest"
+                                android:layout_marginBottom="28dp"
+                                android:layout_marginRight="10dp"
+                                android:background="@drawable/rating_5" />
+                        </RelativeLayout>
+                    </FrameLayout>
+                </LinearLayout>
             </ScrollView>
+
         </RelativeLayout>
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tvCurrFoodNotFound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/food_not_found"
-        android:id="@+id/tvCurrFoodNotFound"
-        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="@string/food_not_found"
         android:textAlignment="center"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#ffffff"
         android:visibility="gone" />
 

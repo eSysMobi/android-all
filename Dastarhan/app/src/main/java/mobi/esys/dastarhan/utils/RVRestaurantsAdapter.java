@@ -7,17 +7,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import mobi.esys.dastarhan.Constants;
+import mobi.esys.dastarhan.CurrentRestaurantActivity;
 import mobi.esys.dastarhan.FoodActivity;
 import mobi.esys.dastarhan.R;
-import mobi.esys.dastarhan.Restaurants;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
@@ -57,8 +55,8 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         RestaurantViewHolder(View itemView) {
             super(itemView);
             tvRestaurant = (TextView) itemView.findViewById(R.id.tvRestaurant);
-            ivRestaurant = (ImageView) itemView.findViewById(R.id.ivRestaurant);
-            ivRatingRestaurant = (ImageView) itemView.findViewById(R.id.ivRatingRestaurant);
+            ivRestaurant = (ImageView) itemView.findViewById(R.id.ivCurrFoodRest);
+            ivRatingRestaurant = (ImageView) itemView.findViewById(R.id.ivCurrFoodRatingRest);
         }
     }
 
@@ -161,11 +159,9 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         public boolean onLongClick(View v) {
             Log.d("dtagRecyclerView", "Long click RESTARAUNT in RecyclerView with id = " + id);
 
-            //TODO implement onLongClick
-            Toast.makeText(mContext,"Long click to restaurant with ID " + id,Toast.LENGTH_SHORT).show();
-//            Intent intent = new Intent(mContext, Restaurant.class);
-//            intent.putExtra("restaurantID",id);
-//            mContext.startActivity(intent);
+            Intent intent = new Intent(mContext, CurrentRestaurantActivity.class);
+            intent.putExtra("restID",id);
+            mContext.startActivity(intent);
             return true;
         }
     }

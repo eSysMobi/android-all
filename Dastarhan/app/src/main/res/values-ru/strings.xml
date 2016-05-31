@@ -15,5 +15,12 @@
     <string name="info">Информация</string>
     <string name="price">Цена:</string>
     <string name="food_not_found">Извините, но данная еда не найдена в базе данных</string>
+    <string name="rest_not_found">Извините, но данный ресторан не найден в базе данных</string>
     <string name="to_order">Заказать</string>
+    <string name="open_hours">Время работы:</string>
+    <string name="schedule">Расписание:</string>
+    <string name="tel">Тел:</string>
+    <string name="order_tel">Тел. заказа:</string>
+    <string name="email">Эл.почта:</string>
+    <string name="payment_method">Платёжный метод:</string>
 </resources>

@@ -16,7 +16,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/ivRestaurant"
+                android:id="@+id/ivCurrFoodRest"
                 android:layout_centerVertical="true"
                 android:background="@drawable/def_restaurant"
                 android:layout_alignParentRight="true"
@@ -28,27 +28,28 @@
                 android:id="@+id/tvRestaurant"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivRestaurant"
-                android:layout_alignTop="@+id/ivRestaurant"
-                android:layout_alignRight="@+id/ivRestaurant"
-                android:layout_alignBottom="@+id/ivRestaurant"
+                android:layout_alignLeft="@+id/ivCurrFoodRest"
+                android:layout_alignTop="@+id/ivCurrFoodRest"
+                android:layout_alignBottom="@+id/ivCurrFoodRest"
                 android:gravity="center_vertical"
-                android:text="@string/all_cuisines"
+                android:text="Restaurant"
                 android:textColor="#ffffff"
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
                 android:layout_marginBottom="1dp"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:layout_toLeftOf="@+id/ivCurrFoodRatingRest"
+                android:layout_toStartOf="@+id/ivCurrFoodRatingRest" />
 
             <ImageView
-                android:id="@+id/ivRatingRestaurant"
+                android:id="@+id/ivCurrFoodRatingRest"
                 android:layout_width="100dp"
                 android:layout_height="16dp"
                 android:background="@drawable/rating_5"
-                android:layout_alignRight="@+id/ivRestaurant"
-                android:layout_alignBottom="@+id/ivRestaurant"
+                android:layout_alignRight="@+id/ivCurrFoodRest"
+                android:layout_alignBottom="@+id/ivCurrFoodRest"
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="28dp" />
         </RelativeLayout>
