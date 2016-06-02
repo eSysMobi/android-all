@@ -23,4 +23,12 @@
     <string name="order_tel">Тел. заказа:</string>
     <string name="email">Эл.почта:</string>
     <string name="payment_method">Платёжный метод:</string>
+    <string name="login">Войти</string>
+    <string name="skip">Пропустить авторизацию</string>
+    <string name="login_email">Эл.почта</string>
+    <string name="login_pass">Пароль</string>
+    <string name="login_sign_up">Регистрация?</string>
+    <string name="login_remind">Напомнить?</string>
+    <string name="enter_or_skip">Пожалуйста введите эл.адрес и пароль или пропустите авторизацию</string>
+    <string name="is_need_remember">Запомнить учётные данные?</string>
 </resources>

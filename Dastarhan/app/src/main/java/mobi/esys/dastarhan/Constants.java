@@ -4,6 +4,8 @@ package mobi.esys.dastarhan;
  * Created by ZeyUzh on 18.05.2016.
  */
 public class Constants {
+    public static final String APP_PREF = "dastarhan_preferences";
+
     public static final int CALLBACK_GET_CUISINES_SUCCESS = 42;
     public static final int CALLBACK_GET_CUISINES_FAIL = 41;
     public static final int CALLBACK_GET_CUISINES_SHOW_PROGRESS_BAR = 44;

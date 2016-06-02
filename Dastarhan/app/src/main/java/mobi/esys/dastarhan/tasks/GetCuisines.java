@@ -25,10 +25,9 @@ import mobi.esys.dastarhan.utils.DatabaseHelper;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
-public class GetCuisines extends AsyncTask<Void, Void, Void> {
+public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = "dtagGetCuisines";
     private Handler handler;
-    boolean result = false;
     private Context context;
 
     public GetCuisines(Context incContext, Handler incHandler) {
@@ -43,8 +42,8 @@ public class GetCuisines extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
-
+    protected Boolean doInBackground(Void... params) {
+        Boolean result = false;
 
         URL url;
         HttpURLConnection urlConnection = null;
@@ -133,9 +132,9 @@ public class GetCuisines extends AsyncTask<Void, Void, Void> {
                     Log.d(TAG, "Close DB (cuisines)");
                     db.close();
                 }
+                //if we have cuisunes elements
+                result = true;
             }
-            result = true;
-
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "Error IOException " + e.toString());
@@ -146,16 +145,21 @@ public class GetCuisines extends AsyncTask<Void, Void, Void> {
                 urlConnection.disconnect();
             }
         }
-        return null;
+        return result;
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        //super.onPostExecute(aVoid);
+    protected void onPostExecute(Boolean result) {
         if (result) {
             handler.sendEmptyMessage(Constants.CALLBACK_GET_CUISINES_SUCCESS);
         } else {
             handler.sendEmptyMessage(Constants.CALLBACK_GET_CUISINES_FAIL);
         }
+    }
+
+    @Override
+    protected void onCancelled() {
+        handler.sendEmptyMessage(Constants.CALLBACK_GET_CUISINES_FAIL);
+        super.onCancelled();
     }
 }

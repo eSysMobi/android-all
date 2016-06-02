@@ -29,9 +29,13 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private final String TAG = "dtagMainActivity";
+
+    private DastarhanApp dastarhanApp;
+
     private Handler handlerCuisines;
-    ProgressBar mpbCuisines;
-    RecyclerView mrvCuisines;
+
+    private ProgressBar mpbCuisines;
+    private RecyclerView mrvCuisines;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +62,12 @@ public class MainActivity extends AppCompatActivity
 
         handlerCuisines = new HandleCuisines();
 
+        dastarhanApp = (DastarhanApp) getApplication();
 
-        GetCuisines gc = new GetCuisines(this, handlerCuisines);
-        gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        if (dastarhanApp.getNeedGetCuisinesFromServer()) {
+            GetCuisines gc = new GetCuisines(this, handlerCuisines);
+            gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }
     }
 
     private class HandleCuisines extends Handler {
@@ -69,6 +76,7 @@ public class MainActivity extends AppCompatActivity
         public void handleMessage(Message msg) {
             if (msg.what == Constants.CALLBACK_GET_CUISINES_SUCCESS) {  //all ok
                 Log.d(TAG, "Cuisines data received");
+                dastarhanApp.setNeedGetCuisinesFromServer(false);
                 updateCuisines();
             }
             if (msg.what == Constants.CALLBACK_GET_CUISINES_FAIL) {  //not ok
@@ -118,7 +126,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_action_menu) {
             // Handle the action
         } else if (id == R.id.nav_action_favorites) {
-            Intent intent = new Intent(MainActivity.this,FavoriteActivity.class);
+            Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
 

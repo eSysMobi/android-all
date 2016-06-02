@@ -31,4 +31,12 @@
     <string name="order_tel">Order phone numder:</string>
     <string name="email">Email:</string>
     <string name="payment_method">Payment method:</string>
+    <string name="login">Log in</string>
+    <string name="skip">Skip authentication</string>
+    <string name="login_email">Email</string>
+    <string name="login_pass">Password</string>
+    <string name="login_sign_up">Sign up?</string>
+    <string name="login_remind">Remind?</string>
+    <string name="enter_or_skip">Please input email and password or skip authentication</string>
+    <string name="is_need_remember">Remember your credentials?</string>
 </resources>
