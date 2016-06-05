@@ -86,7 +86,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "offer integer,"
                 + "vegetarian integer,"
                 + "favorite integer,"
+                + "featured integer,"
+                + "in_order integer"
+                + ");");
+
+        // create table orders
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_ORDERS);
+        db.execSQL("create table " + Constants.DB_TABLE_ORDERS + " ("
+                + "_id integer primary key autoincrement,"
+                + "id_order integer,"
+                + "id_food integer,"
+                + "count integer,"
+                + "price real,"
+                + "notice text"
+                + ");");
+
+        // create table promo
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_PROMO);
+        db.execSQL("create table " + Constants.DB_TABLE_PROMO + " ("
+                + "_id integer primary key autoincrement,"
+                + "server_id integer,"
+                + "res_id integer,"
+                + "condition integer,"
+                + "condition_par integer,"
+                + "time integer,"
+                + "time1 text,"
+                + "time2 text,"
+                + "days text,"
+                + "date integer,"
+                + "date1 text,"
+                + "date2 text,"
+                + "gift_condition integer,"
                 + "featured integer"
+                + ");");
+
+        // create table gifts
+        Log.d(TAG, "Create table " + Constants.DB_TABLE_GIFTS);
+        db.execSQL("create table " + Constants.DB_TABLE_GIFTS + " ("
+                + "_id integer primary key autoincrement,"
+                + "res_id integer,"
+                + "gift_goods integer"
                 + ");");
     }
 

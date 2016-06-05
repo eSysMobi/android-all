@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@drawable/smooth_background"
+    android:background="@drawable/smooth_background_1"
     tools:openDrawer="start">
 
     <include

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@drawable/smooth_background"
+    android:background="@drawable/smooth_background_1"
     tools:openDrawer="start">
 
     <include
@@ -24,7 +24,7 @@
         app:itemTextColor="#ffffff"
         app:menu="@menu/activity_main_drawer" />
         <!-- android:background="#88676767" -->
-        <!-- android:background="@drawable/smooth_background" -->
+        <!-- android:background="@drawable/smooth_background_1" -->
         <!--app:headerLayout="@layout/nav_header_restorans" -->
 
 </android.support.v4.widget.DrawerLayout>

@@ -60,14 +60,16 @@ public class MainActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvCuisines.setLayoutManager(llm);
 
-        handlerCuisines = new HandleCuisines();
+//        handlerCuisines = new HandleCuisines();
+//
+//        dastarhanApp = (DastarhanApp) getApplication();
+//
+//        if (dastarhanApp.getNeedGetCuisinesFromServer()) {
+//            GetCuisines gc = new GetCuisines(this, handlerCuisines);
+//            gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+//        }
 
-        dastarhanApp = (DastarhanApp) getApplication();
-
-        if (dastarhanApp.getNeedGetCuisinesFromServer()) {
-            GetCuisines gc = new GetCuisines(this, handlerCuisines);
-            gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-        }
+        updateCuisines();
     }
 
     private class HandleCuisines extends Handler {
@@ -124,16 +126,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            // Handle the action
+            //not need
         } else if (id == R.id.nav_action_favorites) {
             Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-
+            Intent intent = new Intent(MainActivity.this,BasketActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-
+            Intent intent = new Intent(MainActivity.this,PromoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
 
         } else if (id == R.id.nav_action_info) {

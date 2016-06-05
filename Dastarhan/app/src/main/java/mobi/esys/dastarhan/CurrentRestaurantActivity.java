@@ -312,11 +312,13 @@ public class CurrentRestaurantActivity extends AppCompatActivity
             Intent intent = new Intent(CurrentRestaurantActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-
+            Intent intent = new Intent(CurrentRestaurantActivity.this,BasketActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-
+            Intent intent = new Intent(CurrentRestaurantActivity.this,PromoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
 
         } else if (id == R.id.nav_action_info) {

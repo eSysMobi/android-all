@@ -3,6 +3,7 @@ package mobi.esys.dastarhan.utils;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
@@ -27,31 +28,89 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private SQLiteDatabase db;
     private String locale;
     private DatabaseHelper dbHelper;
+    private byte action;
 
     //constructor
-    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, boolean needOnlyFavorites, Integer[] restID) {
+    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, byte action, Integer[] restID) {
         this.mContext = mContext;
         this.locale = locale;
         this.dbHelper = dbHelper;
-        ;
+        this.action = action;
         db = dbHelper.getReadableDatabase();
 
         String selectQuery;
-        if (!needOnlyFavorites) {
-            Log.d("dtagRecyclerView", "restIDs = " + restID.toString());
+        switch (action) {
+            case Constants.ACTION_GET_FOOD_FAVORITE:
+                Log.d("dtagRecyclerView", "Retrieve favorite food");
+                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
+                break;
+            case Constants.ACTION_GET_FOOD_FROM_RESTAURANTS:
 
                 if (restID[0] == -42) {
+                    Log.d("dtagRecyclerView", "Retrieve food from all restaurants");
                     selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
                 } else {
+                    Log.d("dtagRecyclerView", "Retrieve food from restaurants with IDs = " + restID.toString());
                     //selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
                     selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID[0];
-                    for(int i = 1; i<restID.length;i++){
+                    for (int i = 1; i < restID.length; i++) {
                         selectQuery = selectQuery + " or res_id = " + restID[i];
                     }
                 }
-        } else {
-            Log.d("dtagRecyclerView", "Need only favorites ");
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
+                break;
+            case Constants.ACTION_GET_FOOD_CURR_ORDERED:
+                SharedPreferences prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
+                int numOrder = prefs.getInt(Constants.PREF_CURR_NUM_ORDER, 1);
+                boolean executed = prefs.getBoolean(Constants.PREF_CURR_ORDER_EXECUTED, false);
+                if (executed) {
+                    numOrder = -1;
+                }
+                Log.d("dtagRecyclerView", "Retrieve ordered food with order num = " + numOrder);
+//                SELECT
+//                    а.имя_столбца1_таблицы_1,
+//                    а.имя_столбца2_таблицы_1,
+//                    б.имя_столбца1_таблицы_2,
+//                    б.имя_столбца2_таблицы_2
+//                FROM
+//                    имя_таблицы_1 а, имя_таблицы_2 б
+//                WHERE
+//                    а.имя_столбца_по_которому_объединяем =
+//                    б.имя_столбца_по_которому_объединяем;
+
+                selectQuery =
+                        "SELECT "
+                                + "a.server_id as server_id, "
+                                + "a.ru_name as ru_name, "
+                                + "a.en_name as en_name, "
+                                //+ "a.price as price, "
+                                + "a.res_id as res_id, "
+                                + "a.cat_id as cat_id, "
+                                + "a.picture as picture, "
+                                + "a.ru_descr as ru_descr, "
+                                + "a.en_descr as en_descr, "
+                                + "a.min_amount as min_amount, "
+                                + "a.units as units, "
+                                + "a.ordered as ordered, "
+                                + "a.offer as offer, "
+                                + "a.vegetarian as vegetarian, "
+                                + "a.featured as featured, "
+                                + "a.in_order as in_order, "
+                                + "a.favorite as favorite, "
+                                + "b.count as count, "
+                                + "b.price as price, "
+                                + "b.notice as notice "
+                                + "FROM "
+                                + Constants.DB_TABLE_FOOD + " a, "
+                                + Constants.DB_TABLE_ORDERS + " b "
+                                + "WHERE "
+                                + "a.server_id = b.id_food "
+                                + "AND "
+                                + "b.id_order = " + numOrder;
+                Log.d("dtagRecyclerView", "Query = " + selectQuery);
+                break;
+            default:
+                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
+                break;
         }
 
         cursor = db.rawQuery(selectQuery, null);
@@ -63,6 +122,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         TextView tvFoodPriceRV;
         ImageView ivFoodRV;
         ImageView ivFoodRVFav;
+        TextView tvFoodNoticeRV;
 
         int food_id = 0;
         int res_id = 0;
@@ -80,6 +140,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         int vegetarian = 0;
         int favorite = 0;
         int featured = 0;
+        int in_order = 0;
 
         FoodViewHolder(View itemView) {
             super(itemView);
@@ -87,6 +148,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             tvFoodPriceRV = (TextView) itemView.findViewById(R.id.tvFoodPriceRV);
             ivFoodRV = (ImageView) itemView.findViewById(R.id.ivFoodRV);
             ivFoodRVFav = (ImageView) itemView.findViewById(R.id.ivFoodRVFav);
+            tvFoodNoticeRV = (TextView) itemView.findViewById(R.id.tvFoodNoticeRV);
         }
     }
 
@@ -123,12 +185,25 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         viewHolder.offer = cursor.getInt(cursor.getColumnIndexOrThrow("offer"));
         viewHolder.vegetarian = cursor.getInt(cursor.getColumnIndexOrThrow("vegetarian"));
         viewHolder.featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
-
+        viewHolder.in_order = cursor.getInt(cursor.getColumnIndexOrThrow("in_order"));
         viewHolder.favorite = cursor.getInt(cursor.getColumnIndex("favorite"));
+
         if (viewHolder.favorite != 1) {
             viewHolder.ivFoodRVFav.setVisibility(View.GONE);
         } else {
             viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
+        }
+
+        if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
+            int tmpCount = cursor.getInt(cursor.getColumnIndex("count"));
+            String tmpName = "(" + String.valueOf(tmpCount) + ") " + viewHolder.tvFoodNameRV.getText().toString();
+            viewHolder.tvFoodNameRV.setText(tmpName);
+
+            String tmpNotice = cursor.getString(cursor.getColumnIndex("notice"));
+            if (!tmpNotice.isEmpty()) {
+                viewHolder.tvFoodNoticeRV.setVisibility(View.VISIBLE);
+                viewHolder.tvFoodNoticeRV.setText(tmpNotice);
+            }
         }
 
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.food_id);
@@ -203,6 +278,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
                 viewHolder.ivFoodRVFav.setVisibility(View.GONE);
             }
             cv.put("featured", viewHolder.featured);
+            cv.put("in_order", viewHolder.in_order);
             int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
             Log.d("dtagRecyclerView", "Fav updated = " + result);
             db.close();

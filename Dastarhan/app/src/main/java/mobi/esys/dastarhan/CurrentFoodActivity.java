@@ -1,7 +1,9 @@
 package mobi.esys.dastarhan;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -31,7 +33,11 @@ public class CurrentFoodActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private final String TAG = "dtagCurrentFood";
+    private transient SharedPreferences prefs;
+    private int current_order;
+    private boolean order_executed;
 
+    private boolean canOrdered = false;
 
     private SQLiteDatabase db;
     private Cursor cursor;
@@ -39,6 +45,7 @@ public class CurrentFoodActivity extends AppCompatActivity
     private TextView mtvCurrFoodPrice;
     private TextView mtvCurrFoodName;
     private TextView mtvCurrFoodDescr;
+    private TextView mtvCurrFoodAddShopping;
     private ImageView mivCurrFoodFavorite;
     private ImageView mivCurrFoodAddShopping;
     private ImageView mivCurrFoodVegan;
@@ -59,6 +66,8 @@ public class CurrentFoodActivity extends AppCompatActivity
     private int vegetarian = 0;
     private int favorite = 0;
     private int featured = 0;
+    private int in_order = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +86,10 @@ public class CurrentFoodActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
+        current_order = prefs.getInt(Constants.PREF_CURR_NUM_ORDER, 1);
+        order_executed = prefs.getBoolean(Constants.PREF_CURR_ORDER_EXECUTED, false);
+
         currentFoodID = getIntent().getIntExtra("currentFoodID", -42);
 
         Log.d(TAG, "Choose FOOD ID from intent = " + currentFoodID);
@@ -87,7 +100,123 @@ public class CurrentFoodActivity extends AppCompatActivity
         mivCurrFoodFavorite = (ImageView) findViewById(R.id.ivCurrFoodFavorite);
         mivCurrFoodAddShopping = (ImageView) findViewById(R.id.ivCurrFoodAddShopping);
         mivCurrFoodVegan = (ImageView) findViewById(R.id.ivCurrFoodVegan);
+        mtvCurrFoodAddShopping = (TextView) findViewById(R.id.tvCurrFoodAddShopping);
 
+        //click favorite
+        mivCurrFoodFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (favorite != 0) {
+                    favorite = 0;
+                    mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_empty));
+                } else {
+                    favorite = 1;
+                    mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
+                }
+
+                DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
+                db = dbHelper.getWritableDatabase();
+                ContentValues cv = new ContentValues();
+                cv.put("server_id", currentFoodID);
+                cv.put("res_id", res_id);
+                cv.put("cat_id", cat_id);
+                cv.put("ru_name", ru_name);
+                cv.put("en_name", en_name);
+                cv.put("picture", picture);
+                cv.put("ru_descr", ru_descr);
+                cv.put("en_descr", en_descr);
+                cv.put("price", price);
+                cv.put("min_amount", min_amount);
+                cv.put("units", units);
+                cv.put("ordered", ordered);
+                cv.put("offer", offer);
+                cv.put("vegetarian", vegetarian);
+                cv.put("favorite", favorite);
+                cv.put("featured", featured);
+                cv.put("in_order", in_order);
+
+                db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
+                db.close();
+            }
+        });
+
+        //click order
+        mivCurrFoodAddShopping.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (canOrdered) {
+                    Intent intent = new Intent(CurrentFoodActivity.this, CurrentOrderActivity.class);
+                    startActivityForResult(intent, 88);
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult requestCode " + requestCode + " resultCode " + resultCode);
+        if (data == null) {
+            return;
+        }
+        Log.d(TAG, "all ok");
+        if (requestCode == 88 && resultCode == Activity.RESULT_OK) {
+            int count = data.getIntExtra("count",1);
+            String notice = data.getStringExtra("notice");
+            Log.d(TAG, "Saving order " + current_order + " Count: " + count + " Notice: " + notice);
+
+            canOrdered = false;
+            if (order_executed) {
+                current_order++;
+                order_executed = false;
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(Constants.PREF_CURR_NUM_ORDER, current_order);
+                editor.putBoolean(Constants.PREF_CURR_ORDER_EXECUTED, order_executed);
+                editor.apply();
+            }
+
+            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
+            db = dbHelper.getWritableDatabase();
+            ContentValues cv;
+
+            cv = new ContentValues();
+            cv.put("server_id", currentFoodID);
+            cv.put("res_id", res_id);
+            cv.put("cat_id", cat_id);
+            cv.put("ru_name", ru_name);
+            cv.put("en_name", en_name);
+            cv.put("picture", picture);
+            cv.put("ru_descr", ru_descr);
+            cv.put("en_descr", en_descr);
+            cv.put("price", price);
+            cv.put("min_amount", min_amount);
+            cv.put("units", units);
+            cv.put("ordered", ordered);
+            cv.put("offer", offer);
+            cv.put("vegetarian", vegetarian);
+            cv.put("favorite", favorite);
+            cv.put("featured", featured);
+            cv.put("in_order", current_order);
+            db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
+
+            cv = new ContentValues();
+            cv.put("id_order", current_order);
+            cv.put("id_food", currentFoodID);
+            cv.put("count", count);
+            cv.put("price", price);
+            cv.put("notice", notice);
+            long rowID = db.insert(Constants.DB_TABLE_ORDERS, null, cv);
+            Log.d(TAG, "row order inserted, ID = " + rowID);
+
+            db.close();
+
+            mtvCurrFoodAddShopping.setText(R.string.cant_order);
+            Toast.makeText(getApplicationContext(), "Added to shopping list", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onResume() {
         try {
             DatabaseHelper dbHelper = new DatabaseHelper(this);
             db = dbHelper.getReadableDatabase();
@@ -119,6 +248,17 @@ public class CurrentFoodActivity extends AppCompatActivity
                     vegetarian = cursor.getInt(cursor.getColumnIndexOrThrow("vegetarian"));
                     favorite = cursor.getInt(cursor.getColumnIndexOrThrow("favorite"));
                     featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
+                    in_order = cursor.getInt(cursor.getColumnIndexOrThrow("in_order"));
+
+                    if (in_order < current_order) {
+                        canOrdered = true;
+                    }
+
+                    if (canOrdered) {
+                        mtvCurrFoodAddShopping.setText(R.string.to_order);
+                    } else {
+                        mtvCurrFoodAddShopping.setText(R.string.cant_order);
+                    }
 
                     if (locale.equals("ru")) {
                         name = ru_name;
@@ -259,49 +399,7 @@ public class CurrentFoodActivity extends AppCompatActivity
             Log.e(TAG, "Error with DB: " + e.toString());
             e.printStackTrace();
         }
-
-        mivCurrFoodFavorite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (favorite != 0) {
-                    favorite = 0;
-                    mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_empty));
-                } else {
-                    favorite = 1;
-                    mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
-                }
-
-                DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
-                db = dbHelper.getWritableDatabase();
-                ContentValues cv = new ContentValues();
-                cv.put("server_id", currentFoodID);
-                cv.put("res_id", res_id);
-                cv.put("cat_id", cat_id);
-                cv.put("ru_name", ru_name);
-                cv.put("en_name", en_name);
-                cv.put("picture", picture);
-                cv.put("ru_descr", ru_descr);
-                cv.put("en_descr", en_descr);
-                cv.put("price", price);
-                cv.put("min_amount", min_amount);
-                cv.put("units", units);
-                cv.put("ordered", ordered);
-                cv.put("offer", offer);
-                cv.put("vegetarian", vegetarian);
-                cv.put("favorite", favorite);
-                cv.put("featured", featured);
-
-                db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
-                db.close();
-            }
-        });
-
-        mivCurrFoodAddShopping.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Add to shopping list", Toast.LENGTH_SHORT).show();
-            }
-        });
+        super.onResume();
     }
 
     @Override
@@ -347,11 +445,13 @@ public class CurrentFoodActivity extends AppCompatActivity
             Intent intent = new Intent(CurrentFoodActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-
+            Intent intent = new Intent(CurrentFoodActivity.this,BasketActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-
+            Intent intent = new Intent(CurrentFoodActivity.this, PromoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
 
         } else if (id == R.id.nav_action_info) {

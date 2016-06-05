@@ -60,13 +60,13 @@ public class Restaurants extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvRestaurants.setLayoutManager(llm);
 
-        handlerRestaurants = new HandleRestaurants();
-
         cuisineID = getIntent().getIntExtra("cuisineID", -42);
         Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
 
-        GetRestaurants gr = new GetRestaurants(this, handlerRestaurants);
-        gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+//        handlerRestaurants = new HandleRestaurants();
+//        GetRestaurants gr = new GetRestaurants(this, handlerRestaurants);
+//        gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        updateRestaurants();
     }
 
     private class HandleRestaurants extends Handler {
@@ -128,11 +128,13 @@ public class Restaurants extends AppCompatActivity
             Intent intent = new Intent(Restaurants.this,FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-
+            Intent intent = new Intent(Restaurants.this,BasketActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-
+            Intent intent = new Intent(Restaurants.this,PromoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
 
         } else if (id == R.id.nav_action_info) {

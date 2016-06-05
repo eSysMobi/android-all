@@ -158,7 +158,7 @@ public class FoodActivity extends AppCompatActivity
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, false, restaurantsID);
+        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID);
         if (mrvFood.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);
@@ -194,11 +194,13 @@ public class FoodActivity extends AppCompatActivity
             Intent intent = new Intent(FoodActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-
+            Intent intent = new Intent(FoodActivity.this,BasketActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-
+            Intent intent = new Intent(FoodActivity.this,PromoActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
 
         } else if (id == R.id.nav_action_info) {

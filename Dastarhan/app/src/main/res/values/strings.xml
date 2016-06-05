@@ -17,14 +17,14 @@
     <string name="recommended">Recommended</string>
     <string name="menu">Menu</string>
     <string name="favorites">Favorites</string>
-    <string name="basket">Basket</string>
+    <string name="basket">Shopping cart</string>
     <string name="history_of_orders">History of orders</string>
     <string name="promo">Promo</string>
     <string name="info">Info</string>
     <string name="price">Price:</string>
     <string name="food_not_found">Sorry, but this food not found in Database</string>
     <string name="rest_not_found">Sorry, but this restaurant not found in Database</string>
-    <string name="to_order">Add to shopping list</string>
+    <string name="to_order">Add to shopping cart</string>
     <string name="open_hours">Open hours:</string>
     <string name="schedule">Schedule:</string>
     <string name="tel">Phone number:</string>
@@ -39,4 +39,9 @@
     <string name="login_remind">Remind?</string>
     <string name="enter_or_skip">Please input email and password or skip authentication</string>
     <string name="is_need_remember">Remember your credentials?</string>
+    <string name="title_activity_promo">PromoActivity</string>
+    <string name="cant_order">Already in the cart</string>
+    <string name="add_to_cart">Adding to the shopping cart…</string>
+    <string name="title_activity_basket">BasketActivity</string>
+    <string name="add_address">Adding address</string>
 </resources>
