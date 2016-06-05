@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,14 +32,19 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private String locale;
     private DatabaseHelper dbHelper;
     private byte action;
+    private SharedPreferences prefs;
+    private Handler handler;
+    private double totalCost = 0;
 
     //constructor
-    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, byte action, Integer[] restID) {
+    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, byte action, Integer[] restID, Handler handler) {
         this.mContext = mContext;
         this.locale = locale;
         this.dbHelper = dbHelper;
         this.action = action;
+        this.handler = handler;
         db = dbHelper.getReadableDatabase();
+        prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
         String selectQuery;
         switch (action) {
@@ -59,7 +67,6 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
                 }
                 break;
             case Constants.ACTION_GET_FOOD_CURR_ORDERED:
-                SharedPreferences prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
                 int numOrder = prefs.getInt(Constants.PREF_CURR_NUM_ORDER, 1);
                 boolean executed = prefs.getBoolean(Constants.PREF_CURR_ORDER_EXECUTED, false);
                 if (executed) {
@@ -94,7 +101,8 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
                                 + "a.offer as offer, "
                                 + "a.vegetarian as vegetarian, "
                                 + "a.featured as featured, "
-                                + "a.in_order as in_order, "
+                                //+ "a.in_order as in_order, "
+                                + "b.id_order as in_order, "
                                 + "a.favorite as favorite, "
                                 + "b.count as count, "
                                 + "b.price as price, "
@@ -122,6 +130,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         TextView tvFoodPriceRV;
         ImageView ivFoodRV;
         ImageView ivFoodRVFav;
+        ImageView ivFoodRVCart;
         TextView tvFoodNoticeRV;
 
         int food_id = 0;
@@ -141,6 +150,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         int favorite = 0;
         int featured = 0;
         int in_order = 0;
+        int count = 0;
 
         FoodViewHolder(View itemView) {
             super(itemView);
@@ -148,6 +158,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             tvFoodPriceRV = (TextView) itemView.findViewById(R.id.tvFoodPriceRV);
             ivFoodRV = (ImageView) itemView.findViewById(R.id.ivFoodRV);
             ivFoodRVFav = (ImageView) itemView.findViewById(R.id.ivFoodRVFav);
+            ivFoodRVCart = (ImageView) itemView.findViewById(R.id.ivFoodRVCart);
             tvFoodNoticeRV = (TextView) itemView.findViewById(R.id.tvFoodNoticeRV);
         }
     }
@@ -165,15 +176,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         viewHolder.food_id = cursor.getInt(cursor.getColumnIndex("server_id"));
         viewHolder.ru_name = cursor.getString(cursor.getColumnIndex("ru_name"));
         viewHolder.en_name = cursor.getString(cursor.getColumnIndex("en_name"));
-        if (locale.equals("ru")) {
-            viewHolder.tvFoodNameRV.setText(viewHolder.ru_name);
-        } else {
-            viewHolder.tvFoodNameRV.setText(viewHolder.en_name);
-        }
         viewHolder.price = cursor.getDouble(cursor.getColumnIndex("price"));
-        viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.price));
-        //viewHolder.ivCuisine.setImageBitmap(...);
-
         viewHolder.res_id = cursor.getInt(cursor.getColumnIndexOrThrow("res_id"));
         viewHolder.cat_id = cursor.getInt(cursor.getColumnIndexOrThrow("cat_id"));
         viewHolder.picture = cursor.getString(cursor.getColumnIndexOrThrow("picture"));
@@ -188,33 +191,75 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         viewHolder.in_order = cursor.getInt(cursor.getColumnIndexOrThrow("in_order"));
         viewHolder.favorite = cursor.getInt(cursor.getColumnIndex("favorite"));
 
+        //viewHolder.ivCuisine.setImageBitmap(...);
+
         if (viewHolder.favorite != 1) {
             viewHolder.ivFoodRVFav.setVisibility(View.GONE);
         } else {
             viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
         }
 
+        int numOrder = prefs.getInt(Constants.PREF_CURR_NUM_ORDER, 1);
+        if (viewHolder.in_order == numOrder) {
+            viewHolder.ivFoodRVCart.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.ivFoodRVCart.setVisibility(View.GONE);
+        }
+
         if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
-            int tmpCount = cursor.getInt(cursor.getColumnIndex("count"));
-            String tmpName = "(" + String.valueOf(tmpCount) + ") " + viewHolder.tvFoodNameRV.getText().toString();
+            viewHolder.count = cursor.getInt(cursor.getColumnIndex("count"));
+            //set name
+            String tmpName = "";
+            if (locale.equals("ru")) {
+                tmpName = "(" + String.valueOf(viewHolder.count) + ") " + viewHolder.ru_name;
+            } else {
+                tmpName = "(" + String.valueOf(viewHolder.count) + ") " + viewHolder.en_name;
+            }
             viewHolder.tvFoodNameRV.setText(tmpName);
 
+            //set notice
             String tmpNotice = cursor.getString(cursor.getColumnIndex("notice"));
             if (!tmpNotice.isEmpty()) {
                 viewHolder.tvFoodNoticeRV.setVisibility(View.VISIBLE);
                 viewHolder.tvFoodNoticeRV.setText(tmpNotice);
             }
+
+            //set price
+            viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.price * viewHolder.count));
+        } else{
+            //set name
+            if (locale.equals("ru")) {
+                viewHolder.tvFoodNameRV.setText(viewHolder.ru_name);
+            } else {
+                viewHolder.tvFoodNameRV.setText(viewHolder.en_name);
+            }
+
+            //set price
+            viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.price));
         }
 
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.food_id);
         viewHolder.itemView.setOnClickListener(customClickListener);
 
-        CustomLongClickListener customLongClickListener = new CustomLongClickListener(cursor, dbHelper, viewHolder);
+        CustomLongClickListener customLongClickListener = new CustomLongClickListener(cursor, dbHelper, viewHolder, action, handler);
         viewHolder.itemView.setOnLongClickListener(customLongClickListener);
 
         if (i == getItemCount() - 1) {
             //cursor.close();
             db.close();
+        }
+
+        if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
+            totalCost = totalCost + viewHolder.price * viewHolder.count;
+            if (i == getItemCount() - 1) {
+                Message message = Message.obtain();
+                message.setTarget(handler);
+                message.what = 43;
+                Bundle bundle = new Bundle();
+                bundle.putDouble("totalCost",totalCost);
+                message.setData(bundle);
+                message.sendToTarget();
+            }
         }
     }
 
@@ -240,48 +285,91 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         Cursor cursor;
         DatabaseHelper dbHelper;
         FoodViewHolder viewHolder;
+        byte action;
+        Handler handler;
 
-        public CustomLongClickListener(Cursor cursor, DatabaseHelper dbHelper, FoodViewHolder viewHolder) {
+        public CustomLongClickListener(Cursor cursor, DatabaseHelper dbHelper, FoodViewHolder viewHolder, byte action, Handler handler) {
             this.cursor = cursor;
             this.dbHelper = dbHelper;
             this.viewHolder = viewHolder;
+            this.action = action;
+            this.handler = handler;
         }
 
         @Override
         public boolean onLongClick(View v) {
-            Log.d("dtagRecyclerView", "Start update fav");
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-            ContentValues cv = new ContentValues();
-            cv.put("server_id", viewHolder.food_id);
-            cv.put("res_id", viewHolder.res_id);
-            cv.put("cat_id", viewHolder.cat_id);
-            cv.put("ru_name", viewHolder.ru_name);
-            cv.put("en_name", viewHolder.en_name);
-            cv.put("picture", viewHolder.picture);
-            cv.put("ru_descr", viewHolder.ru_descr);
-            cv.put("en_descr", viewHolder.en_descr);
-            cv.put("price", viewHolder.price);
-            cv.put("min_amount", viewHolder.min_amount);
-            cv.put("units", viewHolder.units);
-            cv.put("ordered", viewHolder.ordered);
-            cv.put("offer", viewHolder.offer);
-            cv.put("vegetarian", viewHolder.vegetarian);
-            if (viewHolder.favorite != 1) {
-                //set fav to 1
-                viewHolder.favorite = 1;
-                cv.put("favorite", viewHolder.favorite);
-                viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
+            if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
+                if (viewHolder.in_order > 0) {
+                    Log.d("dtagRecyclerView", "Delete food from cart");
+                    int numOrder = viewHolder.in_order;
+
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    ContentValues cv = new ContentValues();
+                    cv.put("server_id", viewHolder.food_id);
+                    cv.put("res_id", viewHolder.res_id);
+                    cv.put("cat_id", viewHolder.cat_id);
+                    cv.put("ru_name", viewHolder.ru_name);
+                    cv.put("en_name", viewHolder.en_name);
+                    cv.put("picture", viewHolder.picture);
+                    cv.put("ru_descr", viewHolder.ru_descr);
+                    cv.put("en_descr", viewHolder.en_descr);
+                    cv.put("price", viewHolder.price);
+                    cv.put("min_amount", viewHolder.min_amount);
+                    cv.put("units", viewHolder.units);
+                    cv.put("ordered", viewHolder.ordered);
+                    cv.put("offer", viewHolder.offer);
+                    cv.put("vegetarian", viewHolder.vegetarian);
+                    cv.put("favorite", viewHolder.favorite);
+                    cv.put("featured", viewHolder.featured);
+                    cv.put("in_order", 0);
+                    int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
+                    Log.d("dtagRecyclerView", "Food deleted from current order = " + result);
+
+                    int rowID = db.delete(Constants.DB_TABLE_ORDERS, "id_order = " + numOrder + " AND id_food= " + viewHolder.food_id, null);
+                    Log.d("dtagRecyclerView", "row order deleted, ID = " + rowID);
+                    db.close();
+
+                    viewHolder.ivFoodRVCart.setVisibility(View.GONE);
+                    viewHolder.in_order = 0;
+
+                    //update list
+                    handler.sendEmptyMessage(42);
+                }
             } else {
-                //set fa to 0
-                viewHolder.favorite = 0;
-                cv.put("favorite", viewHolder.favorite);
-                viewHolder.ivFoodRVFav.setVisibility(View.GONE);
+                Log.d("dtagRecyclerView", "Start update fav");
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                ContentValues cv = new ContentValues();
+                cv.put("server_id", viewHolder.food_id);
+                cv.put("res_id", viewHolder.res_id);
+                cv.put("cat_id", viewHolder.cat_id);
+                cv.put("ru_name", viewHolder.ru_name);
+                cv.put("en_name", viewHolder.en_name);
+                cv.put("picture", viewHolder.picture);
+                cv.put("ru_descr", viewHolder.ru_descr);
+                cv.put("en_descr", viewHolder.en_descr);
+                cv.put("price", viewHolder.price);
+                cv.put("min_amount", viewHolder.min_amount);
+                cv.put("units", viewHolder.units);
+                cv.put("ordered", viewHolder.ordered);
+                cv.put("offer", viewHolder.offer);
+                cv.put("vegetarian", viewHolder.vegetarian);
+                if (viewHolder.favorite != 1) {
+                    //set fav to 1
+                    viewHolder.favorite = 1;
+                    cv.put("favorite", viewHolder.favorite);
+                    viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
+                } else {
+                    //set fa to 0
+                    viewHolder.favorite = 0;
+                    cv.put("favorite", viewHolder.favorite);
+                    viewHolder.ivFoodRVFav.setVisibility(View.GONE);
+                }
+                cv.put("featured", viewHolder.featured);
+                cv.put("in_order", viewHolder.in_order);
+                int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
+                Log.d("dtagRecyclerView", "Fav updated = " + result);
+                db.close();
             }
-            cv.put("featured", viewHolder.featured);
-            cv.put("in_order", viewHolder.in_order);
-            int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
-            Log.d("dtagRecyclerView", "Fav updated = " + result);
-            db.close();
             return true;
         }
     }

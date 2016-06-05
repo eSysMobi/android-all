@@ -158,7 +158,7 @@ public class FoodActivity extends AppCompatActivity
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID);
+        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID, null);
         if (mrvFood.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);

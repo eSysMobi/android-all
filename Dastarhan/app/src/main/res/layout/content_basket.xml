@@ -15,28 +15,53 @@
     <android.support.v7.widget.RecyclerView
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="300dp"
         android:id="@+id/rvOrders"
         android:layout_alignParentTop="true"
         android:visibility="visible"
-        android:layout_above="@+id/bBasketAddAddress" />
+        android:layout_above="@+id/tvBasketTotalCost" />
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Send order"
-        android:id="@+id/bBasketSendOrder"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="41dp"
-        android:enabled="false" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="20dp"
+        android:id="@+id/linearLayout3"
+        android:gravity="center">
 
-    <Button
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add address"
+            android:id="@+id/bBasketAddAddress"
+            android:enabled="false"
+            android:layout_below="@+id/rvOrders"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send order"
+            android:id="@+id/bBasketSendOrder"
+            android:enabled="false"
+            android:layout_below="@+id/rvOrders"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+    </LinearLayout>
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add address"
-        android:id="@+id/bBasketAddAddress"
-        android:layout_above="@+id/bBasketSendOrder"
-        android:layout_centerHorizontal="true"
-        android:enabled="false" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/total_cost_full"
+        android:id="@+id/tvBasketTotalCost"
+        android:layout_above="@+id/linearLayout3"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="10dp"
+        android:textColor="#ffffff" />
 </RelativeLayout>

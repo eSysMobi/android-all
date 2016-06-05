@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -22,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import mobi.esys.dastarhan.utils.DatabaseHelper;
@@ -32,9 +35,12 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
     private final String TAG = "dtagBasketActivity";
     private final static int PERMISSION_REQUEST_CODE = 334;
 
+    private Handler handler;
+
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
     private Button mbBasketSendOrder;
+    private TextView mtvBasketTotalCost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +59,12 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        handler = new BasketHandler();
+
         mrvOrders = (RecyclerView) findViewById(R.id.rvOrders);
         mbBasketAddAddress = (Button) findViewById(R.id.bBasketAddAddress);
         mbBasketSendOrder = (Button) findViewById(R.id.bBasketSendOrder);
+        mtvBasketTotalCost = (TextView) findViewById(R.id.tvBasketTotalCost);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvOrders.setLayoutManager(llm);
@@ -100,16 +109,37 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
         }
     }
 
-    private void updateList(){
+    protected void updateList(){
+        Log.d(TAG, "Refresh RecyclerView");
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_CURR_ORDERED, null);
+        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_CURR_ORDERED, null, handler);
         if (mrvOrders.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvOrders");
             mrvOrders.setAdapter(adapter);
         } else {
             Log.d(TAG, "Swap adapter in mrvOrders");
             mrvOrders.swapAdapter(adapter, true);
+        }
+    }
+
+    private class BasketHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            switch (message.what) {
+                case 42:
+                    //refresh list
+                    updateList();
+                    break;
+                case 43:
+                    //refresh total cost
+                    Log.d(TAG, "Refresh total cost");
+                    Bundle bundle = message.getData();
+                    double totalCost = bundle.getDouble("totalCost", 0);
+                    String text = getResources().getString(R.string.total_cost) + " " + totalCost + " " + getResources().getString(R.string.currency);
+                    mtvBasketTotalCost.setText(text);
+                    break;
+            }
         }
     }
 
