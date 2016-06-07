@@ -119,44 +119,19 @@
         android:layout_above="@+id/navFrame"
         android:layout_centerHorizontal="true" />
 
-    <FrameLayout
+    <Button
         android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:id="@+id/flLoginButton"
+        android:id="@+id/bLoginButton"
+        android:background="@drawable/button_selector"
+        android:text="@string/skip"
+        android:textSize="18sp"
+        android:textColor="#ffffff"
         android:layout_marginTop="10dp"
         android:layout_below="@+id/flPassword"
         android:layout_centerHorizontal="true"
-        android:visibility="visible">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivLoginButton"
-                android:layout_centerVertical="true"
-                android:background="@drawable/login_button_back" />
-
-            <TextView
-                android:id="@+id/tvLogin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivLoginButton"
-                android:layout_alignTop="@+id/ivLoginButton"
-                android:layout_alignRight="@+id/ivLoginButton"
-                android:layout_alignBottom="@+id/ivLoginButton"
-                android:gravity="center"
-                android:text="@string/skip"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="1dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp" />
-        </RelativeLayout>
-    </FrameLayout>
+        android:textAllCaps="false"
+        android:visibility="visible"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -166,9 +141,9 @@
         android:id="@+id/tvSignUp"
         android:textColor="#ffffff"
         android:layout_marginTop="20dp"
-        android:layout_below="@+id/flLoginButton"
-        android:layout_alignLeft="@+id/flLoginButton"
-        android:layout_alignStart="@+id/flLoginButton"
+        android:layout_below="@+id/bLoginButton"
+        android:layout_alignLeft="@+id/bLoginButton"
+        android:layout_alignStart="@+id/bLoginButton"
         android:visibility="visible" />
 
     <TextView
@@ -179,8 +154,8 @@
         android:id="@+id/tvRemind"
         android:textColor="#ffffff"
         android:layout_alignTop="@+id/tvSignUp"
-        android:layout_alignRight="@+id/flLoginButton"
-        android:layout_alignEnd="@+id/flLoginButton"
+        android:layout_alignRight="@+id/bLoginButton"
+        android:layout_alignEnd="@+id/bLoginButton"
         android:visibility="visible" />
 
     <TextView
@@ -195,86 +170,36 @@
         android:visibility="invisible"
         android:enabled="false" />
 
-    <FrameLayout
-        android:layout_width="69dp"
-        android:layout_height="55dp"
-        android:id="@+id/flLoginRememberYes"
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_selector"
+        android:id="@+id/bLoginRememberYes"
         android:layout_marginTop="10dp"
         android:layout_marginRight="20dp"
         android:layout_below="@+id/navFrame"
         android:layout_toLeftOf="@+id/navFrame"
         android:visibility="invisible"
-        android:enabled="false">
+        android:text="@string/yes"
+        android:textSize="18sp"
+        android:textColor="#ffffff"
+        android:textAllCaps="false"
+        android:enabled="false"/>
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivLoginRememberYes"
-                android:layout_centerVertical="true"
-                android:background="@drawable/button_yes_no" />
-
-            <TextView
-                android:id="@+id/tvLoginRememberYes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivLoginRememberYes"
-                android:layout_alignTop="@+id/ivLoginRememberYes"
-                android:layout_alignRight="@+id/ivLoginRememberYes"
-                android:layout_alignBottom="@+id/ivLoginRememberYes"
-                android:gravity="center"
-                android:text="Yes"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="1dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp" />
-        </RelativeLayout>
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="69dp"
-        android:layout_height="55dp"
-        android:id="@+id/flLoginRememberNo"
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_selector"
+        android:id="@+id/bLoginRememberNo"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="20dp"
         android:layout_below="@+id/navFrame"
         android:layout_toRightOf="@+id/navFrame"
         android:visibility="invisible"
-        android:enabled="false">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivLoginRememberNo"
-                android:layout_centerVertical="true"
-                android:background="@drawable/button_yes_no" />
-
-            <TextView
-                android:id="@+id/tvLoginRememberNo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivLoginRememberNo"
-                android:layout_alignTop="@+id/ivLoginRememberNo"
-                android:layout_alignRight="@+id/ivLoginRememberNo"
-                android:layout_alignBottom="@+id/ivLoginRememberNo"
-                android:gravity="center"
-                android:text="No"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="1dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp" />
-        </RelativeLayout>
-    </FrameLayout>
+        android:text="@string/no"
+        android:textSize="18sp"
+        android:textColor="#ffffff"
+        android:textAllCaps="false"
+        android:enabled="false"/>
 
 </RelativeLayout>

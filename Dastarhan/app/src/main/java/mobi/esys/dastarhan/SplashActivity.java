@@ -22,6 +22,8 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
         handler = new HandleCuisines();
         GetCuisines gc = new GetCuisines(this, handler);
         gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);

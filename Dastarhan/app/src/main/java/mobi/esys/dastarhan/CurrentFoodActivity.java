@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -45,9 +46,8 @@ public class CurrentFoodActivity extends AppCompatActivity
     private TextView mtvCurrFoodPrice;
     private TextView mtvCurrFoodName;
     private TextView mtvCurrFoodDescr;
-    private TextView mtvCurrFoodAddShopping;
+    private Button mbCurrFoodAddShopping;
     private ImageView mivCurrFoodFavorite;
-    private ImageView mivCurrFoodAddShopping;
     private ImageView mivCurrFoodVegan;
 
     private int currentFoodID;
@@ -77,6 +77,8 @@ public class CurrentFoodActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_current_food_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -98,9 +100,8 @@ public class CurrentFoodActivity extends AppCompatActivity
         mtvCurrFoodName = (TextView) findViewById(R.id.tvCurrFoodName);
         mtvCurrFoodDescr = (TextView) findViewById(R.id.tvCurrFoodDescr);
         mivCurrFoodFavorite = (ImageView) findViewById(R.id.ivCurrFoodFavorite);
-        mivCurrFoodAddShopping = (ImageView) findViewById(R.id.ivCurrFoodAddShopping);
         mivCurrFoodVegan = (ImageView) findViewById(R.id.ivCurrFoodVegan);
-        mtvCurrFoodAddShopping = (TextView) findViewById(R.id.tvCurrFoodAddShopping);
+        mbCurrFoodAddShopping = (Button) findViewById(R.id.bCurrFoodAddShopping);
 
         //click favorite
         mivCurrFoodFavorite.setOnClickListener(new View.OnClickListener() {
@@ -141,7 +142,7 @@ public class CurrentFoodActivity extends AppCompatActivity
         });
 
         //click order
-        mivCurrFoodAddShopping.setOnClickListener(new View.OnClickListener() {
+        mbCurrFoodAddShopping.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (canOrdered) {
@@ -210,7 +211,7 @@ public class CurrentFoodActivity extends AppCompatActivity
 
             db.close();
 
-            mtvCurrFoodAddShopping.setText(R.string.cant_order);
+            mbCurrFoodAddShopping.setText(R.string.cant_order);
             Toast.makeText(getApplicationContext(), "Added to shopping list", Toast.LENGTH_SHORT).show();
         }
     }
@@ -255,9 +256,9 @@ public class CurrentFoodActivity extends AppCompatActivity
                     }
 
                     if (canOrdered) {
-                        mtvCurrFoodAddShopping.setText(R.string.to_order);
+                        mbCurrFoodAddShopping.setText(R.string.to_order);
                     } else {
-                        mtvCurrFoodAddShopping.setText(R.string.cant_order);
+                        mbCurrFoodAddShopping.setText(R.string.cant_order);
                     }
 
                     if (locale.equals("ru")) {

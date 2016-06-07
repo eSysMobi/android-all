@@ -24,6 +24,8 @@ public class CurrentOrderActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_order);
 
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
         etCurrOrderNotice = (EditText)findViewById(R.id.etCurrOrderNotice);
         sbCurrOrderCount = (SeekBar) findViewById(R.id.sbCurrOrderCount);
         tvCurrOrderCount2 = (TextView) findViewById(R.id.tvCurrOrderCount2);

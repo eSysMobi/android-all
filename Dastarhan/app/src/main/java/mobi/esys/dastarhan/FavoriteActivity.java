@@ -33,6 +33,7 @@ public class FavoriteActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_favorite_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

@@ -21,47 +21,58 @@
         android:visibility="visible"
         android:layout_above="@+id/tvBasketTotalCost" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/linearLayout3"
-        android:gravity="center">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add address"
-            android:id="@+id/bBasketAddAddress"
-            android:enabled="false"
-            android:layout_below="@+id/rvOrders"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send order"
-            android:id="@+id/bBasketSendOrder"
-            android:enabled="false"
-            android:layout_below="@+id/rvOrders"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
-    </LinearLayout>
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/total_cost_full"
         android:id="@+id/tvBasketTotalCost"
-        android:layout_above="@+id/linearLayout3"
+        android:textColor="#ffffff"
+        android:visibility="visible"
+        android:layout_above="@+id/bBasketSendOrder"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="10dp"
-        android:textColor="#ffffff" />
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp" />
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_address"
+            android:id="@+id/bBasketAddAddress"
+            android:enabled="false"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:textAllCaps="false"
+            android:background="@drawable/button_selector"
+            android:layout_alignTop="@+id/bBasketSendOrder"
+            android:layout_toLeftOf="@+id/flBasketNav"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/send_order"
+            android:id="@+id/bBasketSendOrder"
+            android:enabled="false"
+            android:textColor="#ffffff"
+            android:textSize="18sp"
+            android:textAllCaps="false"
+            android:background="@drawable/button_selector"
+            android:layout_above="@+id/flBasketNav"
+            android:layout_alignRight="@+id/rvOrders"
+            android:layout_alignEnd="@+id/rvOrders"
+            android:layout_toRightOf="@+id/flBasketNav"
+            android:layout_toEndOf="@+id/flBasketNav" />
+
+    <FrameLayout
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/flBasketNav"/>
+
+
 </RelativeLayout>

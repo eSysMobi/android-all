@@ -33,6 +33,8 @@ public class AddAddressActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_address);
 
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
         metAddAddressCity = (EditText) findViewById(R.id.etAddAddressCity);
         metAddAddressDistrict = (EditText) findViewById(R.id.etAddAddressDistrict);
         metAddAddressExactAddress = (EditText) findViewById(R.id.etAddAddressExactAddress);
