@@ -16,20 +16,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-public class PromoActivity extends AppCompatActivity
+public class SettingActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_promo);
+        setContentView(R.layout.activity_setting);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_promo_layout);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_setting_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -41,7 +42,7 @@ public class PromoActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_promo_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_setting_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -56,26 +57,26 @@ public class PromoActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            Intent intent = new Intent(PromoActivity.this,MainActivity.class);
+            Intent intent = new Intent(SettingActivity.this, MainActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_favorites) {
-            Intent intent = new Intent(PromoActivity.this,FavoriteActivity.class);
+            Intent intent = new Intent(SettingActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(PromoActivity.this,BasketActivity.class);
+            Intent intent = new Intent(SettingActivity.this, BasketActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-            //not need
-        } else if (id == R.id.nav_action_settings) {
-            Intent intent = new Intent(PromoActivity.this, SettingActivity.class);
+            Intent intent = new Intent(SettingActivity.this, PromoActivity.class);
             startActivity(intent);
+        } else if (id == R.id.nav_action_settings) {
+            //not need
         } else if (id == R.id.nav_action_info) {
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_promo_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_setting_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

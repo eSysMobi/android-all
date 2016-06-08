@@ -43,7 +43,7 @@
     <string name="cant_order">Already in the cart</string>
     <string name="add_to_cart">Adding to the shopping cart…</string>
     <string name="title_activity_basket">BasketActivity</string>
-    <string name="adding_address">Adding address</string>
+    <string name="adding_address">Checking address</string>
     <string name="total_cost_full">Total cost: 0.00 rub</string>
     <string name="total_cost">Total cost:</string>
     <string name="currency">rub</string>
@@ -51,4 +51,9 @@
     <string name="no">No</string>
     <string name="add_address">Add address</string>
     <string name="send_order">Send order</string>
+    <string name="title_activity_setting">SettingActivity</string>
+    <string name="city">City</string>
+    <string name="distr">District/Street</string>
+    <string name="exact_addr">The exact address</string>
+    <string name="submit">Submit</string>
 </resources>

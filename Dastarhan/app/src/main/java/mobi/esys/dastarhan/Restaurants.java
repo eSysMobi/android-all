@@ -138,7 +138,8 @@ public class Restaurants extends AppCompatActivity
             Intent intent = new Intent(Restaurants.this,PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(Restaurants.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

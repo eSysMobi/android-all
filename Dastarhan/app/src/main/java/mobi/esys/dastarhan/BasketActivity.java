@@ -111,7 +111,7 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
         }
     }
 
-    protected void updateList(){
+    protected void updateList() {
         Log.d(TAG, "Refresh RecyclerView");
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
@@ -172,10 +172,11 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(BasketActivity.this,PromoActivity.class);
+            Intent intent = new Intent(BasketActivity.this, PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(BasketActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

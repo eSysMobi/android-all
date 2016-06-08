@@ -101,7 +101,8 @@ public class FavoriteActivity extends AppCompatActivity
             Intent intent = new Intent(FavoriteActivity.this,PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(FavoriteActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

@@ -8,14 +8,14 @@ import android.content.res.Configuration;
  */
 public class DastarhanApp extends Application {
 
-    private boolean needGetCuisinesFromServer = true;
+    private long lastCheck = 0;
 
-    public void setNeedGetCuisinesFromServer(boolean needGetCuisinesFromServer) {
-        this.needGetCuisinesFromServer = needGetCuisinesFromServer;
+    public void setLastCheck(){
+        lastCheck = System.currentTimeMillis();
     }
 
-    public boolean getNeedGetCuisinesFromServer() {
-        return needGetCuisinesFromServer;
+    public long getLastCheck() {
+        return lastCheck;
     }
 
     @Override

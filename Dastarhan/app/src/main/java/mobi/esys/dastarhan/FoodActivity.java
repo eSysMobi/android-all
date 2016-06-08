@@ -204,7 +204,8 @@ public class FoodActivity extends AppCompatActivity
             Intent intent = new Intent(FoodActivity.this,PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(FoodActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

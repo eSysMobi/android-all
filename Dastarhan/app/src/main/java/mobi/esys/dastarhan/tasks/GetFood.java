@@ -51,17 +51,16 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
         URL url;
         HttpURLConnection urlConnection = null;
 
-        for(int i = 0; i<restID.length;i++) {
+        for (Integer aRestID : restID) {
 
             try {
-                if (restID[i] == -42) {
+                if (aRestID == -42) {
                     url = new URL(Constants.URL_FOOD + 0);
                 } else {
-                    url = new URL(Constants.URL_FOOD + restID[i]);
+                    url = new URL(Constants.URL_FOOD + aRestID);
                 }
 
-                urlConnection = (HttpURLConnection) url
-                        .openConnection();
+                urlConnection = (HttpURLConnection) url.openConnection();
 
                 InputStream is = urlConnection.getInputStream();
 
@@ -192,7 +191,7 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                     urlConnection.disconnect();
                 }
             }
-            Log.d(TAG, "Sucessully getting info about food from restaurant with id "+ restID[i]);
+            Log.d(TAG, "Sucessully getting info about food from restaurant with id " + aRestID);
         }
         return null;
     }

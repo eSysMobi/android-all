@@ -322,7 +322,8 @@ public class CurrentRestaurantActivity extends AppCompatActivity
             Intent intent = new Intent(CurrentRestaurantActivity.this,PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(CurrentRestaurantActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

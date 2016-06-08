@@ -33,7 +33,7 @@
     <string name="is_need_remember">Запомнить учётные данные?</string>
     <string name="cant_order">Уже в корзине</string>
     <string name="add_to_cart">Добавление в корзину…</string>
-    <string name="adding_address">Adding address</string>
+    <string name="adding_address">Проверка адреса</string>
     <string name="total_cost_full">Общая сумма: 0.00 руб</string>
     <string name="total_cost">Общая сумма:</string>
     <string name="currency">руб</string>
@@ -41,4 +41,8 @@
     <string name="no">Нет</string>
     <string name="add_address">Ввести адрес</string>
     <string name="send_order">Заказать</string>
+    <string name="city">Город</string>
+    <string name="distr">Район/улица</string>
+    <string name="exact_addr">Точный адрес</string>
+    <string name="submit">Подтвердить</string>
 </resources>

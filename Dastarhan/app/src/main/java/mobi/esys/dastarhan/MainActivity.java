@@ -30,10 +30,6 @@ public class MainActivity extends AppCompatActivity
 
     private final String TAG = "dtagMainActivity";
 
-    private DastarhanApp dastarhanApp;
-
-    private Handler handlerCuisines;
-
     private ProgressBar mpbCuisines;
     private RecyclerView mrvCuisines;
 
@@ -62,37 +58,7 @@ public class MainActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvCuisines.setLayoutManager(llm);
 
-//        handlerCuisines = new HandleCuisines();
-//
-//        dastarhanApp = (DastarhanApp) getApplication();
-//
-//        if (dastarhanApp.getNeedGetCuisinesFromServer()) {
-//            GetCuisines gc = new GetCuisines(this, handlerCuisines);
-//            gc.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        }
-
         updateCuisines();
-    }
-
-    private class HandleCuisines extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == Constants.CALLBACK_GET_CUISINES_SUCCESS) {  //all ok
-                Log.d(TAG, "Cuisines data received");
-                dastarhanApp.setNeedGetCuisinesFromServer(false);
-                updateCuisines();
-            }
-            if (msg.what == Constants.CALLBACK_GET_CUISINES_FAIL) {  //not ok
-                Log.d(TAG, "Cuisines data NOT receive");
-                updateCuisines();
-            }
-            if (msg.what == Constants.CALLBACK_GET_CUISINES_SHOW_PROGRESS_BAR) {  //show progress bar
-                mrvCuisines.setVisibility(View.GONE);
-                mpbCuisines.setVisibility(View.VISIBLE);
-            }
-            super.handleMessage(msg);
-        }
     }
 
     private void updateCuisines() {
@@ -141,7 +107,8 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this,PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(MainActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }

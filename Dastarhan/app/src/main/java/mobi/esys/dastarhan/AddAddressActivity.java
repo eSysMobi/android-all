@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import mobi.esys.dastarhan.utils.AppLocationService;
 import mobi.esys.dastarhan.utils.LocationAddress;
@@ -26,6 +27,7 @@ public class AddAddressActivity extends AppCompatActivity {
     private EditText metAddAddressDistrict;
     private EditText metAddAddressExactAddress;
     private Button mbAddAddress;
+    private ProgressBar mpbAddAddress;
     AppLocationService appLocationService;
 
     @Override
@@ -39,14 +41,10 @@ public class AddAddressActivity extends AppCompatActivity {
         metAddAddressDistrict = (EditText) findViewById(R.id.etAddAddressDistrict);
         metAddAddressExactAddress = (EditText) findViewById(R.id.etAddAddressExactAddress);
         mbAddAddress = (Button) findViewById(R.id.bAddAddress);
+        mpbAddAddress = (ProgressBar) findViewById(R.id.pbAddAddress);
 
         appLocationService = new AppLocationService(AddAddressActivity.this);
         Location location = appLocationService.getLocation(LocationManager.NETWORK_PROVIDER);
-
-        //you can hard-code the lat & long if you have issues with getting it
-        //remove the below if-condition and use the following couple of lines
-        //double latitude = 37.422005;
-        //double longitude = -122.084095
 
         if (location != null) {
             double latitude = location.getLatitude();
@@ -120,6 +118,8 @@ public class AddAddressActivity extends AppCompatActivity {
                         metAddAddressDistrict.setText(street);
                         metAddAddressExactAddress.setText(locationAddress);
                     }
+                    mpbAddAddress.setVisibility(View.GONE);
+                    mbAddAddress.setVisibility(View.VISIBLE);
                     break;
             }
         }

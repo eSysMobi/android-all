@@ -454,7 +454,8 @@ public class CurrentFoodActivity extends AppCompatActivity
             Intent intent = new Intent(CurrentFoodActivity.this, PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
-
+            Intent intent = new Intent(CurrentFoodActivity.this, SettingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_action_info) {
 
         }
