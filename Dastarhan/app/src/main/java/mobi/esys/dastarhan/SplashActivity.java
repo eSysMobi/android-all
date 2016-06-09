@@ -18,11 +18,13 @@ import mobi.esys.dastarhan.tasks.GetCuisines;
 import mobi.esys.dastarhan.tasks.GetPromo;
 import mobi.esys.dastarhan.tasks.GetRestaurants;
 import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.utils.FoodCheckElement;
 
 public class SplashActivity extends AppCompatActivity {
 
     private final String TAG = "dtagSplashActivity";
     private Handler handler;
+    private DastarhanApp dastarhanApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,8 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
+        dastarhanApp = (DastarhanApp) getApplication();
 
         handler = new HandleCuisines();
         GetCuisines gc = new GetCuisines(this, handler);
@@ -88,6 +92,8 @@ public class SplashActivity extends AppCompatActivity {
             do {
                 int res_id = cursor.getInt(cursor.getColumnIndexOrThrow("server_id"));
                 restIDs.add(res_id);
+                //save restaurants id for checking time
+                dastarhanApp.getCheckedFood().add(new FoodCheckElement(res_id,0));
             } while (cursor.moveToNext());
             Integer[] restaurantsID = restIDs.toArray(new Integer[restIDs.size()]);
             GetPromo gp = new GetPromo(this, handler, restaurantsID);

@@ -24,20 +24,24 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import mobi.esys.dastarhan.tasks.GetFood;
 import mobi.esys.dastarhan.tasks.GetRestaurants;
 import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.utils.FoodCheckElement;
 import mobi.esys.dastarhan.utils.RVFoodAdapter;
 
 public class FoodActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private final String TAG = "dtagFood";
+    private DastarhanApp dastarhanApp;
+
     private RecyclerView mrvFood;
     private ProgressBar mpbFood;
     private Handler handlerFood;
-    private final String TAG = "dtagFood";
 
     private int cuisineID;
     private Integer[] restaurantsID = null;
@@ -51,6 +55,8 @@ public class FoodActivity extends AppCompatActivity
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
+        dastarhanApp = (DastarhanApp) getApplication();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_food_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -71,7 +77,7 @@ public class FoodActivity extends AppCompatActivity
 
         cuisineID = getIntent().getIntExtra("cuisineID", -42);
         restaurantsID = new Integer[1];
-        restaurantsID[0] = getIntent().getIntExtra("restID", -42);
+        restaurantsID[0] = getIntent().getIntExtra("restID", -50);
         Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
         Log.d(TAG, "Restaurant ID from intent = " + restaurantsID[0]);
     }
@@ -80,14 +86,35 @@ public class FoodActivity extends AppCompatActivity
     protected void onResume() {
         if (cuisineID != -50) {
             //get food from cuisine
-            GetRestaurants gr = new GetRestaurants(this, handlerFood);
-            gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            getFoodFromRestaurants();
+            //no need, restaurants get in splash-screen
+            //GetRestaurants gr = new GetRestaurants(this, handlerFood);
+            //gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         } else {
             //if we have that restaurant
-            if (restaurantsID[0] != -42) {
-                //get food from restaurant
-                GetFood gf = new GetFood(this, handlerFood, restaurantsID);
-                gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            if (restaurantsID[0] != -50) {
+                boolean needDownFoodFormServer = false;
+                long currTime = System.currentTimeMillis();
+
+                //check last downloaded time
+                if (currTime > dastarhanApp.getCheckedFood().get(0).getTimeCheck() + Constants.FOOD_CHECKING_INTERVAL) {
+                    for (FoodCheckElement foodCheckElement : dastarhanApp.getCheckedFood()) {
+                        if (restaurantsID[0].equals(foodCheckElement.getRestID())
+                                && currTime > foodCheckElement.getTimeCheck() + Constants.FOOD_CHECKING_INTERVAL) {
+                            needDownFoodFormServer = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (needDownFoodFormServer) {
+                    //get food from restaurant
+                    GetFood gf = new GetFood(this, handlerFood, restaurantsID);
+                    gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                } else {
+                    Log.d(TAG, "Not need download food, time is not expired");
+                    updateFood();
+                }
             }
         }
         super.onResume();
@@ -99,10 +126,26 @@ public class FoodActivity extends AppCompatActivity
         public void handleMessage(Message msg) {
             if (msg.what == Constants.CALLBACK_GET_FOOD_SUCCESS) {  //all ok
                 Log.d(TAG, "Food data received");
+                //update down time
+                if (cuisineID == -42) {
+                    //update first element "All restaurants"
+                    dastarhanApp.getCheckedFood().get(0).setTimeCheck(System.currentTimeMillis());
+                } else {
+                    for (int i = 0; i < dastarhanApp.getCheckedFood().size(); i++) {
+                        for (Integer restaurantID : restaurantsID) {
+                            if (restaurantID.equals(dastarhanApp.getCheckedFood().get(i).getRestID())) {
+                                dastarhanApp.getCheckedFood().get(i).setTimeCheck(System.currentTimeMillis());
+                                break;
+                            }
+                        }
+                    }
+                }
+                //update RecycleVew
                 updateFood();
             }
             if (msg.what == Constants.CALLBACK_GET_FOOD_FAIL) {  //not ok
                 Log.d(TAG, "Food data NOT receive");
+                //update RecycleVew
                 updateFood();
             }
             if (msg.what == Constants.CALLBACK_GET_FOOD_SHOW_PROGRESS_BAR || msg.what == Constants.CALLBACK_GET_RESTAURANTS_SHOW_PROGRESS_BAR) {  //show progress bar
@@ -111,10 +154,12 @@ public class FoodActivity extends AppCompatActivity
             }
             if (msg.what == Constants.CALLBACK_GET_RESTAURANTS_SUCCESS) {  //all ok
                 Log.d(TAG, "Restaurants data received");
+                //update RecycleVew
                 getFoodFromRestaurants();
             }
             if (msg.what == Constants.CALLBACK_GET_RESTAURANTS_FAIL) {  //not ok
                 Log.d(TAG, "Restaurants data NOT receive");
+                //update RecycleVew
                 getFoodFromRestaurants();
             }
             super.handleMessage(msg);
@@ -122,7 +167,7 @@ public class FoodActivity extends AppCompatActivity
     }
 
     private void getFoodFromRestaurants() {
-        //get cuisines ID from restaurants
+        //get restaurants ID from cuisines
         String selectQuery;
         if (cuisineID == -42) {
             selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS;
@@ -146,16 +191,39 @@ public class FoodActivity extends AppCompatActivity
         cursor.close();
         db.close();
 
-        if (restaurantsID.length > 0) {
-            //get food from restaurant
-            GetFood gf = new GetFood(this, handlerFood, restaurantsID);
-            gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        //check last downloaded time
+        boolean needDownFoodFromServer = false;
+        long currTime = System.currentTimeMillis();
+
+        if (currTime > dastarhanApp.getCheckedFood().get(0).getTimeCheck() + Constants.FOOD_CHECKING_INTERVAL) {
+            //checking first element "All restaurants"
+            for (FoodCheckElement foodCheckElement : dastarhanApp.getCheckedFood()) {
+                for (Integer restaurantID : restaurantsID) {
+                    if (restaurantID.equals(foodCheckElement.getRestID())
+                            && currTime > foodCheckElement.getTimeCheck() + Constants.FOOD_CHECKING_INTERVAL) {
+                        needDownFoodFromServer = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (needDownFoodFromServer) {
+            if (restaurantsID.length > 0) {
+                //get food from restaurant
+                GetFood gf = new GetFood(this, handlerFood, restaurantsID);
+                gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            } else {
+                Log.d(TAG, "We have no restaurants with this cuisines");
+                mpbFood.setVisibility(View.GONE);
+                mrvFood.setVisibility(View.VISIBLE);
+            }
         } else {
-            Log.d(TAG, "We have no restaurants with this cuisine");
-            mpbFood.setVisibility(View.GONE);
-            mrvFood.setVisibility(View.VISIBLE);
+            Log.d(TAG, "Not need download food, time is not expired");
+            updateFood();
         }
     }
+
 
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
@@ -196,12 +264,12 @@ public class FoodActivity extends AppCompatActivity
             Intent intent = new Intent(FoodActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(FoodActivity.this,BasketActivity.class);
+            Intent intent = new Intent(FoodActivity.this, BasketActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(FoodActivity.this,PromoActivity.class);
+            Intent intent = new Intent(FoodActivity.this, PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
             Intent intent = new Intent(FoodActivity.this, SettingActivity.class);

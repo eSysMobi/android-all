@@ -50,4 +50,6 @@ public class Constants {
     public static final byte ACTION_GET_FOOD_FAVORITE = 4;
     public static final byte ACTION_GET_FOOD_CURR_ORDERED = 8;
 
+    //time
+    public static final int FOOD_CHECKING_INTERVAL = 15 * 60 * 1000; //15 min
 }
