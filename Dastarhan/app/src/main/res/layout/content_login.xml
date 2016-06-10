@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivInputBack1"
                 android:layout_centerVertical="true"
-                android:background="@drawable/input_back" />
+                android:background="@drawable/background_shape_input" />
 
             <EditText
                 android:id="@+id/etEmail"
@@ -57,10 +57,11 @@
                 android:textSize="18sp"
                 android:singleLine="true"
                 android:hint="@string/login_email"
+                android:textColorHint="#c8c8c8"
                 android:imeOptions="actionNext"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:textColorHint="#ffffff"
+                android:maxLength="40"
                 android:textCursorDrawable="@null"/>
         </RelativeLayout>
     </FrameLayout>
@@ -82,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivInputBack2"
                 android:layout_centerVertical="true"
-                android:background="@drawable/input_back" />
+                android:background="@drawable/background_shape_input" />
 
             <EditText
                 android:id="@+id/etPass"
@@ -102,10 +103,11 @@
                 android:textSize="18sp"
                 android:singleLine="true"
                 android:hint="@string/login_pass"
+                android:textColorHint="#c8c8c8"
                 android:imeOptions="actionDone"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:textColorHint="#ffffff"
+                android:maxLength="30"
                 android:textCursorDrawable="@null"/>
         </RelativeLayout>
     </FrameLayout>

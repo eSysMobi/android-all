@@ -12,10 +12,14 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import mobi.esys.dastarhan.utils.AppLocationService;
 import mobi.esys.dastarhan.utils.LocationAddress;
@@ -23,11 +27,16 @@ import mobi.esys.dastarhan.utils.LocationAddress;
 public class AddAddressActivity extends AppCompatActivity {
 
     private final String TAG = "dtagAddAddress";
+    SharedPreferences prefs;
+
     private EditText metAddAddressCity;
     private EditText metAddAddressDistrict;
-    private EditText metAddAddressExactAddress;
+    private EditText metAddAddressHouse;
+    private EditText metAddAddressApartment;
+    private EditText metAddAddressNotice;
     private Button mbAddAddress;
     private ProgressBar mpbAddAddress;
+
     AppLocationService appLocationService;
 
     @Override
@@ -39,9 +48,64 @@ public class AddAddressActivity extends AppCompatActivity {
 
         metAddAddressCity = (EditText) findViewById(R.id.etAddAddressCity);
         metAddAddressDistrict = (EditText) findViewById(R.id.etAddAddressDistrict);
-        metAddAddressExactAddress = (EditText) findViewById(R.id.etAddAddressExactAddress);
+        metAddAddressHouse = (EditText) findViewById(R.id.etAddAddressHouse);
+        metAddAddressApartment = (EditText) findViewById(R.id.etAddAddressApartment);
+        metAddAddressNotice = (EditText) findViewById(R.id.etAddAddressNotice);
         mbAddAddress = (Button) findViewById(R.id.bAddAddress);
         mpbAddAddress = (ProgressBar) findViewById(R.id.pbAddAddress);
+
+        metAddAddressCity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddAddressDistrict.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddAddressDistrict.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddAddressHouse.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddAddressHouse.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddAddressApartment.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddAddressApartment.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddAddressNotice.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddAddressNotice.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                return false;
+            }
+        });
+
+        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
 
         appLocationService = new AppLocationService(AddAddressActivity.this);
         Location location = appLocationService.getLocation(LocationManager.NETWORK_PROVIDER);
@@ -59,7 +123,28 @@ public class AddAddressActivity extends AppCompatActivity {
         mbAddAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                if (!metAddAddressCity.getText().toString().isEmpty()) {
+                    if (!metAddAddressDistrict.getText().toString().isEmpty()) {
+                        if (!metAddAddressHouse.getText().toString().isEmpty()) {
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("city", metAddAddressCity.getText().toString());
+                            editor.putString("street", metAddAddressDistrict.getText().toString());
+                            editor.putString("house", metAddAddressHouse.getText().toString());
+                            editor.putString("apartment", metAddAddressApartment.getText().toString());
+                            editor.putString("notice_addr", metAddAddressNotice.getText().toString());
+                            editor.apply();
+                            Intent intent = new Intent();
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        } else {
+                            Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(AddAddressActivity.this, R.string.need_enter_district, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(AddAddressActivity.this, R.string.need_enter_city, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -101,22 +186,18 @@ public class AddAddressActivity extends AppCompatActivity {
 
                     Log.d(TAG, "Get address bundle");
 
-                    SharedPreferences prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
-
                     if (locationAddress == null || locationAddress.isEmpty()) {
-                        metAddAddressCity.setText(prefs.getString("city",""));
-                        metAddAddressDistrict.setText(prefs.getString("street",""));
-                        metAddAddressExactAddress.setText(prefs.getString("address",""));
+                        metAddAddressCity.setText(prefs.getString("city", ""));
+                        metAddAddressDistrict.setText(prefs.getString("street", ""));
+                        metAddAddressHouse.setText(prefs.getString("house", ""));
+                        metAddAddressApartment.setText(prefs.getString("apartment", ""));
+                        metAddAddressNotice.setText(prefs.getString("notice_addr", ""));
                     } else {
-                        SharedPreferences.Editor editor = prefs.edit();
-                        editor.putString("city",city);
-                        editor.putString("street",street);
-                        editor.putString("address",locationAddress);
-                        editor.apply();
-
                         metAddAddressCity.setText(city);
                         metAddAddressDistrict.setText(street);
-                        metAddAddressExactAddress.setText(locationAddress);
+                        metAddAddressHouse.setText(prefs.getString("house", ""));
+                        metAddAddressApartment.setText(prefs.getString("apartment", ""));
+                        metAddAddressNotice.setText(prefs.getString("notice_addr", ""));
                     }
                     mpbAddAddress.setVisibility(View.GONE);
                     mbAddAddress.setVisibility(View.VISIBLE);

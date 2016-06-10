@@ -45,4 +45,11 @@
     <string name="distr">Район/улица</string>
     <string name="exact_addr">Точный адрес</string>
     <string name="submit">Подтвердить</string>
+    <string name="notice_addr">Примечания (напр. телефон)</string>
+    <string name="notice">Примечания</string>
+    <string name="apartment">Офис/кв.</string>
+    <string name="house_num">Дом</string>
+    <string name="need_enter_house_num">Введите номер дома</string>
+    <string name="need_enter_district">Введите название района/улицы</string>
+    <string name="need_enter_city">Введите название города</string>
 </resources>

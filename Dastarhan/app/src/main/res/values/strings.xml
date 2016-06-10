@@ -56,4 +56,11 @@
     <string name="distr">District/Street</string>
     <string name="exact_addr">The exact address</string>
     <string name="submit">Submit</string>
+    <string name="notice_addr">Notice (e.g. phone number)</string>
+    <string name="notice">Notice</string>
+    <string name="apartment">Apartment</string>
+    <string name="house_num">House</string>
+    <string name="need_enter_house_num">Enter house number</string>
+    <string name="need_enter_district">Enter district/street</string>
+    <string name="need_enter_city">Enter city name</string>
 </resources>

@@ -50,7 +50,7 @@ public class LocationAddress {
                     if (!result.isEmpty()) {
                         message.what = 1;
                         Bundle bundle = new Bundle();
-                        result = result +" Latitude: " + latitude + " Longitude: " + longitude;
+                        //result = result +" Latitude: " + latitude + " Longitude: " + longitude;
                         bundle.putString("address", result);
                         bundle.putString("city", city);
                         bundle.putString("street", street);

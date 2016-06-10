@@ -17,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentFoodActivity;
 import mobi.esys.dastarhan.R;
@@ -35,6 +38,8 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private SharedPreferences prefs;
     private Handler handler;
     private double totalCost = 0;
+    private Set<Integer> changeElement;
+
 
     //constructor
     public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, byte action, Integer[] restID, Handler handler) {
@@ -43,6 +48,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         this.dbHelper = dbHelper;
         this.action = action;
         this.handler = handler;
+        changeElement = new HashSet<>();
         db = dbHelper.getReadableDatabase();
         prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
@@ -193,6 +199,14 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
 
         //viewHolder.ivCuisine.setImageBitmap(...);
 
+        if(changeElement.contains(i)){
+            if (viewHolder.favorite != 1) {
+                viewHolder.favorite = 1;
+            } else {
+                viewHolder.favorite = 0;
+            }
+        }
+
         if (viewHolder.favorite != 1) {
             viewHolder.ivFoodRVFav.setVisibility(View.GONE);
         } else {
@@ -222,11 +236,13 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             if (!tmpNotice.isEmpty()) {
                 viewHolder.tvFoodNoticeRV.setVisibility(View.VISIBLE);
                 viewHolder.tvFoodNoticeRV.setText(tmpNotice);
+            } else {
+                viewHolder.tvFoodNoticeRV.setVisibility(View.GONE);
             }
 
             //set price
             viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.price * viewHolder.count));
-        } else{
+        } else {
             //set name
             if (locale.equals("ru")) {
                 viewHolder.tvFoodNameRV.setText(viewHolder.ru_name);
@@ -241,7 +257,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.food_id);
         viewHolder.itemView.setOnClickListener(customClickListener);
 
-        CustomLongClickListener customLongClickListener = new CustomLongClickListener(cursor, dbHelper, viewHolder, action, handler);
+        CustomLongClickListener customLongClickListener = new CustomLongClickListener(dbHelper, viewHolder, i, action, handler, changeElement);
         viewHolder.itemView.setOnLongClickListener(customLongClickListener);
 
         if (i == getItemCount() - 1) {
@@ -256,7 +272,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
                 message.setTarget(handler);
                 message.what = 43;
                 Bundle bundle = new Bundle();
-                bundle.putDouble("totalCost",totalCost);
+                bundle.putDouble("totalCost", totalCost);
                 message.setData(bundle);
                 message.sendToTarget();
             }
@@ -282,18 +298,21 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     }
 
     private static class CustomLongClickListener implements View.OnLongClickListener {
-        Cursor cursor;
         DatabaseHelper dbHelper;
         FoodViewHolder viewHolder;
+        int elementNum;
         byte action;
         Handler handler;
+        Set<Integer> changeElement;
 
-        public CustomLongClickListener(Cursor cursor, DatabaseHelper dbHelper, FoodViewHolder viewHolder, byte action, Handler handler) {
-            this.cursor = cursor;
+
+        public CustomLongClickListener(DatabaseHelper dbHelper, FoodViewHolder viewHolder, int elementNum, byte action, Handler handler, Set<Integer> changeElement) {
             this.dbHelper = dbHelper;
             this.viewHolder = viewHolder;
             this.action = action;
             this.handler = handler;
+            this.elementNum = elementNum;
+            this.changeElement = changeElement;
         }
 
         @Override
@@ -369,6 +388,11 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
                 int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
                 Log.d("dtagRecyclerView", "Fav updated = " + result);
                 db.close();
+                if (changeElement.contains(elementNum)) {
+                    changeElement.remove(elementNum);
+                } else {
+                    changeElement.add(elementNum);
+                }
             }
             return true;
         }

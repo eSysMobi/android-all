@@ -1,6 +1,7 @@
 package mobi.esys.dastarhan;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -76,7 +77,7 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
             public void onClick(View v) {
                 Log.d(TAG, "Add address");
                 Intent intent = new Intent(BasketActivity.this, AddAddressActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 88);
             }
         });
 
@@ -97,6 +98,16 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
     protected void onResume() {
         updateList();
         super.onResume();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult requestCode " + requestCode + " resultCode " + resultCode);
+        if (requestCode == 88 && resultCode == Activity.RESULT_OK) {
+            Log.d(TAG, "all ok");
+            mbBasketSendOrder.setEnabled(true);
+        }
     }
 
     @Override
