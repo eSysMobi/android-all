@@ -61,6 +61,7 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                 }
 
                 urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setReadTimeout(Constants.CONNECTION_TIMEOUT);
 
                 InputStream is = urlConnection.getInputStream();
 
@@ -204,5 +205,11 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
         } else {
             handler.sendEmptyMessage(Constants.CALLBACK_GET_FOOD_FAIL);
         }
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        handler.sendEmptyMessage(Constants.CALLBACK_GET_FOOD_FAIL);
     }
 }

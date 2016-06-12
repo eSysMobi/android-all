@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -16,8 +19,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.utils.RVPromoAdapter;
+
 public class PromoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private final String TAG = "dtagPromoActivity";
+    private RecyclerView mrvPromo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +46,29 @@ public class PromoActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        mrvPromo = (RecyclerView) findViewById(R.id.rvPromo);
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        mrvPromo.setLayoutManager(llm);
+    }
+
+    @Override
+    protected void onResume() {
+        updatePromoList();
+        super.onResume();
+    }
+
+    private void updatePromoList(){
+        String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        RVPromoAdapter adapter = new RVPromoAdapter(dbHelper, this, locale);
+        if (mrvPromo.getAdapter() == null) {
+            Log.d(TAG, "New adapter in mrvPromo");
+            mrvPromo.setAdapter(adapter);
+        } else {
+            Log.d(TAG, "Swap adapter in mrvPromo");
+            mrvPromo.swapAdapter(adapter, true);
+        }
     }
 
     @Override

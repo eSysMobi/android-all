@@ -136,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
 
                 } else {
-                    startMainActivity();
+                    returnResult();
                 }
 
             }
@@ -159,14 +159,14 @@ public class LoginActivity extends AppCompatActivity {
         mbLoginRememberYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startMainActivity();
+                returnResult();
             }
         });
 
         mbLoginRememberNo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startMainActivity();
+                returnResult();
             }
         });
     }
@@ -289,9 +289,10 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void startMainActivity() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
+    private void returnResult() {
+        Intent intent = new Intent();
+        //intent.putExtra("count", 5);
+        setResult(RESULT_OK, intent);
         finish();
     }
 

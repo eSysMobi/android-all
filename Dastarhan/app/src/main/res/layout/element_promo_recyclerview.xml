@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="4dp"
+    android:background="@drawable/background_shape_mask"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+
+    <TextView
+        android:id="@+id/tvPromoHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Promo!"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold"
+        android:textColor="#ffffff" />
+
+    <FrameLayout
+        android:id="@+id/flPromoRestaurant"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoHeader"
+        android:layout_centerHorizontal="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/ivPromoRestaurant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/def_restaurant" />
+
+            <TextView
+                android:id="@+id/tvPromoRestaurant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/ivPromoRestaurant"
+                android:layout_alignLeft="@+id/ivPromoRestaurant"
+                android:layout_alignTop="@+id/ivPromoRestaurant"
+                android:layout_marginBottom="1dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="1dp"
+                android:layout_toLeftOf="@+id/ivCurrFoodRatingRest"
+                android:layout_toStartOf="@+id/ivCurrFoodRatingRest"
+                android:gravity="center_vertical"
+                android:singleLine="true"
+                android:text="Restaurant"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/ivPromoRestaurantRating"
+                android:layout_width="100dp"
+                android:layout_height="16dp"
+                android:layout_alignBottom="@+id/ivPromoRestaurant"
+                android:layout_alignRight="@+id/ivPromoRestaurant"
+                android:layout_marginBottom="28dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/rating_5" />
+        </RelativeLayout>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvPromoAfflicted"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/flPromoRestaurant"
+        android:layout_alignStart="@+id/flPromoRestaurant"
+        android:layout_below="@+id/flPromoRestaurant"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Акция распростаняется на:"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoAfflicted_0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoAfflicted"
+        android:layout_centerHorizontal="true"
+        android:text="Все блюда заказа"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoTimeOfAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoAfflicted_0"
+        android:text="Акция проводится:"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoTimeOfActionDays"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoTimeOfAction"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Пн, вт, ср, чт, пт"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoTimeOfActionExact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoTimeOfActionDays"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="C 11.11.2011 по 12.12.2012, с 09:30 до 20:45"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoConditions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoTimeOfActionExact"
+        android:text="При условии:"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:textColor="#ffffff" />
+
+    <TextView
+        android:id="@+id/tvPromoConditionsExact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPromoConditions"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Покупка на сумму не менее 400руб."
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+
+
+</RelativeLayout>

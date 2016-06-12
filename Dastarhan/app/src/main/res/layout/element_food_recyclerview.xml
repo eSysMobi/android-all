@@ -4,7 +4,8 @@
     android:descendantFocusability="blocksDescendants"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/mask_narrow"
+    android:background="@drawable/background_shape_mask"
+    android:layout_marginBottom="4dp"
     android:padding="8dp">
 
 

@@ -41,7 +41,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="5dp"
-                android:background="@drawable/mask"
+                android:background="@drawable/background_shape_mask"
                 android:id="@+id/linearLayout"
                 android:padding="5dp">
 

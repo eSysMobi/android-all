@@ -52,6 +52,7 @@ public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
 
             urlConnection = (HttpURLConnection) url
                     .openConnection();
+            urlConnection.setReadTimeout(Constants.CONNECTION_TIMEOUT);
 
             InputStream is = urlConnection.getInputStream();
 

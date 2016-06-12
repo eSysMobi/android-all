@@ -40,10 +40,19 @@ public class Constants {
     public static final String DB_TABLE_PROMO = "promo";
     public static final String DB_TABLE_GIFTS = "gifts";
 
-    //
-    public static final byte GIFT_TYPE_DISCOUNT_PERCENT_ALL = 1;
-    public static final byte GIFT_TYPE_GOODS = 2;
-    public static final byte GIFT_TYPE_HIDDEN = 3;
+    //promo gifts type
+    public static final String GIFT_TYPE_DISCOUNT_PERCENT_ALL = "discount_percent_all";     //Скидка в процентах на весь заказ(умещается в 1 строку)
+    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_ALL = "discount_amount_all";       //Скидка в рублях на весь заказ (умещается в 1 строку)
+    public static final String GIFT_TYPE_DISCOUNT_PERCENT_OFFER = "discount_percent_offer"; //Скидка в процентах на блюда, обозначенные в условиях акции (несколько строк)
+    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_OFFER = "discount_amount_offer";   //Скидка в рублях на блюда, обозначенные в условиях акции (несколько строк)
+    public static final String GIFT_TYPE_GIFT_GOODS = "gift_goods";                         //Блюда, которые получают в подарок (несколько строк)
+    public static final String GIFT_TYPE_FREE_DELIVERY = "free_delivery";                   //Бесплатная доставка (умещается в 1 строку)
+    public static final String GIFT_TYPE_HIDDEN = "hidden";                                 //Скрыто, откроется после ввода промокода (умещается в 1 строку)
+
+    //currencies
+    public static final String CURRENCY = "рублей";
+    public static final String CURRENCY_SHORT = "руб.";
+    public static final String CURRENCY_VERY_SHORT = "р.";
 
     //actions for food adapter
     public static final byte ACTION_GET_FOOD_FROM_RESTAURANTS = 2;
@@ -51,5 +60,6 @@ public class Constants {
     public static final byte ACTION_GET_FOOD_CURR_ORDERED = 8;
 
     //time
+    public static final int CONNECTION_TIMEOUT = 3 * 1000; //3 sec
     public static final int FOOD_CHECKING_INTERVAL = 15 * 60 * 1000; //15 min
 }

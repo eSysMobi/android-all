@@ -55,6 +55,7 @@ public class GetPromo extends AsyncTask<Void, Void, Void> {
                 url = new URL(Constants.URL_PROMO + restaurantsID[i]);
 
                 urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setReadTimeout(Constants.CONNECTION_TIMEOUT);
 
                 InputStream is = urlConnection.getInputStream();
 
@@ -211,5 +212,11 @@ public class GetPromo extends AsyncTask<Void, Void, Void> {
         } else {
             handler.sendEmptyMessage(Constants.CALLBACK_GET_PROMO_FAIL);
         }
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        handler.sendEmptyMessage(Constants.CALLBACK_GET_PROMO_FAIL);
     }
 }

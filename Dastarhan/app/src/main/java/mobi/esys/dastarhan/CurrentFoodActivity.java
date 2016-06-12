@@ -270,7 +270,7 @@ public class CurrentFoodActivity extends AppCompatActivity
                     mtvCurrFoodName.setText(name);
 
                     priceString = String.valueOf(price); //String.valueOf(currentFoodPrice);
-                    priceString += " р.";
+                    priceString += " " + Constants.CURRENCY_VERY_SHORT;
                     mtvCurrFoodPrice.setText(priceString);
 
                     String description = "";

@@ -63,4 +63,5 @@
     <string name="need_enter_house_num">Enter house number</string>
     <string name="need_enter_district">Enter district/street</string>
     <string name="need_enter_city">Enter city name</string>
+    <string name="discount_all">%1$s discount on all meals of the restaurant</string>
 </resources>

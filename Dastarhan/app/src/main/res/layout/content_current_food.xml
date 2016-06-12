@@ -87,7 +87,7 @@
             android:id="@+id/rlCurrFoodAdding"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:background="@drawable/mask"
+            android:background="@drawable/background_shape_mask"
             android:orientation="vertical">
 
 
@@ -157,7 +157,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="8dp"
-            android:background="@drawable/mask"
+            android:background="@drawable/background_shape_mask"
             android:orientation="vertical">
 
             <ScrollView

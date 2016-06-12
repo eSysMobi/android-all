@@ -1,5 +1,6 @@
 package mobi.esys.dastarhan;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -23,6 +24,8 @@ import mobi.esys.dastarhan.utils.FoodCheckElement;
 public class SplashActivity extends AppCompatActivity {
 
     private final String TAG = "dtagSplashActivity";
+    public final int REQUEST_CODE_SPLASH = 89;
+
     private Handler handler;
     private DastarhanApp dastarhanApp;
 
@@ -63,11 +66,11 @@ public class SplashActivity extends AppCompatActivity {
             }
             if (msg.what == Constants.CALLBACK_GET_PROMO_SUCCESS) {  //all ok
                 Log.d(TAG, "Promo data received");
-                nextActivity();
+                goLoginActivity();
             }
             if (msg.what == Constants.CALLBACK_GET_PROMO_FAIL) {  //not ok
                 Log.d(TAG, "Promo data NOT receive");
-                nextActivity();
+                goLoginActivity();
             }
 
             super.handleMessage(msg);
@@ -103,9 +106,20 @@ public class SplashActivity extends AppCompatActivity {
         db.close();
     }
 
-    private void nextActivity() {
+    private void goLoginActivity() {
         Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-        startActivity(intent);
-        finish();
+        startActivityForResult(intent, REQUEST_CODE_SPLASH);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "Login after splash requestCode " + requestCode + " resultCode " + resultCode);
+        if (requestCode == REQUEST_CODE_SPLASH) {
+            //if(resultCode == Activity.RESULT_OK){ }
+            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 }
