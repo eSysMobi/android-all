@@ -41,6 +41,16 @@
                 android:layout_alignBottom="@+id/ivFoodRV"
                 android:layout_margin="5dp"
                 android:visibility="gone" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/ivFoodRVPromo"
+                android:background="@drawable/promo"
+                android:layout_alignRight="@+id/ivFoodRV"
+                android:layout_alignTop="@+id/ivFoodRV"
+                android:layout_margin="5dp"
+                android:visibility="gone"/>
         </RelativeLayout>
 
         <FrameLayout

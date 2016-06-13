@@ -17,7 +17,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import mobi.esys.dastarhan.Constants;
@@ -39,6 +41,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private Handler handler;
     private double totalCost = 0;
     private Set<Integer> changeElement;
+    private List<Boolean> needPromo;
 
 
     //constructor
@@ -49,6 +52,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         this.action = action;
         this.handler = handler;
         changeElement = new HashSet<>();
+        needPromo = new ArrayList<>();
         db = dbHelper.getReadableDatabase();
         prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
@@ -137,6 +141,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         ImageView ivFoodRV;
         ImageView ivFoodRVFav;
         ImageView ivFoodRVCart;
+        ImageView ivFoodRVPromo;
         TextView tvFoodNoticeRV;
 
         int food_id = 0;
@@ -165,6 +170,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             ivFoodRV = (ImageView) itemView.findViewById(R.id.ivFoodRV);
             ivFoodRVFav = (ImageView) itemView.findViewById(R.id.ivFoodRVFav);
             ivFoodRVCart = (ImageView) itemView.findViewById(R.id.ivFoodRVCart);
+            ivFoodRVPromo = (ImageView) itemView.findViewById(R.id.ivFoodRVPromo);
             tvFoodNoticeRV = (TextView) itemView.findViewById(R.id.tvFoodNoticeRV);
         }
     }
@@ -199,7 +205,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
 
         //viewHolder.ivCuisine.setImageBitmap(...);
 
-        if(changeElement.contains(i)){
+        if (changeElement.contains(i)) {
             if (viewHolder.favorite != 1) {
                 viewHolder.favorite = 1;
             } else {
@@ -252,6 +258,28 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
 
             //set price
             viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.price));
+        }
+
+        //promo
+        if (needPromo.size() <= i) {
+            String selectQuery_promo = "SELECT * "
+                    + "FROM "
+                    + Constants.DB_TABLE_PROMO
+                    + " WHERE "
+                    + "(condition = 2 OR condition = 3)"
+                    + "AND condition_par LIKE \"%" + String.valueOf(viewHolder.food_id) + "%\"";
+            Cursor cursor_promo = db.rawQuery(selectQuery_promo, null);
+            if(cursor_promo.getCount()>0){
+                needPromo.add(true);
+            } else {
+                needPromo.add(false);
+            }
+            cursor_promo.close();
+        }
+        if (needPromo.get(i)) {
+            viewHolder.ivFoodRVPromo.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.ivFoodRVPromo.setVisibility(View.GONE);
         }
 
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.food_id);

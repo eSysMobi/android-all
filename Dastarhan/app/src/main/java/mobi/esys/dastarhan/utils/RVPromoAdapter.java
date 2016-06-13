@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentRestaurantActivity;
 import mobi.esys.dastarhan.FoodActivity;
@@ -25,11 +28,15 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
     private Context mContext;
     private SQLiteDatabase db;
     private String locale;
+    private List<String> gifts_names;
+    private List<String> conditions_names;
 
     //constructor
     public RVPromoAdapter(DatabaseHelper dbHelper, Context mContext, String locale) {
         this.mContext = mContext;
         this.locale = locale;
+        gifts_names = new ArrayList<>();
+        conditions_names = new ArrayList<>();
         db = dbHelper.getReadableDatabase();
         String selectQuery = "SELECT "
                 + "a.ru_name as ru_name, "
@@ -64,10 +71,11 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
         ImageView ivPromoRestaurant;
         TextView tvPromoRestaurant;
         ImageView ivPromoRestaurantRating;
+        TextView tvPromoAfflicted;
         TextView tvPromoAfflicted_0;
         TextView tvPromoTimeOfActionDays;
         TextView tvPromoTimeOfActionExact;
-        TextView tvPromoConditions;
+        TextView tvPromoConditionsExact;
         int restaraunt_id = 0;
 
         PromoViewHolder(View itemView) {
@@ -76,10 +84,11 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
             ivPromoRestaurant = (ImageView) itemView.findViewById(R.id.ivPromoRestaurant);
             tvPromoRestaurant = (TextView) itemView.findViewById(R.id.tvPromoRestaurant);
             ivPromoRestaurantRating = (ImageView) itemView.findViewById(R.id.ivPromoRestaurantRating);
+            tvPromoAfflicted = (TextView) itemView.findViewById(R.id.tvPromoAfflicted);
             tvPromoAfflicted_0 = (TextView) itemView.findViewById(R.id.tvPromoAfflicted_0);
             tvPromoTimeOfActionDays = (TextView) itemView.findViewById(R.id.tvPromoTimeOfActionDays);
             tvPromoTimeOfActionExact = (TextView) itemView.findViewById(R.id.tvPromoTimeOfActionExact);
-            tvPromoConditions = (TextView) itemView.findViewById(R.id.tvPromoConditions);
+            tvPromoConditionsExact = (TextView) itemView.findViewById(R.id.tvPromoConditionsExact);
         }
     }
 
@@ -100,8 +109,8 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
             viewHolder.tvPromoRestaurant.setText(cursor.getString(cursor.getColumnIndex("en_name")));
         }
 
-        int restaraunt_rating = cursor.getInt(cursor.getColumnIndex("total_rating"));
-        switch (restaraunt_rating) {
+        int restaurant_rating = cursor.getInt(cursor.getColumnIndex("total_rating"));
+        switch (restaurant_rating) {
             case 0:
                 viewHolder.ivPromoRestaurantRating.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_0));
                 break;
@@ -140,6 +149,192 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
         //TODO download and set image
         //viewHolder.ivPromoRestaurant.setImageBitmap(...);
 
+        //gifts
+        String gift_type = cursor.getString(cursor.getColumnIndex("gift_type"));
+        String gift = cursor.getString(cursor.getColumnIndex("gift"));
+        int gift_condition = 0;
+        switch (gift_type) {
+            case Constants.GIFT_TYPE_DISCOUNT_PERCENT_ALL:
+                //Скидка в процентах на весь заказ
+                viewHolder.tvPromoHeader.setText(mContext.getString(R.string.discount) + " " + gift + "%");
+                if (gifts_names.size() <= i) {
+                    gifts_names.add("0");
+                }
+                viewHolder.tvPromoAfflicted_0.setText(R.string.afflicted_all_order);
+                break;
+            case Constants.GIFT_TYPE_DISCOUNT_AMOUNT_ALL:
+                //Скидка в рублях на весь заказ
+                viewHolder.tvPromoHeader.setText(mContext.getString(R.string.discount) + " " + gift + Constants.CURRENCY_VERY_SHORT);
+                if (gifts_names.size() <= i) {
+                    gifts_names.add("0");
+                }
+                viewHolder.tvPromoAfflicted_0.setText(R.string.afflicted_all_order);
+                break;
+            case Constants.GIFT_TYPE_DISCOUNT_PERCENT_OFFER:
+                //Скидка в процентах на блюда, обозначенные в условиях акции
+                gift_condition = cursor.getInt(cursor.getColumnIndex("gift_condition"));
+                if (gift_condition > 0) {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_or);
+                } else {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_and);
+                }
+                viewHolder.tvPromoHeader.setText(mContext.getString(R.string.discount) + " " + gift + "%");
+                if (gifts_names.size() <= i) {
+                    gifts_names.add(getFoodNames(cursor.getString(cursor.getColumnIndex("gift")), true));
+                }
+                viewHolder.tvPromoAfflicted_0.setText(gifts_names.get(i));
+                break;
+            case Constants.GIFT_TYPE_DISCOUNT_AMOUNT_OFFER:
+                //Скидка в рублях на блюда, обозначенные в условиях акции
+                gift_condition = cursor.getInt(cursor.getColumnIndex("gift_condition"));
+                if (gift_condition > 0) {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_or);
+                } else {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_and);
+                }
+                viewHolder.tvPromoHeader.setText(mContext.getString(R.string.discount) + " " + gift + Constants.CURRENCY_VERY_SHORT);
+                if (gifts_names.size() <= i) {
+                    gifts_names.add(getFoodNames(cursor.getString(cursor.getColumnIndex("gift")), true));
+                }
+                viewHolder.tvPromoAfflicted_0.setText(gifts_names.get(i));
+                break;
+            case Constants.GIFT_TYPE_GIFT_GOODS:
+                //Блюда, которые получают в подарок
+                gift_condition = cursor.getInt(cursor.getColumnIndex("gift_condition"));
+                if (gift_condition > 0) {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_or);
+                } else {
+                    viewHolder.tvPromoAfflicted.setText(R.string.afflicted_to_and);
+                }
+                viewHolder.tvPromoHeader.setText(R.string.meal_for_gift);
+                if (gifts_names.size() <= i) {
+                    gifts_names.add(getFoodNames(cursor.getString(cursor.getColumnIndex("gift")), true));
+                }
+                viewHolder.tvPromoAfflicted_0.setText(gifts_names.get(i));
+                break;
+            case Constants.GIFT_TYPE_FREE_DELIVERY:
+                //Бесплатная доставка
+                viewHolder.tvPromoHeader.setText(R.string.free_delivery);
+                if (gifts_names.size() <= i) {
+                    gifts_names.add("0");
+                }
+                viewHolder.tvPromoAfflicted_0.setText(R.string.afflicted_all_order);
+                break;
+            case Constants.GIFT_TYPE_HIDDEN:
+                //Скрыто
+                viewHolder.tvPromoHeader.setText(R.string.hidden);
+                if (gifts_names.size() <= i) {
+                    gifts_names.add("0");
+                }
+                viewHolder.tvPromoAfflicted_0.setText(R.string.hidden);
+                break;
+        }
+
+        //days
+        StringBuilder sb = new StringBuilder();
+        String[] days = cursor.getString(cursor.getColumnIndex("days")).split(",");
+        for (String day : days) {
+            switch (Integer.parseInt(day)) {
+                case 1:
+                    sb.append(mContext.getString(R.string.day_1)).append(" ");
+                    break;
+                case 2:
+                    sb.append(mContext.getString(R.string.day_2)).append(" ");
+                    break;
+                case 3:
+                    sb.append(mContext.getString(R.string.day_3)).append(" ");
+                    break;
+                case 4:
+                    sb.append(mContext.getString(R.string.day_4)).append(" ");
+                    break;
+                case 5:
+                    sb.append(mContext.getString(R.string.day_5)).append(" ");
+                    break;
+                case 6:
+                    sb.append(mContext.getString(R.string.day_6)).append(" ");
+                    break;
+                case 7:
+                    sb.append(mContext.getString(R.string.day_7)).append(" ");
+                    break;
+            }
+        }
+        viewHolder.tvPromoTimeOfActionDays.setText(sb.toString());
+
+        //exact data
+        StringBuilder sb_exact_data = new StringBuilder();
+
+        int date = cursor.getInt(cursor.getColumnIndex("date"));
+        if (date > 0) {
+            String date1 = cursor.getString(cursor.getColumnIndex("date1"));
+            String date2 = cursor.getString(cursor.getColumnIndex("date2"));
+            sb_exact_data
+                    .append(mContext.getString(R.string.from)).append(" ").append(date1)
+                    .append(" ").append(mContext.getString(R.string.to)).append(" ").append(date2);
+        } else {
+            sb_exact_data.append(mContext.getString(R.string.every_day));
+        }
+
+        int time = cursor.getInt(cursor.getColumnIndex("time"));
+        if (time > 0) {
+            String time1 = cursor.getString(cursor.getColumnIndex("time1"));
+            String time2 = cursor.getString(cursor.getColumnIndex("time2"));
+            sb_exact_data
+                    .append(" ").append(mContext.getString(R.string.from)).append(" ").append(time1)
+                    .append(" ").append(mContext.getString(R.string.to)).append(" ").append(time2);
+        } else {
+            sb_exact_data.append(" ").append(mContext.getString(R.string.around_the_clock));
+        }
+
+        viewHolder.tvPromoTimeOfActionExact.setText(sb_exact_data.toString());
+
+
+        //conditions
+        StringBuilder sb_condition = new StringBuilder();
+        int condition = cursor.getInt(cursor.getColumnIndex("condition"));
+        String condition_par = cursor.getString(cursor.getColumnIndex("condition_par"));
+        String tmp = "";
+        switch (condition) {
+            case 1:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Сумма заказа больше").append(" ").append(condition_par).append(Constants.CURRENCY_VERY_SHORT).toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+            case 2:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Покупка блюд").append(" ").append(getFoodNames(condition_par, false)).toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+            case 3:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Покупка блюда").append(" ").append(getFoodNames(condition_par,false)).toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+            case 4:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Покупка блюд из категории").append(" ").append(condition_par).toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+            case 5:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Введён промокод").toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+            case 6:
+                if (conditions_names.size() <= i) {
+                    tmp = sb_condition.append("Без условий").toString();
+                    conditions_names.add(tmp);
+                }
+                break;
+        }
+
+        viewHolder.tvPromoConditionsExact.setText(conditions_names.get(i));
+
+
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.restaraunt_id);
         viewHolder.itemView.setOnClickListener(customClickListener);
 
@@ -150,6 +345,63 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
             //cursor.close();
             db.close();
         }
+    }
+
+    private String getFoodNames(String ids, boolean needLines) {
+        String names = "";
+        Cursor cursor_food = null;
+        try {
+            String selectQuery_food = "SELECT * FROM "
+                    + Constants.DB_TABLE_FOOD
+                    + " WHERE";
+            String[] parts = ids.split(",");
+            if (parts.length > 0) {
+                for (String part : parts) {
+                    //+ "server_id = res_id";
+                    selectQuery_food = selectQuery_food + " server_id = " + part + " OR ";
+                }
+                selectQuery_food = selectQuery_food.substring(0, selectQuery_food.length() - 4);
+                cursor_food = db.rawQuery(selectQuery_food, null);
+            }
+            if (cursor_food != null && cursor_food.moveToFirst()) {
+                boolean firstSeparator = false;
+                do {
+                    if(firstSeparator){
+                        if (needLines) {
+                            names = names + System.getProperty("line.separator");
+                        } else {
+                            names = names + ", ";
+                        }
+                    }
+                    if (locale.equals("ru")) {
+                        String name = cursor_food.getString(cursor_food.getColumnIndexOrThrow("ru_name"));
+                        if (name.isEmpty()) {
+                            names = names + cursor_food.getString(cursor_food.getColumnIndexOrThrow("en_name"));
+                        } else {
+                            names = names + name;
+                        }
+                    } else {
+                        String name = cursor_food.getString(cursor_food.getColumnIndexOrThrow("en_name"));
+                        if (name.isEmpty()) {
+                            names = names + cursor_food.getString(cursor_food.getColumnIndexOrThrow("ru_name"));
+                        } else {
+                            names = names + name;
+                        }
+                    }
+                    firstSeparator = true;
+                } while (cursor_food.moveToNext());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor_food != null) {
+                cursor_food.close();
+            }
+        }
+        if (names.isEmpty()) {
+            names = "Food with this ID not exists in DB!";
+        }
+        return names;
     }
 
     private static class CustomClickListener implements View.OnClickListener {

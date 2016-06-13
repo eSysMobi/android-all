@@ -53,6 +53,26 @@
     <string name="need_enter_district">Введите название района/улицы</string>
     <string name="need_enter_city">Введите название города</string>
     <string name="discount_all">%1$s discount on all meals of the restaurant</string>
+    <string name="discount">Скидка</string>
+    <string name="meal_for_gift">Блюда в подарок</string>
+    <string name="free_delivery">Бесплатная доставка</string>
+    <string name="hidden">Скрыто</string>
+    <string name="afflicted_all_order">Все блюда заказа</string>
+    <string name="afflicted_to">Акция распространяется на:</string>
+    <string name="afflicted_to_and">Акция распространяется на блюда:</string>
+    <string name="afflicted_to_or">Акция распространяется на одно из блюд:</string>
 
+    <string name="day_1">пн.</string>
+    <string name="day_2">вт.</string>
+    <string name="day_3">ср.</string>
+    <string name="day_4">чт.</string>
+    <string name="day_5">пт.</string>
+    <string name="day_6">сб.</string>
+    <string name="day_7">вс.</string>
+
+    <string name="around_the_clock">круглосуточно</string>
+    <string name="from">с</string>
+    <string name="to">до</string>
+    <string name="every_day">ежедневно</string>
 
 </resources>

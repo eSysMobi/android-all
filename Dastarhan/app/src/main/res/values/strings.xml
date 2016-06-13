@@ -64,4 +64,26 @@
     <string name="need_enter_district">Enter district/street</string>
     <string name="need_enter_city">Enter city name</string>
     <string name="discount_all">%1$s discount on all meals of the restaurant</string>
+    <string name="discount">Discount</string>
+    <string name="meal_for_gift">Free food</string>
+    <string name="free_delivery">Free delivery</string>
+    <string name="hidden">Hidden</string>
+    <string name="afflicted_all_order">All the food in order</string>
+    <string name="afflicted_to">The promo applies to:</string>
+    <string name="afflicted_to_and">The promo applies to dishes:</string>
+    <string name="afflicted_to_or">The promo applies to one of the dishes:</string>
+
+    <string name="day_1">Mon.</string>
+    <string name="day_2">Tue.</string>
+    <string name="day_3">Wed.</string>
+    <string name="day_4">Thu.</string>
+    <string name="day_5">Fri.</string>
+    <string name="day_6">Sat.</string>
+    <string name="day_7">Sun.</string>
+
+    <string name="around_the_clock">around the clock</string>
+    <string name="from">from</string>
+    <string name="to">to</string>
+    <string name="every_day">every day</string>
+
 </resources>

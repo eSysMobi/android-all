@@ -41,13 +41,13 @@ public class Constants {
     public static final String DB_TABLE_GIFTS = "gifts";
 
     //promo gifts type
-    public static final String GIFT_TYPE_DISCOUNT_PERCENT_ALL = "discount_percent_all";     //Скидка в процентах на весь заказ(умещается в 1 строку)
-    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_ALL = "discount_amount_all";       //Скидка в рублях на весь заказ (умещается в 1 строку)
-    public static final String GIFT_TYPE_DISCOUNT_PERCENT_OFFER = "discount_percent_offer"; //Скидка в процентах на блюда, обозначенные в условиях акции (несколько строк)
-    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_OFFER = "discount_amount_offer";   //Скидка в рублях на блюда, обозначенные в условиях акции (несколько строк)
-    public static final String GIFT_TYPE_GIFT_GOODS = "gift_goods";                         //Блюда, которые получают в подарок (несколько строк)
-    public static final String GIFT_TYPE_FREE_DELIVERY = "free_delivery";                   //Бесплатная доставка (умещается в 1 строку)
-    public static final String GIFT_TYPE_HIDDEN = "hidden";                                 //Скрыто, откроется после ввода промокода (умещается в 1 строку)
+    public static final String GIFT_TYPE_DISCOUNT_PERCENT_ALL = "discount_percent_all";     //Скидка в процентах на весь заказ
+    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_ALL = "discount_amount_all";       //Скидка в рублях на весь заказ
+    public static final String GIFT_TYPE_DISCOUNT_PERCENT_OFFER = "discount_percent_offer"; //Скидка в процентах на блюда, обозначенные в условиях акции
+    public static final String GIFT_TYPE_DISCOUNT_AMOUNT_OFFER = "discount_amount_offer";   //Скидка в рублях на блюда, обозначенные в условиях акции
+    public static final String GIFT_TYPE_GIFT_GOODS = "gift_goods";                         //Блюда, которые получают в подарок
+    public static final String GIFT_TYPE_FREE_DELIVERY = "free_delivery";                   //Бесплатная доставка
+    public static final String GIFT_TYPE_HIDDEN = "hidden";                                 //Скрыто, откроется после ввода промокода
 
     //currencies
     public static final String CURRENCY = "рублей";

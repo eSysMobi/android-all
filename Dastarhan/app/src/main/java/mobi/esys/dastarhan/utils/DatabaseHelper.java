@@ -130,14 +130,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "gift TEXT,"
                 + "gift_condition INTEGER" // Условия предоставление подарков в акции, 0 - И, 1 - ИЛИ
                 + ");");
-
-        // create table gifts
-        Log.d(TAG, "Create table " + Constants.DB_TABLE_GIFTS);
-        db.execSQL("create table " + Constants.DB_TABLE_GIFTS + " ("
-                + "_id INTEGER primary key autoincrement,"
-                + "res_id INTEGER,"
-                + "gift_goods INTEGER"
-                + ");");
     }
 
     @Override
