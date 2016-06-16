@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import net.londatiga.android.instagram.Instagram;
 
 import java.io.File;
 import java.util.Arrays;
@@ -31,7 +30,6 @@ import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
 
 public class InstagramHashtagActivity extends Activity {
     private transient UpnewsTubeApp mApp;
-    private transient Instagram instagram;
     private transient EditText hashTagEdit;
     private transient SharedPreferences preferences;
     private transient String prevHashtag;
@@ -46,13 +44,11 @@ public class InstagramHashtagActivity extends Activity {
         setContentView(R.layout.fragment_instagramhashtag);
 
         mApp = (UpnewsTubeApp) getApplicationContext();
-        instagram = new Instagram(this, DevelopersKeys.INSTAGRAM_CLIENT_ID,
-                DevelopersKeys.INSTAGRAM_CLIENT_SECRET,
-                DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
         hashTagEdit = (EditText) findViewById(R.id.instHashTagEdit);
         hashTagEdit.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+        Button igSkipBtn = (Button) findViewById(R.id.igSkipBtn);
 
         preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
         prevHashtag = preferences.getString("instHashTag", "");
@@ -73,6 +69,7 @@ public class InstagramHashtagActivity extends Activity {
             }
         });
 
+        enterHashBtn.requestFocus();
         hashTagEdit.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -103,6 +100,17 @@ public class InstagramHashtagActivity extends Activity {
             }
         });
 
+        igSkipBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("instNeedShow", false);
+                editor.apply();
+                startActivity(new Intent(InstagramHashtagActivity.this, TwitterLoginActivity.class));
+                finish();
+            }
+        });
+
         hashTagEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
@@ -122,10 +130,11 @@ public class InstagramHashtagActivity extends Activity {
     public void checkTagAndGo() {
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
-            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString(), mApp);
-            checkInstaTagTask.execute(instagram.getSession().getAccessToken());
+            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString().substring(1), mApp);
+            checkInstaTagTask.execute();
             try {
-                if (checkInstaTagTask.get()) {
+                String result = checkInstaTagTask.get();
+                if (!result.isEmpty()) {
                     String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
                     Log.d("curr tag", hashtag);
                     Log.d("prev tag", prevHashtag);
@@ -134,7 +143,9 @@ public class InstagramHashtagActivity extends Activity {
                     }
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("instHashTag", hashtag);
+                    editor.putBoolean("instNeedShow", true);
                     editor.apply();
+                    mApp.setInstagramFiles(result);
                     startActivity(new Intent(InstagramHashtagActivity.this,
                             TwitterLoginActivity.class));
                     finish();
@@ -149,6 +160,8 @@ public class InstagramHashtagActivity extends Activity {
             Toast.makeText(this, "Input Instagram hashtag", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
     public void clearFolder() {
         File tmpFolder = new File(Folders.SD_CARD.

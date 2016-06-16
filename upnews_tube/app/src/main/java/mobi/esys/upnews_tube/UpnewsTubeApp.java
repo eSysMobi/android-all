@@ -30,6 +30,16 @@ public class UpnewsTubeApp extends Application {
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER)};
 
+    private static String instagramFiles = "";
+
+    public void setInstagramFiles(String instagramFiles) {
+        UpnewsTubeApp.instagramFiles = instagramFiles;
+    }
+
+    public String getInstagramFiles() {
+        return instagramFiles;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

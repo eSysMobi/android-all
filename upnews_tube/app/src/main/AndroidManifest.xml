@@ -84,9 +84,6 @@
             android:launchMode="singleTop"
             android:screenOrientation="landscape" />
         <activity
-            android:name="mobi.esys.upnews_tube.InstagramLoginActivity"
-            android:screenOrientation="landscape" />
-        <activity
             android:name="mobi.esys.upnews_tube.InstagramHashtagActivity"
             android:screenOrientation="landscape" />
         <activity

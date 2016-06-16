@@ -1,6 +1,5 @@
 package mobi.esys.upnews_tube.instagram;
 
-
 import android.content.Context;
 import android.util.Log;
 
@@ -8,11 +7,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import mobi.esys.upnews_tube.PlayerActivityYouTube;
 import okio.BufferedSink;
@@ -35,21 +31,30 @@ public class InstagramDownloader {
     }
 
 
-    public void download(List<InstagramItem> instagramPhotos) {
-        Log.d("new download", instagramPhotos.toString());
-        lastFileName = "photo".concat(String.valueOf(instagramPhotos.size()).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
-        for (int i = 0; i < instagramPhotos.size(); i++) {
+    public void download(String urls) {
+        String[] urlArray = urls.split(",");
 
-            String currFileName = "photo".concat(String.valueOf(i + 1).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
+        lastFileName = getNameFromArray(urlArray[urlArray.length - 1]);
+        for (int i = 0; i < urlArray.length; i++) {
+            String currFileName = getNameFromArray(urlArray[i]);
             Log.d("file name", currFileName);
 
-            String url = instagramPhotos.get(i).getIgOriginURL();
-            downloadFileAsync(url, currFileName);
-
-
+            downloadFileAsync(urlArray[i], currFileName);
         }
+    }
 
+    private String getNameFromArray(String url) {
 
+        String name = url;
+        int srt = name.lastIndexOf("/") + 1;
+        int end = name.length();
+        int end2 = name.indexOf("?");
+        if (end2 != -1) {
+            end = end2;
+        }
+        name = name.substring(srt, end);
+
+        return name;
     }
 
     public void downloadFileAsync(String url, final String fileName) {
@@ -61,31 +66,21 @@ public class InstagramDownloader {
                                                                         Log.d("pic file", picFile.getAbsolutePath());
                                                                         try {
                                                                             if (!picFile.exists()) {
-
                                                                                 picFile.createNewFile();
-
                                                                             }
 
 
                                                                             BufferedSink sink = Okio.buffer(Okio.sink(picFile));
                                                                             sink.write(resource);
                                                                             sink.close();
-                                                                        } catch (
-                                                                                IOException e
-                                                                                )
-
-                                                                        {
+                                                                        } catch (IOException e) {
                                                                             e.printStackTrace();
                                                                         }
                                                                         if (fileName.equals(lastFileName)) {
-                                                                                ((PlayerActivityYouTube) context).loadSlide(tag);
+                                                                            ((PlayerActivityYouTube) context).loadSlide(tag);
                                                                         }
                                                                     }
                                                                 }
-
         );
-
     }
-
-
 }

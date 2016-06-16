@@ -4,20 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
 
-import mobi.esys.upnews_tube.InstagramLoginActivity;
+import mobi.esys.upnews_tube.InstagramHashtagActivity;
 import mobi.esys.upnews_tube.R;
-import mobi.esys.upnews_tube.UpnewsTubeApp;
 import mobi.esys.upnews_tube.constants.OtherConst;
 
 /**
@@ -81,7 +78,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 SharedPreferences.Editor editor = mPrefs.edit();
                 editor.putString(OtherConst.APP_PREF_PLAYLIST, viewHolder.playlistID);
                 editor.apply();
-                Intent nextActivity = new Intent(mContext, InstagramLoginActivity.class);
+                Intent nextActivity = new Intent(mContext, InstagramHashtagActivity.class);
                 mContext.startActivity(nextActivity);
             }
         });

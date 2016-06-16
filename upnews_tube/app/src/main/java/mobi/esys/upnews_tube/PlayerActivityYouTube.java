@@ -24,7 +24,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,16 +43,9 @@ import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import net.londatiga.android.instagram.Instagram;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -66,9 +58,8 @@ import mobi.esys.upnews_tube.constants.DevelopersKeys;
 import mobi.esys.upnews_tube.constants.Folders;
 import mobi.esys.upnews_tube.constants.OtherConst;
 import mobi.esys.upnews_tube.constants.TimeConsts;
-import mobi.esys.upnews_tube.instagram.GetIGPhotosTask;
+import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
 import mobi.esys.upnews_tube.instagram.InstagramDownloader;
-import mobi.esys.upnews_tube.instagram.InstagramItem;
 import mobi.esys.upnews_tube.net.NetMonitor;
 import mobi.esys.upnews_tube.twitter.TwitterHelper;
 import zh.wang.android.apis.yweathergetter4a.WeatherInfo;
@@ -92,9 +83,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
     private transient LinearLayout clockLayout;
-    private transient Instagram instagram;
     private transient SliderLayout mSlider;
-    private transient List<InstagramItem> igPhotos;
     private transient Location location;
     private transient LinearLayout dashLayout;
     private transient LinearLayout weatherLayout;
@@ -132,9 +121,10 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private transient boolean isFirst = true;
     private transient boolean youtubePlaylist = true;
     private transient SharedPreferences preferences;
+    private transient UpnewsTubeApp mApp;
     private transient EasyTracker easyTracker;
 
-    private transient boolean skip_instagram = true;
+    private transient boolean needIsnstagram;
     private transient boolean skip_twitter = true;
 
     @Override
@@ -151,13 +141,15 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         easyTracker = EasyTracker.getInstance(PlayerActivityYouTube.this);
 
         preferences = getSharedPreferences(OtherConst.APP_PREF, MODE_PRIVATE);
-        skip_instagram = preferences.getBoolean(OtherConst.APP_PREF_SKIP_INSTAGRAM, true);
+        needIsnstagram = preferences.getBoolean("instNeedShow", false);
         skip_twitter = preferences.getBoolean(OtherConst.APP_PREF_SKIP_TWITTER, true);
         playlistID = preferences.getString(OtherConst.APP_PREF_PLAYLIST, "");
 
         clockLayout = (LinearLayout) findViewById(R.id.clockLayout);
         weatherLayout = (LinearLayout) findViewById(R.id.weatherLayout);
         dashLayout = (LinearLayout) findViewById(R.id.dashLayout);
+
+        mApp = (UpnewsTubeApp) getApplication();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             TextClock digitalClock = new TextClock(this);
@@ -219,6 +211,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
         mSlider = (SliderLayout) findViewById(R.id.slider);
 
+
         rlForTwitter = (RelativeLayout) findViewById(R.id.rlForTwitter);
         TwitterAuthConfig authConfig = new TwitterAuthConfig(DevelopersKeys.TWITTER_KEY, DevelopersKeys.TWITTER_SECRET);
         Fabric.with(PlayerActivityYouTube.this, new Twitter(authConfig));
@@ -239,8 +232,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         };
 
         //twitterFeedHandler.postDelayed(twitterFeedRunnable, TimeConsts.TWITTER_LOAD_DELAY);   //this is in onResume
-
-        instagram = new Instagram(PlayerActivityYouTube.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
         instagramHandler = new Handler();
         instagramRunnable = new Runnable() {
@@ -285,12 +276,11 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     }
 
     public void loadSlide(String tag) {
-        String userName = instagram.getSession().getUser().username;
+        mApp.setInstagramFiles("");
         mSlider.stopAutoCycle();
         mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
 
         mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);
-
 
         String path = Folders.SD_CARD.
                 concat(File.separator).
@@ -311,11 +301,11 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
                 if (i == folderList.length - 1) {
                     mSlider.setDuration(TimeConsts.SLIDER_DURATION);
-                    mSlider.startAutoCycle();
+                    //mSlider.startAutoCycle();
                 }
             }
 
-
+            Log.w(TAG, "Start autocycle " + folderList.length + " photos");
             mSlider.startAutoCycle();
         } else {
             Toast.makeText(this, "Instagram photos load fail", Toast.LENGTH_SHORT).show();
@@ -324,76 +314,38 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
 
     public void updateIGPhotos() {
-        if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
+        if (NetMonitor.isNetworkAvailable(mApp)) {
             String tag = preferences.getString("instHashTag", "");
-            final GetIGPhotosTask getTagPhotoIGTask = new GetIGPhotosTask(tag);
-            getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
 
-            try {
-                JSONObject igObject = new JSONObject(getTagPhotoIGTask.get());
-                Log.d("object", igObject.toString());
-                getIGPhotos(igObject);
-                String folder = Folders.SD_CARD.concat(File.separator).
-                        concat(Folders.BASE_FOLDER).
-                        concat(File.separator).
-                        concat(Folders.PHOTO_FOLDER);
-                Log.d(TAG + "_IG", "photos: " + igPhotos.toString());
+            String folder = Folders.SD_CARD.concat(File.separator).
+                    concat(Folders.BASE_FOLDER).
+                    concat(File.separator).
+                    concat(Folders.PHOTO_FOLDER);
+
+            String urls = mApp.getInstagramFiles();
+            if(urls.isEmpty()){
+                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(tag, mApp);
+                checkInstaTagTask.execute();
+                try {
+                    urls = checkInstaTagTask.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.w(TAG, "Loaded urls by tag #" + tag + " : " + urls);
+            if(!urls.isEmpty()) {
 
                 InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder, tag);
-                instagramDownloader.download(igPhotos);
-            } catch (JSONException e) {
-                Log.d("error", "json error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                Log.d("error", "interrupted error");
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                Log.d("error", "execution error");
-                e.printStackTrace();
+                instagramDownloader.download(urls);
             }
         } else {
-            Toast.makeText(PlayerActivityYouTube.this, "Can't update instagram photos",
+            Toast.makeText(PlayerActivityYouTube.this, "Can't update instagram photos. No Internet connection.",
                     Toast.LENGTH_SHORT).show();
         }
     }
     //loadSlide();
-
-
-    private void getIGPhotos(JSONObject igObject) {
-        if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
-            igPhotos = new ArrayList<>();
-            try {
-                Log.d("object main", igObject.toString());
-                final JSONArray igData = igObject.getJSONArray("data");
-
-                for (int i = 0; i < igData.length(); i++) {
-
-                    final JSONObject currObj = igData.getJSONObject(i)
-                            .getJSONObject("images");
-                    Log.d("images main", currObj.toString());
-                    final String origURL = currObj.getJSONObject("standard_resolution")
-                            .getString(URL);
-                    Log.d("images url main", origURL);
-                    Log.d("data", igData.toString());
-                    String fsComm;
-                    if (igData.getJSONObject(i).getJSONObject("comments").getInt("count") > 0) {
-                        fsComm = igData.getJSONObject(i).getJSONObject("comments")
-                                .getJSONArray("data").getJSONObject(0).getString("text");
-                    } else {
-                        fsComm = "";
-                    }
-                    igPhotos.add(new InstagramItem(igData.getJSONObject(i)
-                            .getString("id"), currObj.getJSONObject("standard_resolution")
-                            .getString(URL), origURL, fsComm, igData.getJSONObject(i).getJSONObject("user").getString("username")));
-                }
-            } catch (JSONException e) {
-                Log.d("json", "json_error: ".concat(e.getMessage()));
-                e.printStackTrace();
-            }
-        } else {
-            Toast.makeText(PlayerActivityYouTube.this, "Can't get photos from Instagram", Toast.LENGTH_SHORT).show();
-        }
-    }
 
     @Override
     public void onLocationChanged(Location location) {
@@ -903,10 +855,9 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         super.onResume();
         currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
         locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
-        if (!skip_instagram && !preferences.getString("instHashTag", "").isEmpty()) {
-            mSlider.setVisibility(View.VISIBLE);
+        if (needIsnstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
-        } else {
+        } else{
             mSlider.setVisibility(View.GONE);
         }
         if (!skip_twitter) {
