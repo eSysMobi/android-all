@@ -1,1 +1,1 @@
-include ':app', ':instagram', ':yWeatherGetter4a'
+include ':app', ':yWeatherGetter4a'
