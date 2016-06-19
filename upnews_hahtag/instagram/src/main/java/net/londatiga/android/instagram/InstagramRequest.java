@@ -109,7 +109,6 @@ public class InstagramRequest {
 	 */
 	private String requestPost(String endpoint, List<NameValuePair> params) throws Exception {
 		String requestUri = Cons.API_BASE_URL + ((endpoint.indexOf("/") == 0) ? endpoint : "/" + endpoint);
-		
 		return post(requestUri, params);				
 	}
 	
@@ -189,7 +188,7 @@ public class InstagramRequest {
 	/**
 	 * Create http POST request to an instagram api endpoint. 
 	 * 
-	 * @param requestUri Api url
+	 * @param requestUrl Api url
 	 * @param params Request parameters
 	 * 	 
 	 * @return Api response in json format.
@@ -212,12 +211,15 @@ public class InstagramRequest {
 			}
 			
 			Debug.i("POST " + requestUrl);
+			Debug.i("Params " + params.toString());
 			
 			HttpClient httpClient 	= new DefaultHttpClient();
 			HttpPost httpPost 		= new HttpPost(requestUrl);
 			
 	        httpPost.setEntity(new UrlEncodedFormEntity(params));
-	        
+
+			Debug.i("POST FULL params" + httpPost.getParams().toString());
+
 	        HttpResponse httpResponse 	= httpClient.execute(httpPost);			
 			HttpEntity httpEntity 		= httpResponse.getEntity();
 			

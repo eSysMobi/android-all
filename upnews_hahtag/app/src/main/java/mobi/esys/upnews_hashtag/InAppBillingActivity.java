@@ -60,7 +60,7 @@ public class InAppBillingActivity extends Activity {
                         }
 
                     }
-                    if (purchaseData == "") {
+                    if (purchaseData.isEmpty()) {
                         Bundle buyIntentBundle = billingService.getBuyIntent(3,
                                 getPackageName(), "upnews_hashtag_one_month", "subs", "");
                         PendingIntent pendingIntent = buyIntentBundle
@@ -90,8 +90,7 @@ public class InAppBillingActivity extends Activity {
             startActivity(new Intent(InAppBillingActivity.this,
                     InstaLoginActivity.class));
         } else {
-            bindService(new Intent(
-                            "com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+            bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
                     billingServiceConn, BIND_AUTO_CREATE);
         }
     }
