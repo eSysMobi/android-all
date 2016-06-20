@@ -7,6 +7,7 @@ import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -81,7 +82,7 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
         textView.setGravity(Gravity.LEFT);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         textView.setMaxLines(4);
-        textView.setMaxWidth(650);
+        //textView.setMaxWidth(650);
         return textView;
     }
 
@@ -106,9 +107,9 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
 
         twitterLayout.setBackgroundColor(mContext.getResources().getColor(R.color.rss_line));
 
-        RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(800, 100);
+        RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 150);   //800, 100
         tsLp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        tsLp.setMargins(0, 0, 0, 60);
+        tsLp.setMargins(0, 0, 0, 10);   //tsLp.setMargins(0, 0, 0, 60);
         twitterLayout.setLayoutParams(tsLp);
 
 

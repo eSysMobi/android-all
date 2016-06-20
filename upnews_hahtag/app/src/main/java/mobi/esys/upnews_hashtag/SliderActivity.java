@@ -149,6 +149,7 @@ public class SliderActivity extends Activity {
 
         igPhotos = new ArrayList<>();
 
+        //randomize Transformer
         Timer myTimer = new Timer();
         myTimer.schedule(new TimerTask() {
             @Override

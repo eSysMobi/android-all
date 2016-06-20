@@ -62,26 +62,14 @@ public class InstagramPhotoDownloader {
                                                                          Log.d("pic file", picFile.getAbsolutePath());
                                                                          try {
                                                                              if (!picFile.exists()) {
-
                                                                                  picFile.createNewFile();
-
                                                                              }
-
-
                                                                              BufferedSink sink = Okio.buffer(Okio.sink(picFile));
                                                                              sink.write(resource);
                                                                              sink.close();
-                                                                         } catch (
-                                                                                 FileNotFoundException e
-                                                                                 )
-
-                                                                         {
+                                                                         } catch (FileNotFoundException e){
                                                                              e.printStackTrace();
-                                                                         } catch (
-                                                                                 IOException e
-                                                                                 )
-
-                                                                         {
+                                                                         } catch (IOException e){
                                                                              e.printStackTrace();
                                                                          }
                                                                          if (fileName.equals(lastFileName)) {

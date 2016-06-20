@@ -17,9 +17,11 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.daimajia.slider.library.Indicators.PagerIndicator;
 import com.daimajia.slider.library.SliderLayout;
+import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.SliderTypes.DefaultSliderView;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
@@ -58,6 +60,7 @@ public class MainSliderActivity extends Activity {
     private static final SliderLayout.Transformer[] ANIMATIONS = SliderLayout.Transformer.values();
     private transient RelativeLayout relativeLayout;
     private transient FrameLayout sliderCont;
+    private transient TextView tvTagView;
     private transient UNHApp mApp;
     private transient SharedPreferences preferences;
 
@@ -122,6 +125,8 @@ public class MainSliderActivity extends Activity {
         relativeLayout = (RelativeLayout) findViewById(R.id.embeded_slider_layout);
         sliderCont = (FrameLayout) findViewById(R.id.sliderCont);
         logoView = (ImageView) findViewById(R.id.logoMainSlider);
+        tvTagView = (TextView) findViewById(R.id.tvTagView);
+        tvTagView.setText(igHashTag);
 
         instagram = new Instagram(MainSliderActivity.this,
                 ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
@@ -137,8 +142,8 @@ public class MainSliderActivity extends Activity {
         photoFiles = photoDirHelper.getDirFileList(TAG);
 
         mTimer = new Timer();
-        changeAnimationTimerTask = new ChangeAnimationTimerTask();
-        mTimer.schedule(changeAnimationTimerTask, 0L, ISConsts.times.anim_duration - 5);
+//        changeAnimationTimerTask = new ChangeAnimationTimerTask();
+//        mTimer.schedule(changeAnimationTimerTask, 0L, ISConsts.times.anim_duration - 5);
 
         loadRes();
         loadSlide(false);
@@ -244,11 +249,16 @@ public class MainSliderActivity extends Activity {
             Log.d("slide load", String.valueOf(imageFile.exists()));
             if (imageFile.exists()) {
                 textSliderView
-                        .image(imageFile).setScaleType(DefaultSliderView.ScaleType.Fit).error(R.raw.error).empty(R.raw.empty);
+                        .image(imageFile)
+                        .setScaleType(DefaultSliderView.ScaleType.FitCenterCrop)    //DefaultSliderView.ScaleType.FitCenterCrop
+                        .error(R.raw.error)
+                        .empty(R.raw.empty);
                 mSlider.addSlider(textSliderView);
             }
             if (i == photoFiles.length - 1) {
                 mSlider.setDuration(ISConsts.times.anim_duration);
+                //mSlider.setPresetTransformer(SliderLayout.Transformer.valueOf(ANIMATIONS[2].name()));
+                mSlider.setPresetTransformer(SliderLayout.Transformer.Default);
                 mSlider.startAutoCycle();
             }
         }
