@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
+import com.facebook.FacebookSdk;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import io.fabric.sdk.android.Fabric;
@@ -35,6 +36,7 @@ public class UpnewsOnlineApp extends Application {
         super.onCreate();
         TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
+        FacebookSdk.sdkInitialize(getApplicationContext());
         createFolders();
     }
 

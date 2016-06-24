@@ -7,12 +7,12 @@ public final class TimeConsts {
     //1 hour
     public static final int WEATHER_AND_CURR_REFRESH_INTERVAL = 3600000;
     //15 minutes
-    public static final int TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL = 900000;
+    public static final int TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL = 10 * 60 * 1000;    //10 min
     //5 minutes
     public static final int FACEBOOK_REFRESH_INTERVAL = 300000;
     public static final int WEATHER_LOAD_DELAY = 1500;
     public static final int TWITTER_LOAD_DELAY = 1700;
     public static final int INSTAGRAM_LOAD_DELAY = 2000;
     public static final int CURRENCIES_LOAD_DELAY = 2200;
-    public static final int SLIDER_DURATION = 150;
+    public static final int SLIDER_DURATION = 250;
 }

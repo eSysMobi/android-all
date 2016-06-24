@@ -48,7 +48,7 @@ public class Instagram {
 		mClientSecret	= clientSecret;
 		mRedirectUri	= redirectUri;
 		
-		String authUrl	= Cons.AUTH_URL + "client_id=" + mClientId + "&redirect_uri=" + mRedirectUri + "&response_type=code";
+		String authUrl	= Cons.AUTH_URL + "client_id=" + mClientId + "&redirect_uri=" + mRedirectUri + "&response_type=code&scope=public_content";
 		
 		mSession		= new InstagramSession(context);
 		
@@ -135,13 +135,14 @@ public class Instagram {
             long result = 0;
             
             try {
-    			List<NameValuePair> params = new ArrayList<NameValuePair>(5);
+    			List<NameValuePair> params = new ArrayList<NameValuePair>();
     			
     			params.add(new BasicNameValuePair("client_id", 		mClientId));
     			params.add(new BasicNameValuePair("client_secret",  mClientSecret));
     			params.add(new BasicNameValuePair("grant_type", 	"authorization_code"));
     			params.add(new BasicNameValuePair("redirect_uri", 	mRedirectUri));
     			params.add(new BasicNameValuePair("code", 			code));
+				params.add(new BasicNameValuePair("scope", 			"public_content"));
     			
     			InstagramRequest request	= new InstagramRequest();
     			String response				= request.post(Cons.ACCESS_TOKEN_URL, params);
