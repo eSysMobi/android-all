@@ -42,8 +42,8 @@ android {
         applicationId "mobi.esys.upnews_tv"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 13
-        versionName "2.5.1"
+        versionCode 14
+        versionName "2.5.3"
         signingConfig signingConfigs.config
     }
     sourceSets {

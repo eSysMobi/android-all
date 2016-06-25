@@ -417,7 +417,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             public void run() {
                 updateIGPhotos();
                 instagramHandler.postDelayed(this,
-                        //60 * 1000);
                         TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
@@ -449,8 +448,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     }
 
     public void loadSlide(String tag) {
-
-
         String path = Folders.SD_CARD.
                 concat(File.separator).
                 concat(Folders.BASE_FOLDER).
@@ -458,21 +455,27 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         File[] folderList = new File(path).listFiles();
 
         if (folderList.length > 0) {
+
+            String userName = instagram.getSession().getUser().username;
             mSlider.stopAutoCycle();
             mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
-
-            mSlider.removeAllSliders();
-
             mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);
+
             for (int i = 0; i < folderList.length; i++) {
+
                 final TextSliderView textSliderView = new TextSliderView(PlayerActivity.this);
+
 
                 textSliderView.description("#".concat(tag)).
                         image(folderList[i]).setScaleType(DefaultSliderView.ScaleType.Fit);
 
                 mSlider.addSlider(textSliderView);
+
+                if (i == folderList.length - 1) {
+                    mSlider.setDuration(TimeConsts.SLIDER_DURATION);
+                    mSlider.startAutoCycle();
+                }
             }
-            mSlider.setDuration(TimeConsts.SLIDER_DURATION);
             mSlider.startAutoCycle();
         } else {
             Toast.makeText(this, "Instagram photos load fail", Toast.LENGTH_SHORT).show();
