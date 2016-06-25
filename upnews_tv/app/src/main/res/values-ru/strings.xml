@@ -11,5 +11,6 @@
     <string name="hint_facebook">Введите название/ID группы в Facebook</string>
     <string name="login_instagram">Авторизация в Instagram</string>
     <string name="hint_instagram">Введите тег для поиска в Instagram</string>
+    <string name="skip">Пропустить</string>
 
 </resources>

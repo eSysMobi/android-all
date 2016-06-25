@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
@@ -28,11 +30,10 @@ public class TwitterLoginActivity extends Activity {
         TwitterSession session =
                 Twitter.getSessionManager().getActiveSession();
 
+        preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
+
         if (session == null) {
             setContentView(R.layout.fragment_twitterlogin);
-
-            preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
-            String aT = preferences.getString("twAt", "");
 
             loginButton = (TwitterLoginButton) findViewById(R.id.twLgnBtn);
             loginButton.setCallback(new Callback<TwitterSession>() {
@@ -40,6 +41,7 @@ public class TwitterLoginActivity extends Activity {
                 public void success(Result<TwitterSession> result) {
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("twAT", result.data.getAuthToken().token);
+                    editor.putBoolean("needShowTwitter", true);
                     editor.apply();
                     startActivity(new Intent(TwitterLoginActivity.this, PlayerActivity.class));
                     finish();
@@ -50,12 +52,32 @@ public class TwitterLoginActivity extends Activity {
 
                 }
             });
+
+            Button twLgnBtnSkip = (Button) findViewById(R.id.twLgnBtnSkip);
+            twLgnBtnSkip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putBoolean("needShowTwitter", false);
+                    editor.apply();
+                    startPlayer();
+                }
+            });
+
         } else {
-            startActivity(new Intent(TwitterLoginActivity.this, PlayerActivity.class));
-            finish();
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean("needShowTwitter", true);
+            editor.apply();
+            startPlayer();
         }
 
     }
+
+    private void startPlayer(){
+        startActivity(new Intent(TwitterLoginActivity.this, PlayerActivity.class));
+        finish();
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -51,7 +51,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
@@ -145,6 +144,15 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     private transient Handler facebookRefreshHandler;
     private transient Runnable facebookRefreshRunnable;
 
+    private final Handler currHandler = new Handler();
+    private Runnable currRunnable;
+
+    private final Handler instagramHandler = new Handler();
+    private Runnable instagramRunnable;
+
+    private final Handler twitterFeedHandler = new Handler();
+    private Runnable twitterFeedRunnable;
+
     private final static int PERMISSION_REQUEST_CODE = 334;
     private transient boolean allowflag = false;
 
@@ -153,6 +161,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     private static transient int DELAY_NAV_HIDE = 2000;
 
     private final static String TAG = "unTag_PlayerActivity";
+    private transient boolean needShowInstagram = false;
+    private transient boolean needShowTwitter = false;
 
 
     @Override
@@ -179,6 +189,11 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 //        IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 
         preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
+        needShowInstagram = preferences.getBoolean("needShowInstagram", false);
+        needShowTwitter = preferences.getBoolean("needShowTwitter", false);
+
+        Log.w(TAG,"needShowInstagram = " + needShowInstagram);
+        Log.w(TAG,"needShowTwitter = " + needShowTwitter);
 
         UpnewsOnlineApp app = (UpnewsOnlineApp) getApplicationContext();
         app.setCurrentActivityInstance(this);
@@ -287,7 +302,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 locationHandler.postDelayed(this, TimeConsts.WEATHER_AND_CURR_REFRESH_INTERVAL);
             }
         };
-        locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
+
 
         //start facebook loading every 5 minutes
         facebookRefreshHandler = new Handler();
@@ -304,9 +319,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 facebookRefreshHandler.postDelayed(this, TimeConsts.FACEBOOK_REFRESH_INTERVAL);
             }
         };
-        //facebookRefreshHandler.post(facebookRefreshRunnable);
-        facebookRefreshHandler.postDelayed(facebookRefreshRunnable, 1000);
-        //loadfbGroupVideos();  //manual start facebook loading
 
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
             playerView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
@@ -381,13 +393,11 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             }
         });
 
-
-        mSlider = (SliderLayout) findViewById(R.id.slider);
+        mSlider = (SliderLayout) findViewById(R.id.photoSlider);
 
         TwitterAuthConfig authConfig = new TwitterAuthConfig(DevelopersKeys.TWITTER_KEY, DevelopersKeys.TWITTER_SECRET);
         Fabric.with(PlayerActivity.this, new Twitter(authConfig));
-        final Handler twitterFeedHandler = new Handler();
-        Runnable twitterFeedRunnable = new Runnable() {
+        twitterFeedRunnable = new Runnable() {
             @Override
             public void run() {
                 if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
@@ -402,21 +412,17 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             }
         };
 
-        twitterFeedHandler.postDelayed(twitterFeedRunnable, TimeConsts.TWITTER_LOAD_DELAY);
-
-        final Handler instagramHandler = new Handler();
-        Runnable instagramRunnable = new Runnable() {
+        instagramRunnable = new Runnable() {
             @Override
             public void run() {
                 updateIGPhotos();
-                instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
+                instagramHandler.postDelayed(this,
+                        //60 * 1000);
+                        TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
-        instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
 
-
-        final Handler currHandler = new Handler();
-        Runnable currRunnable = new Runnable() {
+        currRunnable = new Runnable() {
             @Override
             public void run() {
                 getCurrencies();
@@ -424,7 +430,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                         TimeConsts.WEATHER_AND_CURR_REFRESH_INTERVAL);
             }
         };
-        currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
 
         //prepare handler for hide Android status bar
         if (Build.VERSION.SDK_INT >= 14) {
@@ -444,11 +449,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     }
 
     public void loadSlide(String tag) {
-        String userName = instagram.getSession().getUser().username;
-        mSlider.stopAutoCycle();
-        mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
-
-        mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);
 
 
         String path = Folders.SD_CARD.
@@ -458,23 +458,21 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         File[] folderList = new File(path).listFiles();
 
         if (folderList.length > 0) {
+            mSlider.stopAutoCycle();
+            mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
+
+            mSlider.removeAllSliders();
+
+            mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);
             for (int i = 0; i < folderList.length; i++) {
-
                 final TextSliderView textSliderView = new TextSliderView(PlayerActivity.this);
-
 
                 textSliderView.description("#".concat(tag)).
                         image(folderList[i]).setScaleType(DefaultSliderView.ScaleType.Fit);
 
                 mSlider.addSlider(textSliderView);
-
-                if (i == folderList.length - 1) {
-                    mSlider.setDuration(TimeConsts.SLIDER_DURATION);
-                    mSlider.startAutoCycle();
-                }
             }
-
-
+            mSlider.setDuration(TimeConsts.SLIDER_DURATION);
             mSlider.startAutoCycle();
         } else {
             Toast.makeText(this, "Instagram photos load fail", Toast.LENGTH_SHORT).show();
@@ -626,25 +624,21 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-
     @Override
     public void onLocationChanged(Location location) {
         this.location = location;
         Log.d("location", String.valueOf(location.getLatitude()) + ":" + String.valueOf(location.getLongitude()));
     }
 
-
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
 
-
     @Override
     public void onProviderEnabled(String provider) {
 
     }
-
 
     @Override
     public void onProviderDisabled(String provider) {
@@ -668,7 +662,11 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
     @Override
     public void gotWeatherInfo(WeatherInfo weatherInfo) {
-        if (NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
+        boolean flagProceed = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            flagProceed = !isDestroyed();
+        }
+        if (flagProceed && NetMonitor.isNetworkAvailable((UpnewsOnlineApp) getApplication())) {
             if (weatherInfo != null) {
                 weatherLayout.removeAllViews();
                 weatherLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -695,8 +693,8 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 tempText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 
                 String tempInC = "";
-                if(mYahooWeather.getUnit()=='c'){
-                    tempInC = String.valueOf((weatherInfo.getCurrentTemp() - 32) * 5 / 9 ) + " " + "\u2103";
+                if (mYahooWeather.getUnit() == 'c') {
+                    tempInC = String.valueOf((weatherInfo.getCurrentTemp() - 32) * 5 / 9) + " " + "\u2103";
                 } else {
                     tempInC = String.valueOf(weatherInfo.getCurrentTemp()) + " " + "\u2109";
                 }
@@ -710,7 +708,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
                 Glide.with(this).load(Uri.parse(weatherInfo.getCurrentConditionIconURL())).into(conditionImage);
             } else {
                 Toast.makeText(PlayerActivity.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
-                Log.d(TAG,"Weather information is unavailable. weatherInfo = null");
+                Log.d(TAG, "Weather information is unavailable. weatherInfo = null");
             }
         } else {
             Toast.makeText(PlayerActivity.this, "Weather information is unavailable. No inet.", Toast.LENGTH_SHORT).show();
@@ -1053,6 +1051,22 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             playerView.resume();  // <-- this will cause re-buffer.
         }
         //FacebookVideoDownloadHelper.getInstance().registerReceiverInFacebookVDHelper(PlayerActivity.this);
+
+        //facebookRefreshHandler.post(facebookRefreshRunnable);
+        facebookRefreshHandler.postDelayed(facebookRefreshRunnable, 1000);
+        //loadfbGroupVideos();  //manual start facebook loading
+
+        locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
+        currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
+        if (needShowInstagram) {
+            instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
+            mSlider.setVisibility(View.VISIBLE);
+        } else {
+            mSlider.setVisibility(View.GONE);
+        }
+        if (needShowTwitter)
+            twitterFeedHandler.postDelayed(twitterFeedRunnable, TimeConsts.TWITTER_LOAD_DELAY);
+
         super.onResume();
     }
 
@@ -1063,6 +1077,23 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
             playerView.suspend();
         }
         //FacebookVideoDownloadHelper.getInstance().unRegisterReceiverInFacebookVDHelper(PlayerActivity.this);
+
+        if (facebookRefreshRunnable != null) {
+            facebookRefreshHandler.removeCallbacks(facebookRefreshRunnable);
+        }
+        if (locationRunnable != null) {
+            locationHandler.removeCallbacks(locationRunnable);
+        }
+        if (currRunnable != null) {
+            currHandler.removeCallbacks(currRunnable);
+        }
+        if (instagramRunnable != null) {
+            instagramHandler.removeCallbacks(instagramRunnable);
+        }
+        if (twitterFeedRunnable != null) {
+            twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
+        }
+
         super.onPause();
     }
 
@@ -1070,7 +1101,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
     protected void onStop() {
         super.onStop();
         Log.d("unTag_FullscreenAct", "Remove messages from handlerHideUI in onStop()");
-        if(handlerHideUI!=null){
+        if (handlerHideUI != null) {
             handlerHideUI.removeMessages(32);
         }
     }
@@ -1151,11 +1182,17 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         File[] folderList = new File(path).listFiles();
 
         File videoDir = new File(path);
-        Log.d("files", Arrays.toString(folderList));
-        List<File> mp4Files = FileSystemHelper.getFileListByExts(videoDir, VIDEOS_EXTS);
-        Collections.sort(mp4Files);
-        Collections.reverse(mp4Files);
-        Log.d(TAG, "mp4 files in video folder" + mp4Files.toString());
+        boolean dirOK = true;
+        if (!videoDir.exists()) {
+            dirOK = videoDir.mkdir();
+        }
+
+        if (dirOK) {
+            Log.d("files", Arrays.toString(folderList));
+            List<File> mp4Files = FileSystemHelper.getFileListByExts(videoDir, VIDEOS_EXTS);
+            Collections.sort(mp4Files);
+            Collections.reverse(mp4Files);
+            Log.d(TAG, "mp4 files in video folder" + mp4Files.toString());
 
 //        for (File file : folderList) {
 //            if ("mp4".equals(FilenameUtils.getExtension(file.getAbsolutePath()))) {
@@ -1163,49 +1200,51 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 //            }
 //        }
 
-        for (int i = 0; i < mp4Files.size(); i++) {
-            if (mp4Files.get(i).getName().equals(nextVideo)) {
-                videoIndex = i;
+            for (int i = 0; i < mp4Files.size(); i++) {
+                if (mp4Files.get(i).getName().equals(nextVideo)) {
+                    videoIndex = i;
+                }
             }
-        }
 
-        if (mp4Files.size() > 0) {
-            Log.d(TAG, "Play file " + videoIndex + " name " + mp4Files.get(videoIndex).getName());
+            if (mp4Files.size() > 0) {
+                Log.d(TAG, "Play file " + videoIndex + " name " + mp4Files.get(videoIndex).getName());
 
-            if (videoIndex < mp4Files.size()) {
-                playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
-                playerView.start();
-
-                videoIndex++;
                 if (videoIndex < mp4Files.size()) {
-                    nextVideo = mp4Files.get(videoIndex).getName();
+                    playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
+                    playerView.start();
+
+                    videoIndex++;
+                    if (videoIndex < mp4Files.size()) {
+                        nextVideo = mp4Files.get(videoIndex).getName();
+                    } else {
+                        nextVideo = mp4Files.get(0).getName();
+                    }
+
+                    easyTracker.send(MapBuilder.createEvent("playback",
+                            "video_playback", "go to next video", null).build());
                 } else {
-                    nextVideo = mp4Files.get(0).getName();
+                    videoIndex = 0;
+                    playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
+                    playerView.start();
+
+                    if (mp4Files.size() > videoIndex + 1) {
+                        nextVideo = mp4Files.get(videoIndex + 1).getName();
+                    }
+
+                    easyTracker.send(MapBuilder.createEvent("playback",
+                            "video_playback", "go to next video", null).build());
                 }
 
-                easyTracker.send(MapBuilder.createEvent("playback",
-                        "video_playback", "go to next video", null).build());
+
             } else {
-                videoIndex = 0;
-                playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
+                playerView.setVideoURI(embUri);
                 playerView.start();
-
-                if (mp4Files.size() > videoIndex + 1) {
-                    nextVideo = mp4Files.get(videoIndex + 1).getName();
-                }
-
                 easyTracker.send(MapBuilder.createEvent("playback",
                         "video_playback", "go to next video", null).build());
             }
-
-
         } else {
-            playerView.setVideoURI(embUri);
-            playerView.start();
-            easyTracker.send(MapBuilder.createEvent("playback",
-                    "video_playback", "go to next video", null).build());
+            Toast.makeText(this, "Problem with filesystem on SD. Can't create video dir.", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     private static class mHandler extends Handler {
@@ -1242,7 +1281,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-    public void forceSetUISmall(){
+    public void forceSetUISmall() {
         //if (decorView.getSystemUiVisibility() != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
         setUISmall();
         //}

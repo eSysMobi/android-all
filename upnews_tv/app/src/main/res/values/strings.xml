@@ -6,4 +6,5 @@
     <string name="hint_facebook">Input facebook group id</string>
     <string name="login_instagram">Log in with Instagram</string>
     <string name="hint_instagram">Input Instagram hashtag</string>
+    <string name="skip">Skip</string>
 </resources>

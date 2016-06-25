@@ -1,6 +1,5 @@
 package mobi.esys.upnews_tv;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -52,9 +51,33 @@ public class InstagramHashtagActivity extends Activity {
 
         hashTagEdit = (EditText) findViewById(R.id.instHashTagEdit);
         hashTagEdit.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+
 
         preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
+
+        //Button enter hashtag
+        Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+        enterHashBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkTagAndGo();
+            }
+        });
+
+        //Button skip
+        Button instHashTagSkip = (Button) findViewById(R.id.instHashTagSkip);
+        instHashTagSkip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("needShowInstagram", false);
+                editor.apply();
+                startActivity(new Intent(InstagramHashtagActivity.this, TwitterLoginActivity.class));
+                finish();
+            }
+        });
+
+        //EditText
         prevHashtag = preferences.getString("instHashTag", "");
         if (!prevHashtag.isEmpty()) {
             hashTagEdit.setText("#" + prevHashtag);
@@ -65,13 +88,6 @@ public class InstagramHashtagActivity extends Activity {
         } else {
             hashTagEdit.setSelection(1);
         }
-
-        enterHashBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkTagAndGo();
-            }
-        });
 
         hashTagEdit.addTextChangedListener(new TextWatcher() {
 
@@ -116,7 +132,6 @@ public class InstagramHashtagActivity extends Activity {
                 return handled;
             }
         });
-
     }
 
     public void checkTagAndGo() {
@@ -134,6 +149,7 @@ public class InstagramHashtagActivity extends Activity {
                     }
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("instHashTag", hashtag);
+                    editor.putBoolean("needShowInstagram", true);
                     editor.apply();
                     startActivity(new Intent(InstagramHashtagActivity.this,
                             TwitterLoginActivity.class));

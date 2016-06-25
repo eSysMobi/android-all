@@ -2,12 +2,36 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <com.twitter.sdk.android.core.identity.TwitterLoginButton
-        android:id="@+id/twLgnBtn"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
-        <requestFocus/>
-    </com.twitter.sdk.android.core.identity.TwitterLoginButton>
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="30dp"
+            android:text="@string/skip"
+            android:textColor="@android:color/white"
+            android:background="@drawable/buttons_backgrounds_tw"
+            android:id="@+id/twLgnBtnSkip"
+            android:textStyle="bold"
+            android:focusable="true"
+            android:nextFocusRight="@+id/twLgnBtn"/>
+
+        <com.twitter.sdk.android.core.identity.TwitterLoginButton
+            android:id="@+id/twLgnBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/buttons_backgrounds_tw"
+            android:focusable="true"
+            android:nextFocusLeft="@+id/twLgnBtnSkip">
+            <requestFocus/>
+        </com.twitter.sdk.android.core.identity.TwitterLoginButton>
+
+    </LinearLayout>
+
 
 </RelativeLayout>

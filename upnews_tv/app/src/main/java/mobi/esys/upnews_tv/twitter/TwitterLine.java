@@ -112,9 +112,9 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
 
         twitterLayout.setBackgroundColor(mContext.getResources().getColor(R.color.rss_line));
 
-        RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(1000, 100);
+        RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(1000, 150);
         tsLp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        tsLp.setMargins(0, 0, 0, 60);
+        tsLp.setMargins(0, 0, 250, 60);
         twitterLayout.setLayoutParams(tsLp);
 
 
@@ -122,10 +122,10 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
         profileImage.setId(R.id.profileImage);
 
 
-        RelativeLayout.LayoutParams piLp = new RelativeLayout.LayoutParams(90, 90);
+        RelativeLayout.LayoutParams piLp = new RelativeLayout.LayoutParams(130, 130);
         piLp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         piLp.addRule(RelativeLayout.CENTER_VERTICAL);
-        piLp.setMargins(10, 5, 3, 5);
+        piLp.setMargins(10, 10, 3, 10);
         profileImage.setLayoutParams(piLp);
 
         RelativeLayout.LayoutParams tsiLp = new RelativeLayout.LayoutParams(900, RelativeLayout.LayoutParams.WRAP_CONTENT);

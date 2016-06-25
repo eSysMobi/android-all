@@ -189,7 +189,7 @@ public class InstagramRequest {
 	/**
 	 * Create http POST request to an instagram api endpoint. 
 	 * 
-	 * @param requestUri Api url
+	 * @param requestUrl Api url
 	 * @param params Request parameters
 	 * 	 
 	 * @return Api response in json format.
