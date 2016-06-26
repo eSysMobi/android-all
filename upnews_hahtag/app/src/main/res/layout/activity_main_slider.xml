@@ -4,47 +4,205 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    tools:context=".SliderActivity">
-
-    <FrameLayout
-        android:id="@+id/sliderCont"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black" />
-
-
-    <ImageView
-        android:id="@+id/logoMainSlider"
-        android:layout_width="320px"
-        android:layout_height="80px"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="28dp"
-        android:layout_marginTop="20dp"
-        android:alpha="0.3"
-        android:background="@null"
-        android:src="@drawable/upnews_logo_w2" />
+    tools:context=".MainSliderActivity">
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="180px"
-        android:background="@drawable/shape_background_hashtag"
-        android:layout_marginLeft="10dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp">
+        android:layout_alignParentStart="true"
+        android:id="@+id/layoutScreen">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/tvTagView"
-            android:textSize="18sp" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".25"
+            android:id="@+id/layoutHeader">
+
+            <ImageView
+                android:id="@+id/logoMainSlider"
+                android:layout_width="320px"
+                android:layout_height="80px"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="24dp"
+                android:layout_marginTop="16dp"
+                android:alpha="0.3"
+                android:background="@null"
+                android:src="@drawable/upnews_logo_w2" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_background_hashtag"
+                android:paddingLeft="8dp"
+                android:paddingRight="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:id="@+id/commonInfoLayout"
+                android:layout_alignTop="@+id/logoMainSlider"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:id="@+id/tvTagView"
+                    android:text="#news"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:id="@+id/tvTagCountAll"
+                    android:text="42 publication"
+                    android:textSize="18sp"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".70"
+            android:gravity="center_vertical"
+            android:id="@+id/layoutImages">
+
+            <FrameLayout
+                android:id="@+id/flIg1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginLeft="20px"
+                android:layout_marginRight="20px"
+                android:layout_gravity="center">
+
+                <RelativeLayout
+                    android:id="@+id/rlIg1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/ivIg1"
+                        android:scaleType="fitXY"
+                        android:background="@drawable/instagram_logo" />
+
+                    <TextView
+                        android:id="@+id/tvIg1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/ivIg1"
+                        android:layout_alignBottom="@+id/ivIg1"
+                        android:gravity="center_vertical"
+                        android:textColor="#ffffff"
+                        android:text="5"
+                        android:background="@drawable/shape_background_textview"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:paddingLeft="4dp"
+                        android:paddingRight="4dp"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/flIg2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginLeft="20px"
+                android:layout_marginRight="20px"
+                android:layout_gravity="center">
+                <RelativeLayout
+                    android:id="@+id/rlIg2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/ivIg2"
+                        android:scaleType="fitXY"
+                        android:background="@drawable/instagram_logo" />
+
+                    <TextView
+                        android:id="@+id/tvIg2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/ivIg2"
+                        android:layout_alignBottom="@+id/ivIg2"
+                        android:gravity="center_vertical"
+                        android:textColor="#ffffff"
+                        android:text="5"
+                        android:background="@drawable/shape_background_textview"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:paddingLeft="4dp"
+                        android:paddingRight="4dp"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/flIg3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginLeft="20px"
+                android:layout_marginRight="20px"
+                android:layout_gravity="center">
+                <RelativeLayout
+                    android:id="@+id/rlIg3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/ivIg3"
+                        android:scaleType="fitXY"
+                        android:background="@drawable/instagram_logo" />
+
+                    <TextView
+                        android:id="@+id/tvIg3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/ivIg3"
+                        android:layout_alignBottom="@+id/ivIg3"
+                        android:gravity="center_vertical"
+                        android:textColor="#ffffff"
+                        android:text="5"
+                        android:background="@drawable/shape_background_textview"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:paddingLeft="4dp"
+                        android:paddingRight="4dp"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".25"
+            android:id="@+id/layoutTwitter"/>
     </LinearLayout>
 
 </RelativeLayout>

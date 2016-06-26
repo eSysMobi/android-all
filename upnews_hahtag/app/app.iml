@@ -114,8 +114,8 @@
     <orderEntry type="library" exported="" name="performance-metrics-0.2.0" level="project" />
     <orderEntry type="library" exported="" name="okhttp-integration-1.3.0" level="project" />
     <orderEntry type="library" exported="" name="okio-1.3.0" level="project" />
-    <orderEntry type="library" exported="" name="glide-3.6.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-21.0.0" level="project" />
+    <orderEntry type="library" exported="" name="glide-3.6.0" level="project" />
     <orderEntry type="module" module-name="instagram" exported="" />
     <orderEntry type="library" exported="" name="org.apache.http.legacy-android-23" level="project" />
   </component>

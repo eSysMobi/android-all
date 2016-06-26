@@ -26,7 +26,6 @@ import mobi.esys.upnews_hashtag.R;
 
 
 public class TwitterLine implements ViewSwitcher.ViewFactory {
-    private transient RelativeLayout mParentView;
     private transient TextSwitcher textSwitcher;
     private transient Context mContext;
     private transient boolean isTextSwitcherInitialized;
@@ -35,16 +34,14 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
     private transient RelativeLayout twitterLayout;
     private transient List<String> mTwProfImagesUrls;
     private transient ImageView profileImage;
-    private transient boolean isFirst;
 
 
-    public TwitterLine(RelativeLayout parentView, Context context, List<String> twProfImagesUrls,boolean isFirst) {
-        mParentView = parentView;
+    public TwitterLine(RelativeLayout parentView, Context context, List<String> twProfImagesUrls) {
+        twitterLayout = parentView;
         mContext = context;
         isTextSwitcherInitialized = false;
         mTwProfImagesUrls = twProfImagesUrls;
         tweetsCounter = 0;
-        this.isFirst=isFirst;
     }
 
     public void start(final List<Spanned> textToSwitch) {
@@ -87,17 +84,7 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
     }
 
     private void initTextSwitcher() {
-        if(isFirst) {
-            twitterLayout = new RelativeLayout(mContext);
-            twitterLayout.setId(R.id.twitterLayout);
-        }
-        else{
-
-            twitterLayout=(RelativeLayout)mParentView.findViewById(R.id.twitterLayout);
-            if(twitterLayout!=null&&twitterLayout.getChildCount()>0) {
-                twitterLayout.removeAllViews();
-            }
-        }
+        twitterLayout.removeAllViews();
 
         textSwitcher = new TextSwitcher(mContext);
         textSwitcher.setFactory(this);
@@ -105,19 +92,12 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
         textSwitcher.setInAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.fade_in));
         textSwitcher.setOutAnimation(AnimationUtils.loadAnimation(mContext, android.R.anim.fade_out));
 
-        twitterLayout.setBackgroundColor(mContext.getResources().getColor(R.color.rss_line));
-
-        RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 150);   //800, 100
-        tsLp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        tsLp.setMargins(0, 0, 0, 10);   //tsLp.setMargins(0, 0, 0, 60);
-        twitterLayout.setLayoutParams(tsLp);
-
-
         profileImage = new ImageView(mContext);
         profileImage.setId(R.id.profileImage);
 
-
-        RelativeLayout.LayoutParams piLp = new RelativeLayout.LayoutParams(90, 90);
+        //RelativeLayout.LayoutParams piLp = new RelativeLayout.LayoutParams(100, 100);
+        int height = twitterLayout.getHeight();
+        RelativeLayout.LayoutParams piLp = new RelativeLayout.LayoutParams(height, height);
         piLp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         piLp.addRule(RelativeLayout.CENTER_VERTICAL);
         piLp.setMargins(10, 5, 3, 5);
@@ -132,15 +112,11 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
         twitterLayout.addView(profileImage);
         twitterLayout.addView(textSwitcher);
 
-
-        if(isFirst) {
-            mParentView.addView(twitterLayout);
-        }
         isTextSwitcherInitialized = true;
     }
 
     public void removeTextSwitcher() {
-        mParentView.removeView(twitterLayout);
+        twitterLayout.removeAllViews();
         isTextSwitcherInitialized = false;
         tweetsCounter = 0;
     }

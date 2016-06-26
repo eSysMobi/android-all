@@ -8,15 +8,20 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.daimajia.slider.library.Indicators.PagerIndicator;
-import com.daimajia.slider.library.SliderLayout;
-import com.daimajia.slider.library.SliderTypes.DefaultSliderView;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 
@@ -30,9 +35,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 import de.greenrobot.event.EventBus;
@@ -42,20 +44,19 @@ import mobi.esys.downloaders.InstagramPhotoDownloader;
 import mobi.esys.eventbus.SongStopEvent;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
+import mobi.esys.system.PhotoElement;
 import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 
 
 public class SliderActivity extends Activity {
-    private transient SliderLayout mSlider;
-    private static final SliderLayout.Transformer[] ANIMATIONS = SliderLayout.Transformer.values();
     private transient MediaPlayer mediaPlayer;
     private transient TextView textView;
     private transient RelativeLayout relativeLayout;
+    private transient List<PhotoElement> photoElements;
+    private transient int[] nextElementsState = {0, 1, 2};
+
     private transient UNHApp mApp;
-
-    private transient boolean isFirst=true;
-
 
     private transient SharedPreferences preferences;
 
@@ -73,14 +74,15 @@ public class SliderActivity extends Activity {
 
     private transient String igHashTag;
     private transient String twHashTag;
+    private transient int heightElement = 100;
 
     private transient boolean isTwAllow;
 
+    private transient static final String TAG = "unTagEmptySlide";
 
-    private transient final String TAG = this.getClass().getSimpleName();
-
-
-    private transient Handler twitterFeedHandler;
+    private transient final Handler changeImagesHandler = new Handler();
+    private transient Runnable changeImagesRunnable;
+    private transient final Handler twitterFeedHandler = new Handler();
     private transient Runnable twitterFeedRunnable;
 
     private transient List<InstagramPhoto> igPhotos;
@@ -106,15 +108,14 @@ public class SliderActivity extends Activity {
     }
 
     public void init() {
-        setContentView(R.layout.activity_slider);
+        setContentView(R.layout.activity_main_slider);
 
         mApp = (UNHApp) getApplicationContext();
 
-
         instagram = new Instagram(SliderActivity.this,
-                ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
+                ISConsts.instagramconsts.instagram_client_id,
+                ISConsts.instagramconsts.instagram_client_secret,
                 ISConsts.instagramconsts.instagram_redirect_uri);
-
 
         rawIds = new ArrayList<>();
         rawIds.addAll(getAllResourceIDs(R.raw.class));
@@ -132,65 +133,70 @@ public class SliderActivity extends Activity {
             }
         }
 
-
         textView = new TextView(SliderActivity.this);
-        relativeLayout = (RelativeLayout) findViewById(R.id.embeded_slider_layout);
+        relativeLayout = (RelativeLayout) findViewById(R.id.layoutTwitter);
 
-        mSlider = (SliderLayout) findViewById(R.id.slider);
-        mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        heightElement = metrics.widthPixels / 3 - 40;
+
+        LinearLayout commonInfoLayout = (LinearLayout) findViewById(R.id.commonInfoLayout);
+        commonInfoLayout.setVisibility(View.GONE);
+
+        photoElements = new ArrayList<>();
+        RelativeLayout rlIg1 = (RelativeLayout) findViewById(R.id.rlIg1);
+        ImageView ivIg1 = (ImageView) findViewById(R.id.ivIg1);
+        TextView tvIg1 = (TextView) findViewById(R.id.tvIg1);
+        tvIg1.setVisibility(View.GONE);
+        photoElements.add(new PhotoElement(rlIg1, ivIg1, tvIg1));
+        RelativeLayout rlIg2 = (RelativeLayout) findViewById(R.id.rlIg2);
+        ImageView ivIg2 = (ImageView) findViewById(R.id.ivIg2);
+        TextView tvIg2 = (TextView) findViewById(R.id.tvIg2);
+        tvIg2.setVisibility(View.GONE);
+        photoElements.add(new PhotoElement(rlIg2, ivIg2, tvIg2));
+        RelativeLayout rlIg3 = (RelativeLayout) findViewById(R.id.rlIg3);
+        ImageView ivIg3 = (ImageView) findViewById(R.id.ivIg3);
+        TextView tvIg3 = (TextView) findViewById(R.id.tvIg3);
+        tvIg3.setVisibility(View.GONE);
+        photoElements.add(new PhotoElement(rlIg3, ivIg3, tvIg3));
+
+        for (int i = 0; i < photoElements.size(); i++) {
+            photoElements.get(i).getRelativeLayout().setLayoutParams(new FrameLayout.LayoutParams(heightElement, heightElement));
+        }
 
         igHashTag = preferences.getString(ISConsts.prefstags.instagram_hashtag, ISConsts.globals.default_hashtag);
         twHashTag = preferences.getString(ISConsts.prefstags.twitter_hashtag, ISConsts.globals.default_hashtag);
         isTwAllow = preferences.getBoolean(ISConsts.prefstags.twitter_allow, false);
 
-
-        loadSlide();
-
-
-        igPhotos = new ArrayList<>();
-
-        //randomize Transformer
-        Timer myTimer = new Timer();
-        myTimer.schedule(new TimerTask() {
+        changeImagesRunnable = new Runnable() {
             @Override
             public void run() {
-                changeAnimation();
+                loadSlide();
+                changeImagesHandler.postDelayed(this, 14 * 1000);
             }
-        }, 0L, ISConsts.times.anim_duration - 5);
+        };
 
+        igPhotos = new ArrayList<>();
 
         playMP3();
 
         if (isTwAllow) {
             TwitterAuthConfig authConfig = new TwitterAuthConfig(ISConsts.twitterconsts.twitter_key, ISConsts.twitterconsts.twitter_secret);
             Fabric.with(SliderActivity.this, new Twitter(authConfig));
-            final Handler twitterFeedHandler = new Handler();
-            Runnable twitterFeedRunnable = new Runnable() {
+            twitterFeedRunnable = new Runnable() {
                 @Override
                 public void run() {
                     Twitter.getInstance();
                     Twitter.getInstance();
-                    TwitterHelper.startLoadTweets(Twitter.getApiClient(), twHashTag, relativeLayout, getApplicationContext(),isFirst);
-                    isFirst=false;
+                    TwitterHelper.startLoadTweets(Twitter.getApiClient(), twHashTag, relativeLayout, getApplicationContext());
                     twitterFeedHandler.postDelayed(this, 900000);
                 }
             };
-
-            twitterFeedHandler.postDelayed(twitterFeedRunnable, 1700);
         }
 
         updateIGPhotos(igHashTag);
 
     }
-
-
-    private void changeAnimation() {
-
-        Random r = new Random();
-        mSlider.setPresetTransformer(SliderLayout.Transformer.valueOf(ANIMATIONS[r.nextInt(ANIMATIONS.length)].name()));
-
-    }
-
 
     private void playMP3() {
         mediaPlayer = MediaPlayer.create(SliderActivity.this, soundIds.get(musicIndex));
@@ -222,10 +228,7 @@ public class SliderActivity extends Activity {
                                                         }
                                                     }
                                                 }
-
-
                                             }
-
         );
 
         textView.setSelected(true);
@@ -236,36 +239,36 @@ public class SliderActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        stopTwitterFeedRefresh();
+        stopTwitterHandlersRefresh();
+        stopSlidesHandlersRefresh();
         finish();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mSlider.stopAutoCycle();
         if (mediaPlayer != null) {
             mediaPlayer.pause();
             musicPosition = mediaPlayer.getCurrentPosition();
         }
-        stopTwitterFeedRefresh();
+        stopTwitterHandlersRefresh();
+        stopSlidesHandlersRefresh();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mSlider.startAutoCycle();
         if (mediaPlayer != null) {
             mediaPlayer.seekTo(musicPosition);
             mediaPlayer.start();
         }
-        restartTwiiterFeed();
+        restartTwitterHandlersRefresh();
+        restartSlidesHandlersRefresh();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mSlider.removeAllSliders();
         if (mediaPlayer != null) {
             mediaPlayer.pause();
             musicPosition = mediaPlayer.getCurrentPosition();
@@ -281,7 +284,8 @@ public class SliderActivity extends Activity {
             mediaPlayer.release();
         }
         EventBus.getDefault().unregister(this);
-        stopTwitterFeedRefresh();
+        stopTwitterHandlersRefresh();
+        stopSlidesHandlersRefresh();
     }
 
 
@@ -311,20 +315,96 @@ public class SliderActivity extends Activity {
     }
 
     private void loadSlide() {
-        mSlider.stopAutoCycle();
-        for (int i = 0; i < imageIds.size(); i++) {
-            DefaultSliderView textSliderView = new DefaultSliderView(this);
-            textSliderView
-                    .image(imageIds.get(i)).setScaleType(DefaultSliderView.ScaleType.Fit);
+        Log.w(TAG, "Change slides :" + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2]);
 
-            mSlider.addSlider(textSliderView);
+        Animation fade_1 = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+        fade_1.setFillAfter(true);
+        fade_1.setAnimationListener(new AnimList(0));
+        photoElements.get(0).getRelativeLayout().startAnimation(fade_1);
+
+        Animation fade_3 = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+        fade_3.setStartOffset(500);
+        fade_3.setFillAfter(true);
+        fade_3.setAnimationListener(new AnimList(1));
+        photoElements.get(1).getRelativeLayout().startAnimation(fade_3);
+
+        Animation fade_5 = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+        fade_5.setStartOffset(1000);
+        fade_5.setFillAfter(true);
+        fade_5.setAnimationListener(new AnimList(2));
+        photoElements.get(2).getRelativeLayout().startAnimation(fade_5);
+
+
+//        if (nextElementsState[0] >= imageIds.size()) {
+//            nextElementsState[0] = 0;
+//        }
+//        photoElements.get(0).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[0])));
+//        nextElementsState[0]++;
+//
+//        nextElementsState[1] = nextElementsState[0];
+//        if (nextElementsState[1] >= imageIds.size()) {
+//            nextElementsState[1] = 0;
+//        }
+//        photoElements.get(1).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[1])));
+//        nextElementsState[1]++;
+//
+//        nextElementsState[2] = nextElementsState[1];
+//        if (nextElementsState[2] >= imageIds.size()) {
+//            nextElementsState[2] = 0;
+//        }
+//        photoElements.get(2).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[2])));
+//        nextElementsState[2]++;
+    }
+
+    final class AnimList implements Animation.AnimationListener {
+        private int stage;
+
+        public AnimList(int incStage) {
+            this.stage = incStage;
         }
 
-        Random r = new Random();
-        mSlider.setPresetTransformer(SliderLayout.Transformer.valueOf(ANIMATIONS[r.nextInt(ANIMATIONS.length)].name()));
-        mSlider.setDuration(ISConsts.times.anim_duration);
+        @Override
+        public void onAnimationStart(Animation animation) {
+            Log.d(TAG, "Animation start");
+            switch (stage) {
+                case 0:
+                    if (nextElementsState[0] >= imageIds.size()) {
+                        nextElementsState[0] = 0;
+                    }
+                    photoElements.get(0).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[0])));
+                    nextElementsState[0]++;
+                    Log.d(TAG, "nextElementsState[0] =" + nextElementsState[0]);
+                    break;
+                case 1:
+                    nextElementsState[1] = nextElementsState[0];
+                    if (nextElementsState[1] >= imageIds.size()) {
+                        nextElementsState[1] = 0;
+                    }
+                    photoElements.get(1).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[1])));
+                    nextElementsState[1]++;
+                    Log.d(TAG, "nextElementsState[1] =" + nextElementsState[1]);
+                    break;
+                case 2:
+                    nextElementsState[2] = nextElementsState[1];
+                    if (nextElementsState[2] >= imageIds.size()) {
+                        nextElementsState[2] = 0;
+                    }
+                    photoElements.get(2).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[2])));
+                    nextElementsState[2]++;
+                    Log.d(TAG, "nextElementsState[2] =" + nextElementsState[2]);
+                    break;
+            }
+        }
 
-        mSlider.startAutoCycle();
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+            Log.d(TAG, "Animation repeat");
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            Log.d(TAG, "Animation end");
+        }
     }
 
     private void updateIGPhotos(final String tag) {
@@ -349,26 +429,36 @@ public class SliderActivity extends Activity {
             final JSONArray igData = igObject.getJSONArray("data");
             for (int i = 0; i < igData.length(); i++) {
 
+                final JSONObject currLikeObj = igData.getJSONObject(i)
+                        .getJSONObject("likes");
+
                 final JSONObject currObj = igData.getJSONObject(i)
                         .getJSONObject("images");
                 Log.d("images main", currObj.toString());
-                final String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
+                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
                         .getString(URL);
+                int tmpIndex = origURL.indexOf("?");
+                if (tmpIndex > 0) {
+                    origURL = origURL.substring(0, tmpIndex);
+                }
                 Log.d("images url main", origURL);
-                igPhotos.add(new InstagramPhoto(igData.getJSONObject(i)
-                        .getString("id"), currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
-                        .getString(URL), origURL));
-                Log.d("ig photos main", igPhotos.toString());
+
+                final String idDown = igData.getJSONObject(i).getString("id");
+                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
+                tmpIndex = thumbDown.indexOf("?");
+                if (tmpIndex > 0) {
+                    thumbDown = thumbDown.substring(0, tmpIndex);
+                }
+                final int likesDown = currLikeObj.getInt("count");
+
+                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
+                Log.d("ig photos main", igPhotos.get(i).toString());
 
             }
-
-
         } catch (JSONException e) {
         }
-
         InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(SliderActivity.this, false);
         instagramPhotoDownloader.download(igPhotos);
-
     }
 
     public void playEmbedded() {
@@ -407,15 +497,26 @@ public class SliderActivity extends Activity {
         }
     }
 
+    public void stopSlidesHandlersRefresh() {
+        if (changeImagesHandler != null && changeImagesRunnable != null) {
+            changeImagesHandler.removeCallbacks(changeImagesRunnable);
+        }
+    }
 
-    public void stopTwitterFeedRefresh() {
+    public void restartSlidesHandlersRefresh() {
+        if (changeImagesHandler != null && changeImagesRunnable != null) {
+            changeImagesHandler.postDelayed(changeImagesRunnable, 1000);
+        }
+    }
+
+    public void stopTwitterHandlersRefresh() {
         if (twitterFeedHandler != null && twitterFeedRunnable != null) {
             twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
         }
     }
 
-    public void restartTwiiterFeed() {
-        if (twitterFeedHandler != null && twitterFeedRunnable != null) {
+    public void restartTwitterHandlersRefresh() {
+        if (isTwAllow && twitterFeedHandler != null && twitterFeedRunnable != null) {
             twitterFeedHandler.postDelayed(twitterFeedRunnable, ISConsts.times.twitter_get_feed_delay);
         }
     }

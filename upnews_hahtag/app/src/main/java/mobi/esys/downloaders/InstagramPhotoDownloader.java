@@ -27,7 +27,8 @@ public class InstagramPhotoDownloader {
             .getAbsolutePath().concat(ISConsts.globals.dir_name).concat(ISConsts.globals.photo_dir_name);
     private transient Context mContext;
     private transient boolean mIsMain;
-    private transient String lastFileName;
+    private transient int slidesLoaded = 0;
+    private transient int slidesNeed = 0;
 
 
     public InstagramPhotoDownloader(final Context context, final boolean isMain) {
@@ -37,24 +38,24 @@ public class InstagramPhotoDownloader {
 
 
     public void download(List<InstagramPhoto> instagramPhotos) {
-        Log.d("new download", instagramPhotos.toString());
-        lastFileName = "photo".concat(String.valueOf(instagramPhotos.size()).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
-        for (int i = 0; i < instagramPhotos.size(); i++) {
+        slidesNeed = instagramPhotos.size();
+        if (slidesNeed > 0) {
+            Log.d("new download", instagramPhotos.toString());
 
-            String currFileName = "photo".concat(String.valueOf(i + 1).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
-            Log.d("file name", currFileName);
+            //lastFileName = "photo".concat(String.valueOf(instagramPhotos.size()).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
+            for (int i = 0; i < instagramPhotos.size(); i++) {
+                String url = instagramPhotos.get(i).getIgOriginURL();
+                int likes = instagramPhotos.get(i).getIgLikes();
 
-            String url = instagramPhotos.get(i).getIgOriginURL();
-            downloadFileAsync(url, currFileName);
+                String currFileName = String.valueOf(likes) + "_photo".concat(String.valueOf(i + 1).concat(".").concat(FilenameUtils.getExtension(url)));
+                Log.d("file name", currFileName);
 
-
+                downloadFileAsync(url, currFileName);
+            }
         }
-
-
     }
 
     public void downloadFileAsync(String url, final String fileName) {
-
         Glide.with(mContext).load(url).asBitmap().toBytes().into(new SimpleTarget<byte[]>() {
                                                                      @Override
                                                                      public void onResourceReady(byte[] resource, GlideAnimation<? super byte[]> glideAnimation) {
@@ -67,22 +68,20 @@ public class InstagramPhotoDownloader {
                                                                              BufferedSink sink = Okio.buffer(Okio.sink(picFile));
                                                                              sink.write(resource);
                                                                              sink.close();
-                                                                         } catch (FileNotFoundException e){
+                                                                         } catch (FileNotFoundException e) {
                                                                              e.printStackTrace();
-                                                                         } catch (IOException e){
+                                                                         } catch (IOException e) {
                                                                              e.printStackTrace();
                                                                          }
-                                                                         if (fileName.equals(lastFileName)) {
+                                                                         slidesLoaded++;
+
+                                                                         if (slidesLoaded == slidesNeed) {
                                                                              if (mIsMain) {
-                                                                                 ((MainSliderActivity) mContext).loadSlide(true);
+                                                                                 ((MainSliderActivity) mContext).loadSlide();
                                                                              }
                                                                          }
                                                                      }
                                                                  }
-
         );
-
     }
-
-
 }

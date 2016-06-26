@@ -15,11 +15,11 @@ import mobi.esys.view.TwitterLine;
 
 public class TwitterHelper {
 
-    public static void startLoadTweets(final TwitterApiClient client, final String hashTag, final RelativeLayout relativeLayout, final Context context,final boolean isFirst) {
-        loadTweets(client, hashTag, relativeLayout, context,isFirst);
+    public static void startLoadTweets(final TwitterApiClient client, final String hashTag, final RelativeLayout relativeLayout, final Context context) {
+        loadTweets(client, hashTag, relativeLayout, context);
     }
 
-    private static void loadTweets(final TwitterApiClient client, final String hashTag, final RelativeLayout relativeLayout, final Context context,final boolean isFirst) {
+    private static void loadTweets(final TwitterApiClient client, final String hashTag, final RelativeLayout relativeLayout, final Context context) {
         final SearchService service = client.getSearchService();
         if (!hashTag.isEmpty()) {
             String tag = hashTag.replace("#", "");
@@ -27,7 +27,7 @@ public class TwitterHelper {
                 @Override
                 public void success(Result<Search> searchResult) {
                     FeedToText feedToText = new FeedToText(searchResult.data.tweets, context);
-                    TwitterLine twitterLine = new TwitterLine(relativeLayout, context, feedToText.twProfileImageUrls(),isFirst);
+                    TwitterLine twitterLine = new TwitterLine(relativeLayout, context, feedToText.twProfileImageUrls());
                     twitterLine.start(feedToText.getFormattedTweets());
                 }
 
