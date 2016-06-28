@@ -19,7 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".25"
-            android:id="@+id/layoutHeader">
+            android:id="@+id/layoutHeader"
+            android:gravity="center_vertical">
 
             <ImageView
                 android:id="@+id/logoMainSlider"
@@ -28,43 +29,23 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
                 android:layout_marginRight="24dp"
-                android:layout_marginTop="16dp"
                 android:alpha="0.3"
                 android:background="@null"
                 android:src="@drawable/upnews_logo_w2" />
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/shape_background_hashtag"
-                android:paddingLeft="8dp"
-                android:paddingRight="16dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:id="@+id/commonInfoLayout"
-                android:layout_alignTop="@+id/logoMainSlider"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true">
+
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="80px"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:id="@+id/tvTagView"
                     android:text="#news"
-                    android:textSize="18sp" />
+                    android:textSize="28sp"
+                    android:layout_marginLeft="24dp"
+                    android:textColor="#bdbdbd"
+                    android:gravity="center_vertical" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:id="@+id/tvTagCountAll"
-                    android:text="42 publication"
-                    android:textSize="18sp"
-                    android:visibility="gone"/>
-
-            </LinearLayout>
         </RelativeLayout>
 
         <LinearLayout

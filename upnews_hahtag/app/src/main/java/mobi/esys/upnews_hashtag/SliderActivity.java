@@ -14,11 +14,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -44,7 +42,7 @@ import mobi.esys.downloaders.InstagramPhotoDownloader;
 import mobi.esys.eventbus.SongStopEvent;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.system.PhotoElement;
+import mobi.esys.view.PhotoElement;
 import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 
@@ -140,8 +138,8 @@ public class SliderActivity extends Activity {
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         heightElement = metrics.widthPixels / 3 - 40;
 
-        LinearLayout commonInfoLayout = (LinearLayout) findViewById(R.id.commonInfoLayout);
-        commonInfoLayout.setVisibility(View.GONE);
+        TextView tvTagView = (TextView) findViewById(R.id.tvTagView);
+        tvTagView.setVisibility(View.GONE);
 
         photoElements = new ArrayList<>();
         RelativeLayout rlIg1 = (RelativeLayout) findViewById(R.id.rlIg1);
@@ -333,27 +331,6 @@ public class SliderActivity extends Activity {
         fade_5.setFillAfter(true);
         fade_5.setAnimationListener(new AnimList(2));
         photoElements.get(2).getRelativeLayout().startAnimation(fade_5);
-
-
-//        if (nextElementsState[0] >= imageIds.size()) {
-//            nextElementsState[0] = 0;
-//        }
-//        photoElements.get(0).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[0])));
-//        nextElementsState[0]++;
-//
-//        nextElementsState[1] = nextElementsState[0];
-//        if (nextElementsState[1] >= imageIds.size()) {
-//            nextElementsState[1] = 0;
-//        }
-//        photoElements.get(1).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[1])));
-//        nextElementsState[1]++;
-//
-//        nextElementsState[2] = nextElementsState[1];
-//        if (nextElementsState[2] >= imageIds.size()) {
-//            nextElementsState[2] = 0;
-//        }
-//        photoElements.get(2).getImageView().setImageDrawable(getResources().getDrawable(imageIds.get(nextElementsState[2])));
-//        nextElementsState[2]++;
     }
 
     final class AnimList implements Animation.AnimationListener {
@@ -365,7 +342,6 @@ public class SliderActivity extends Activity {
 
         @Override
         public void onAnimationStart(Animation animation) {
-            Log.d(TAG, "Animation start");
             switch (stage) {
                 case 0:
                     if (nextElementsState[0] >= imageIds.size()) {
@@ -398,12 +374,10 @@ public class SliderActivity extends Activity {
 
         @Override
         public void onAnimationRepeat(Animation animation) {
-            Log.d(TAG, "Animation repeat");
         }
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            Log.d(TAG, "Animation end");
         }
     }
 

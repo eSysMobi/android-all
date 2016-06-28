@@ -45,9 +45,9 @@ public class InstagramPhotoDownloader {
             //lastFileName = "photo".concat(String.valueOf(instagramPhotos.size()).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
             for (int i = 0; i < instagramPhotos.size(); i++) {
                 String url = instagramPhotos.get(i).getIgOriginURL();
-                int likes = instagramPhotos.get(i).getIgLikes();
+                //int likes = instagramPhotos.get(i).getIgLikes();
 
-                String currFileName = String.valueOf(likes) + "_photo".concat(String.valueOf(i + 1).concat(".").concat(FilenameUtils.getExtension(url)));
+                String currFileName =instagramPhotos.get(i).getIgPhotoID().concat(".").concat(FilenameUtils.getExtension(url));
                 Log.d("file name", currFileName);
 
                 downloadFileAsync(url, currFileName);
@@ -60,7 +60,7 @@ public class InstagramPhotoDownloader {
                                                                      @Override
                                                                      public void onResourceReady(byte[] resource, GlideAnimation<? super byte[]> glideAnimation) {
                                                                          File picFile = new File(photoDownDir, fileName);
-                                                                         Log.d("pic file", picFile.getAbsolutePath());
+                                                                         Log.d("unTagPicFile", picFile.getAbsolutePath());
                                                                          try {
                                                                              if (!picFile.exists()) {
                                                                                  picFile.createNewFile();

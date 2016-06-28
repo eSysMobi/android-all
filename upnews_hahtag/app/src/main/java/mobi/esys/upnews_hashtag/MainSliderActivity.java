@@ -1,6 +1,7 @@
 package mobi.esys.upnews_hashtag;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -45,7 +46,7 @@ import mobi.esys.downloaders.InstagramPhotoDownloader;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.filesystem.files.FilesHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.system.PhotoElement;
+import mobi.esys.view.PhotoElement;
 import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 
@@ -60,8 +61,6 @@ public class MainSliderActivity extends Activity {
     private transient UNHApp mApp;
     private transient SharedPreferences preferences;
 
-    private transient boolean isFirst = true;
-
     private transient String[] photoFiles;
 
     private transient JSONObject igObject;
@@ -73,7 +72,7 @@ public class MainSliderActivity extends Activity {
 
     private transient boolean isTwAllow;
 
-    private transient final String TAG = this.getClass().getSimpleName();
+    private transient final String TAG = "unTagMainSlider";
 
     private transient List<InstagramPhoto> igPhotos;
 
@@ -162,6 +161,7 @@ public class MainSliderActivity extends Activity {
         loadSlide();
         initTwitter();
         playMP3();
+        updateIGPhotos(igHashTag);
 
         String logoFile = Environment.getExternalStorageDirectory()
                 .getAbsolutePath().concat(ISConsts.globals.dir_name)
@@ -290,8 +290,16 @@ public class MainSliderActivity extends Activity {
                         Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                         photoElements.get(0).getImageView().setImageBitmap(bitmap);
                         nextElementsState[0]++;
-                        Log.d(TAG, "nextElementsState[0] =" + nextElementsState[0]);
-                        String likes = imgFile.getName().substring(0, imgFile.getName().indexOf("_"));
+                        String target = imgFile.getName().substring(0, imgFile.getName().lastIndexOf("."));
+                        int likes = 0;
+                        for (int k = 0; k < igPhotos.size(); k++) {
+                            String searchable = igPhotos.get(k).getIgPhotoID();
+                            Log.w(TAG, target + " <> " + searchable);
+                            if (searchable.equals(target)) {
+                                likes = igPhotos.get(k).getIgLikes();
+                                break;
+                            }
+                        }
                         photoElements.get(0).getTextView().setText("\u2764 " + likes);
                     } else {
                         Log.w(TAG, "All files is corrupted!");
@@ -315,8 +323,16 @@ public class MainSliderActivity extends Activity {
                         Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                         photoElements.get(1).getImageView().setImageBitmap(bitmap);
                         nextElementsState[1]++;
-                        Log.d(TAG, "nextElementsState[1] =" + nextElementsState[1]);
-                        String likes = imgFile.getName().substring(0, imgFile.getName().indexOf("_"));
+                        String target = imgFile.getName().substring(0, imgFile.getName().lastIndexOf("."));
+                        int likes = 0;
+                        for (int k = 0; k < igPhotos.size(); k++) {
+                            String searchable = igPhotos.get(k).getIgPhotoID();
+                            Log.w(TAG, target + " <> " + searchable);
+                            if (searchable.equals(target)) {
+                                likes = igPhotos.get(k).getIgLikes();
+                                break;
+                            }
+                        }
                         photoElements.get(1).getTextView().setText("\u2764 " + likes);
                     } else {
                         Log.w(TAG, "All files is corrupted!");
@@ -340,8 +356,16 @@ public class MainSliderActivity extends Activity {
                         Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                         photoElements.get(2).getImageView().setImageBitmap(bitmap);
                         nextElementsState[2]++;
-                        Log.d(TAG, "nextElementsState[2] =" + nextElementsState[2]);
-                        String likes = imgFile.getName().substring(0, imgFile.getName().indexOf("_"));
+                        String target = imgFile.getName().substring(0,imgFile.getName().lastIndexOf("."));
+                        int likes = 0;
+                        for (int k = 0; k < igPhotos.size(); k++) {
+                            String searchable = igPhotos.get(k).getIgPhotoID();
+                            Log.w(TAG, target + " <> " + searchable);
+                            if (searchable.equals(target)) {
+                                likes = igPhotos.get(k).getIgLikes();
+                                break;
+                            }
+                        }
                         photoElements.get(2).getTextView().setText("\u2764 " + likes);
                     } else {
                         Log.w(TAG, "All files is corrupted!");
@@ -352,12 +376,10 @@ public class MainSliderActivity extends Activity {
 
         @Override
         public void onAnimationRepeat(Animation animation) {
-            Log.d(TAG, "Animation repeat");
         }
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            Log.d(TAG, "Animation end");
         }
     }
 
@@ -496,6 +518,11 @@ public class MainSliderActivity extends Activity {
         }
         stopSlidesHandlersRefresh();
         stopTwitterHandlersRefresh();
+        try {
+            trimCache(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -558,11 +585,35 @@ public class MainSliderActivity extends Activity {
                     Twitter.getInstance();
                     Twitter.getInstance();
                     TwitterHelper.startLoadTweets(Twitter.getApiClient(), twHashTag, relativeLayout, getApplicationContext());
-                    isFirst = false;
                     twitterFeedHandler.postDelayed(this, 900000);
                 }
             };
         }
+    }
+
+    public static void trimCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                deleteDir(dir);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+
+        // The directory is now empty so delete it
+        return dir.delete();
     }
 
 
