@@ -271,7 +271,6 @@ public class MainSliderActivity extends Activity {
 
         @Override
         public void onAnimationStart(Animation animation) {
-            Log.d(TAG, "Animation start");
             switch (stage) {
                 case 0:
                     if (nextElementsState[0] >= photoFiles.length) {
@@ -294,7 +293,6 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            Log.w(TAG, target + " <> " + searchable);
                             if (searchable.equals(target)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
@@ -327,7 +325,6 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            Log.w(TAG, target + " <> " + searchable);
                             if (searchable.equals(target)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
@@ -360,7 +357,6 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            Log.w(TAG, target + " <> " + searchable);
                             if (searchable.equals(target)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
@@ -507,6 +503,7 @@ public class MainSliderActivity extends Activity {
         }
         stopSlidesHandlersRefresh();
         stopTwitterHandlersRefresh();
+        trimCache(this);
     }
 
     @Override
@@ -515,13 +512,6 @@ public class MainSliderActivity extends Activity {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
-        }
-        stopSlidesHandlersRefresh();
-        stopTwitterHandlersRefresh();
-        try {
-            trimCache(this);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -595,6 +585,7 @@ public class MainSliderActivity extends Activity {
         try {
             File dir = context.getCacheDir();
             if (dir != null && dir.isDirectory()) {
+                Log.d("unTagMainSlider","Start deleting cache");
                 deleteDir(dir);
             }
         } catch (Exception e) {
@@ -610,10 +601,12 @@ public class MainSliderActivity extends Activity {
                     return false;
                 }
             }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
         }
-
-        // The directory is now empty so delete it
-        return dir.delete();
     }
 
 
