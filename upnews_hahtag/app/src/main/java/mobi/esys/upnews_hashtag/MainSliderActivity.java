@@ -9,12 +9,15 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.os.PersistableBundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -95,6 +98,10 @@ public class MainSliderActivity extends Activity {
 
     private transient int musicPosition = 0;
 
+    private transient Handler handlerHideUI = new uiHandler();
+    private transient View decorView = null;
+    private static transient int DELAY_NAV_HIDE = 2000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +175,21 @@ public class MainSliderActivity extends Activity {
                 .concat(ISConsts.globals.dir_changeable_logo_name)
                 .concat(ISConsts.globals.changeable_logo_name);
         logoFileHelper = new FilesHelper(logoFile, getApplicationContext());
+
+        //prepare handler for hide Android status bar
+        if (Build.VERSION.SDK_INT >= 14) {
+            decorView = getWindow().getDecorView();
+            setUISmall();
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int visibility) {
+                    if (visibility != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+                        //Log.d("unTag_FullscreenAct", "onSystemUiVisibilityChange " + visibility + " need hide nav. Post delay handler");
+                        handlerHideUI.sendEmptyMessageDelayed(32, DELAY_NAV_HIDE);
+                    }
+                }
+            });
+        }
     }
 
     private void updateIGPhotos(final String tag) {
@@ -503,6 +525,10 @@ public class MainSliderActivity extends Activity {
         }
         stopSlidesHandlersRefresh();
         stopTwitterHandlersRefresh();
+        Log.d(TAG, "Remove messages from handlerHideUI in onStop()");
+        if (handlerHideUI != null) {
+            handlerHideUI.removeMessages(32);
+        }
         trimCache(this);
     }
 
@@ -609,6 +635,29 @@ public class MainSliderActivity extends Activity {
         }
     }
 
+    private class uiHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            setUISmall();
+        }
+    }
+
+    public void setUISmall() {
+        //not need check SDK version because checking in onCreate
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            Log.d(TAG, "UiVisibility before " + decorView.getSystemUiVisibility());
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            Log.d(TAG, "UiVisibility after " + decorView.getSystemUiVisibility());
+        }
+    }
+
+    public void forceSetUISmall() {
+        //if (decorView.getSystemUiVisibility() != View.SYSTEM_UI_FLAG_LOW_PROFILE) {
+        setUISmall();
+        //}
+    }
 
 }
 
