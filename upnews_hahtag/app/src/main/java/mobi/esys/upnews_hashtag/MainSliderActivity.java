@@ -216,8 +216,8 @@ public class MainSliderActivity extends Activity {
     private void getIGPhotos(JSONObject igObject) {
         igPhotos = new ArrayList<>();
         try {
-            Log.d("object main", igObject.toString());
             final JSONArray igData = igObject.getJSONArray("data");
+            Log.d("igData", igData.toString());
 
             for (int i = 0; i < igData.length(); i++) {
 
@@ -262,7 +262,7 @@ public class MainSliderActivity extends Activity {
         DirectoryHelper photoDirHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
         photoFiles = photoDirHelper.getDirFileList(TAG);
 
-        Log.w(TAG, "Change slides :" + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2]);
+        Log.w(TAG, "Change slides : " + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2]);
 
         Animation fade_1 = AnimationUtils.loadAnimation(this, R.anim.fade_in);
         fade_1.setFillAfter(true);

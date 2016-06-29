@@ -27,6 +27,29 @@ public class NetMonitor {
         if (wifiInfo != null) {
             wifi = wifiInfo.getState();
         }
+        if (mobile.equals(NetworkInfo.State.CONNECTED) || wifi.equals(NetworkInfo.State.CONNECTED)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static final boolean isNetworkAvailableOnlyWIFI(UNHApp app) {
+        Context context = app.getApplicationContext();
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobileInfo = connectivityManager
+                .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo.State mobile = NetworkInfo.State.DISCONNECTED;
+        if (mobileInfo != null) {
+            mobile = mobileInfo.getState();
+        }
+        NetworkInfo wifiInfo = connectivityManager
+                .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo.State wifi = NetworkInfo.State.DISCONNECTED;
+        if (wifiInfo != null) {
+            wifi = wifiInfo.getState();
+        }
         boolean dataOnWifiOnly = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(
                         "data_wifi_only", true);
