@@ -15,6 +15,7 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -101,6 +102,8 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private transient Runnable currRunnable;
     private transient Handler twitterFeedHandler;
     private transient Runnable twitterFeedRunnable;
+    private transient Handler youtubeContinueHandler;
+    private transient Runnable youtubeContinueRunnable;
 
     private final static int PERMISSION_REQUEST_CODE = 334;
     private transient boolean allowflag = false;
@@ -122,7 +125,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private transient boolean youtubePlaylist = true;
     private transient SharedPreferences preferences;
     private transient UpnewsTubeApp mApp;
-    private transient EasyTracker easyTracker;
 
     private transient boolean needIsnstagram;
     private transient boolean skip_twitter = true;
@@ -137,8 +139,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_player_activity_you_tube);
-
-        easyTracker = EasyTracker.getInstance(PlayerActivityYouTube.this);
 
         preferences = getSharedPreferences(OtherConst.APP_PREF, MODE_PRIVATE);
         needIsnstagram = preferences.getBoolean("instNeedShow", false);
@@ -273,6 +273,22 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
         youTubeView = (YouTubePlayerView) findViewById(R.id.youtube_view);
         youTubeView.initialize(DEVELOPER_KEY, this);
+
+        youtubeContinueHandler = new Handler();
+        youtubeContinueRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkPlaying();
+                youtubeContinueHandler.postDelayed(this, TimeConsts.PLAYING_CHECK);
+            }
+        };
+    }
+
+    void checkPlaying() {
+        if (YPlayer != null && !YPlayer.isPlaying()) {
+            Log.d(TAG, "Start play again");
+            YPlayer.play();
+        }
     }
 
     public void loadSlide(String tag) {
@@ -323,7 +339,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
                     concat(Folders.PHOTO_FOLDER);
 
             String urls = mApp.getInstagramFiles();
-            if(urls.isEmpty()){
+            if (urls.isEmpty()) {
                 CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(tag, mApp);
                 checkInstaTagTask.execute();
                 try {
@@ -335,7 +351,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
                 }
             }
             Log.w(TAG, "Loaded urls by tag #" + tag + " : " + urls);
-            if(!urls.isEmpty()) {
+            if (!urls.isEmpty()) {
 
                 InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder, tag);
                 instagramDownloader.download(urls);
@@ -857,7 +873,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
         if (needIsnstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
-        } else{
+        } else {
             mSlider.setVisibility(View.GONE);
         }
         if (!skip_twitter) {
@@ -866,11 +882,12 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         } else {
             rlForTwitter.setVisibility(View.GONE);
         }
+        youtubeContinueHandler.postDelayed(youtubeContinueRunnable, TimeConsts.AUTOSTART);
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         Log.d(TAG, "Remove all handlers in onStop()");
         if (handlerHideUI != null) {
             handlerHideUI.removeMessages(32);
@@ -887,9 +904,18 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         if (twitterFeedHandler != null) {
             twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
         }
+        if (twitterFeedHandler != null) {
+            twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
+        }
         //instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
         //currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
         // locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        trimCache(this);
     }
 
     @Override
@@ -903,5 +929,33 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     public void onBackPressed() {
         super.onBackPressed();
         finish();
+    }
+
+    public static void trimCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                Log.d(TAG, "Start deleting cache");
+                deleteDir(dir);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if (dir != null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
     }
 }
