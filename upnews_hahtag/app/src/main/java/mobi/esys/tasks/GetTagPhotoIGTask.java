@@ -32,7 +32,7 @@ public class GetTagPhotoIGTask extends AsyncTask<String, Void, String> {
     private final transient ProgressDialog dialog;
     private final transient boolean isShowProgress;
     private transient UNHApp mApp;
-    private transient final String TAG = this.getClass().getSimpleName();
+    private transient final String TAG = "unTag_GetTagPhoto";
 
     public GetTagPhotoIGTask(final Context context,
                              final String mode, final String tag, final boolean isShowProgress, final UNHApp app) {
@@ -53,7 +53,7 @@ public class GetTagPhotoIGTask extends AsyncTask<String, Void, String> {
     @Override
     protected void onPreExecute() {
         if (isShowProgress) {
-            this.dialog.setMessage("Çàãðóçêà ôîòîãðàôèé èç Instagram ïî òåãó "
+            this.dialog.setMessage("Get data from Instagram about tag: "
                     + tag);
             if (!this.dialog.isShowing()) {
                 this.dialog.show();

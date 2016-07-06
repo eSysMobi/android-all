@@ -7,62 +7,84 @@
     tools:context=".MainSliderActivity">
 
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/layoutScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/layoutScreen">
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
 
         <RelativeLayout
+            android:id="@+id/layoutHeader"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".25"
-            android:id="@+id/layoutHeader"
             android:gravity="center_vertical">
 
             <ImageView
                 android:id="@+id/logoMainSlider"
                 android:layout_width="320px"
                 android:layout_height="80px"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginRight="24dp"
                 android:alpha="0.3"
                 android:background="@null"
-                android:src="@drawable/upnews_logo_w2" />
+                android:src="@drawable/upnews_logo_w2"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
 
-
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/llInfo"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginLeft="24dp">
 
                 <TextView
+                    android:id="@+id/tvTagView"
                     android:layout_width="wrap_content"
                     android:layout_height="80px"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:id="@+id/tvTagView"
+                    android:gravity="center_vertical"
                     android:text="#news"
-                    android:textSize="28sp"
-                    android:layout_marginLeft="24dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="#bdbdbd"
-                    android:gravity="center_vertical" />
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/tvTagCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="80px"
+                    android:gravity="center_vertical"
+                    android:text="0 publications"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#bdbdbd"
+                    android:textSize="28sp"
+                    android:layout_alignTop="@+id/tvTagView"
+                    android:layout_toRightOf="@+id/tvTagView"
+                    android:layout_toEndOf="@+id/tvTagView"
+                    android:layout_marginLeft="12dp" />
+            </LinearLayout>
 
         </RelativeLayout>
 
         <LinearLayout
+            android:id="@+id/layoutImages"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight=".70"
-            android:gravity="center_vertical"
-            android:id="@+id/layoutImages">
+            android:gravity="center_vertical">
 
             <FrameLayout
                 android:id="@+id/flIg1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_gravity="center"
                 android:layout_marginLeft="20px"
                 android:layout_marginRight="20px"
-                android:layout_gravity="center">
+                android:layout_weight="1">
 
                 <RelativeLayout
                     android:id="@+id/rlIg1"
@@ -71,26 +93,26 @@
                     android:layout_gravity="center">
 
                     <ImageView
+                        android:id="@+id/ivIg1"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/ivIg1"
-                        android:scaleType="fitXY"
-                        android:background="@drawable/instagram_logo" />
+                        android:background="@drawable/instagram_logo"
+                        android:scaleType="fitXY" />
 
                     <TextView
                         android:id="@+id/tvIg1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/ivIg1"
                         android:layout_alignBottom="@+id/ivIg1"
-                        android:gravity="center_vertical"
-                        android:textColor="#ffffff"
-                        android:text="5"
-                        android:background="@drawable/shape_background_textview"
-                        android:layout_marginLeft="4dp"
+                        android:layout_alignLeft="@+id/ivIg1"
                         android:layout_marginBottom="4dp"
+                        android:layout_marginLeft="4dp"
+                        android:background="@drawable/shape_background_textview"
+                        android:gravity="center_vertical"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
+                        android:text="5"
+                        android:textColor="#ffffff"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </RelativeLayout>
@@ -101,10 +123,11 @@
                 android:id="@+id/flIg2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_gravity="center"
                 android:layout_marginLeft="20px"
                 android:layout_marginRight="20px"
-                android:layout_gravity="center">
+                android:layout_weight="1">
+
                 <RelativeLayout
                     android:id="@+id/rlIg2"
                     android:layout_width="wrap_content"
@@ -112,26 +135,26 @@
                     android:layout_gravity="center">
 
                     <ImageView
+                        android:id="@+id/ivIg2"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/ivIg2"
-                        android:scaleType="fitXY"
-                        android:background="@drawable/instagram_logo" />
+                        android:background="@drawable/instagram_logo"
+                        android:scaleType="fitXY" />
 
                     <TextView
                         android:id="@+id/tvIg2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/ivIg2"
                         android:layout_alignBottom="@+id/ivIg2"
-                        android:gravity="center_vertical"
-                        android:textColor="#ffffff"
-                        android:text="5"
-                        android:background="@drawable/shape_background_textview"
-                        android:layout_marginLeft="4dp"
+                        android:layout_alignLeft="@+id/ivIg2"
                         android:layout_marginBottom="4dp"
+                        android:layout_marginLeft="4dp"
+                        android:background="@drawable/shape_background_textview"
+                        android:gravity="center_vertical"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
+                        android:text="5"
+                        android:textColor="#ffffff"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </RelativeLayout>
@@ -141,10 +164,11 @@
                 android:id="@+id/flIg3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_gravity="center"
                 android:layout_marginLeft="20px"
                 android:layout_marginRight="20px"
-                android:layout_gravity="center">
+                android:layout_weight="1">
+
                 <RelativeLayout
                     android:id="@+id/rlIg3"
                     android:layout_width="wrap_content"
@@ -152,26 +176,26 @@
                     android:layout_gravity="center">
 
                     <ImageView
+                        android:id="@+id/ivIg3"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/ivIg3"
-                        android:scaleType="fitXY"
-                        android:background="@drawable/instagram_logo" />
+                        android:background="@drawable/instagram_logo"
+                        android:scaleType="fitXY" />
 
                     <TextView
                         android:id="@+id/tvIg3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignLeft="@+id/ivIg3"
                         android:layout_alignBottom="@+id/ivIg3"
-                        android:gravity="center_vertical"
-                        android:textColor="#ffffff"
-                        android:text="5"
-                        android:background="@drawable/shape_background_textview"
-                        android:layout_marginLeft="4dp"
+                        android:layout_alignLeft="@+id/ivIg3"
                         android:layout_marginBottom="4dp"
+                        android:layout_marginLeft="4dp"
+                        android:background="@drawable/shape_background_textview"
+                        android:gravity="center_vertical"
                         android:paddingLeft="4dp"
                         android:paddingRight="4dp"
+                        android:text="5"
+                        android:textColor="#ffffff"
                         android:textSize="18sp"
                         android:textStyle="bold" />
                 </RelativeLayout>
@@ -180,10 +204,10 @@
         </LinearLayout>
 
         <RelativeLayout
+            android:id="@+id/layoutTwitter"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight=".25"
-            android:id="@+id/layoutTwitter"/>
+            android:layout_weight=".25" />
     </LinearLayout>
 
 </RelativeLayout>

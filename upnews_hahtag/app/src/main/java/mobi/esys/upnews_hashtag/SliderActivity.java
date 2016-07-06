@@ -17,6 +17,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -138,8 +139,8 @@ public class SliderActivity extends Activity {
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         heightElement = metrics.widthPixels / 3 - 40;
 
-        TextView tvTagView = (TextView) findViewById(R.id.tvTagView);
-        tvTagView.setVisibility(View.GONE);
+        LinearLayout llInfo = (LinearLayout) findViewById(R.id.llInfo);
+        llInfo.setVisibility(View.GONE);
 
         photoElements = new ArrayList<>();
         RelativeLayout rlIg1 = (RelativeLayout) findViewById(R.id.rlIg1);

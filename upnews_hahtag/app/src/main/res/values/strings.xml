@@ -14,6 +14,7 @@
     <string name="hashsymbol">#</string>
     <string name="twLogoDesc">twitter logo</string>
     <string name="okString">OK</string>
-    <string name="twitterTagNeed">Введите тэг для поиска сообщений в Twitter</string>
+    <string name="twitterTagNeed">Enter the tag to search for messages in Twitter</string>
+    <string name="no_inet">No Internet connection</string>
 
 </resources>

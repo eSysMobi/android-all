@@ -49,6 +49,7 @@ import mobi.esys.downloaders.InstagramPhotoDownloader;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.filesystem.files.FilesHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
+import mobi.esys.tasks.CheckInstaTagTask;
 import mobi.esys.view.PhotoElement;
 import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
@@ -60,7 +61,7 @@ public class MainSliderActivity extends Activity {
     private transient int[] nextElementsState = {0, 1, 2};
 
     private transient RelativeLayout relativeLayout;
-    private transient TextView tvTagView;
+    private transient TextView tvTagCount;
     private transient UNHApp mApp;
     private transient SharedPreferences preferences;
 
@@ -72,6 +73,7 @@ public class MainSliderActivity extends Activity {
 
     private transient String igHashTag;
     private transient String twHashTag;
+    private transient int tagPhotoCount = 0;
 
     private transient boolean isTwAllow;
 
@@ -144,8 +146,9 @@ public class MainSliderActivity extends Activity {
 
         relativeLayout = (RelativeLayout) findViewById(R.id.layoutTwitter);
         logoView = (ImageView) findViewById(R.id.logoMainSlider);
-        tvTagView = (TextView) findViewById(R.id.tvTagView);
+        TextView tvTagView = (TextView) findViewById(R.id.tvTagView);
         tvTagView.setText(igHashTag);
+        tvTagCount = (TextView) findViewById(R.id.tvTagCount);
 
         changeImagesRunnable = new Runnable() {
             @Override
@@ -192,6 +195,25 @@ public class MainSliderActivity extends Activity {
         }
     }
 
+    private void updateTagCount(final String tag) {
+        final CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(tag, mApp);
+
+        try {
+            checkInstaTagTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+            tagPhotoCount = checkInstaTagTask.get();
+            if(tagPhotoCount > 0){
+                String text = String.valueOf(tagPhotoCount).concat(" publications");
+                tvTagCount.setText(text);
+            } else {
+                tvTagCount.setVisibility(View.GONE);
+            }
+        } catch (InterruptedException e) {
+            Log.d("error", "interrupted error");
+        } catch (ExecutionException e) {
+            Log.d("error", "execution error");
+        }
+    }
+
     private void updateIGPhotos(final String tag) {
         final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
                 MainSliderActivity.this,
@@ -202,6 +224,7 @@ public class MainSliderActivity extends Activity {
         try {
             igObject = new JSONObject(getTagPhotoIGTask.get());
             Log.d("object", igObject.toString());
+            updateTagCount(tag);
             getIGPhotos(igObject);
         } catch (JSONException e) {
             Log.d("error", "json error");

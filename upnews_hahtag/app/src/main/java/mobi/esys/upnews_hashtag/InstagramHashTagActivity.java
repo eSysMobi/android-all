@@ -36,8 +36,8 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     private transient UNHApp mApp;
     private transient Instagram instagram;
     private transient EasyTracker easyTracker;
-    private transient boolean isEdit=false;
-    private transient boolean isFirstLaunch=true;
+    private transient boolean isEdit = false;
+    private transient boolean isFirstLaunch = true;
 
     private transient String prevHashTag;
 
@@ -63,20 +63,19 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
 
         preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
 
-        prevHashTag= preferences.getString(ISConsts.prefstags.instagram_hashtag, "");
+        prevHashTag = preferences.getString(ISConsts.prefstags.instagram_hashtag, "");
         if (!prevHashTag.isEmpty()) {
             hashTagEdit.setText(prevHashTag);
-            isFirstLaunch=false;
-        }
-        else{
-            isFirstLaunch=true;
+            isFirstLaunch = false;
+        } else {
+            isFirstLaunch = true;
         }
 
         final Handler startHandler = new Handler();
         final Runnable twitterFeedRunnable = new Runnable() {
             @Override
             public void run() {
-                if(!isEdit&&!isFirstLaunch) {
+                if (!isEdit && !isFirstLaunch) {
                     checkTagAndGo(true);
                 }
             }
@@ -96,7 +95,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                isEdit=true;
+                isEdit = true;
                 startHandler.removeCallbacks(twitterFeedRunnable);
             }
 
@@ -118,7 +117,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
                 if (s.toString().length() == 1) {
                     hashTagEdit.setSelection(1);
                 }
-                isEdit=false;
+                isEdit = false;
             }
 
         });
@@ -147,30 +146,35 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
     }
 
     public void checkTagAndGo(boolean twitterAutoStart) {
-        isEdit=true;
+        isEdit = true;
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
-            Log.d("hash tag",prevHashTag);
-            Log.d("hash tag",hashTagEdit.getEditableText().toString());
+            Log.d("hash tag", prevHashTag);
+            Log.d("hash tag", hashTagEdit.getEditableText().toString());
 
-            if(!"".equals(prevHashTag)&&!hashTagEdit.getEditableText().toString().equals(prevHashTag)){
+            if (!"".equals(prevHashTag) && !hashTagEdit.getEditableText().toString().equals(prevHashTag)) {
                 clearFolder();
             }
             CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString(), mApp);
             checkInstaTagTask.execute(instagram.getSession().getAccessToken());
             try {
-                if (checkInstaTagTask.get()) {
-                    startActivity(new Intent(InstagramHashTagActivity.this, TwitterLoginActivity.class).putExtra("tas",twitterAutoStart));
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString(ISConsts.prefstags.instagram_hashtag, hashTagEdit.getEditableText().toString());
-                    editor.apply();
-                    easyTracker.send(MapBuilder.createEvent("input_hashtag",
-                            "instagram_input_hashtag", hashTagEdit.getEditableText().toString(), null).build());
+                int count = checkInstaTagTask.get();
+                if (count == -1) {
+                    Toast.makeText(InstagramHashTagActivity.this, R.string.no_inet, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(InstagramHashTagActivity.this, "Sorry but this hashtag don't allowed", Toast.LENGTH_SHORT).show();
-                    easyTracker.send(MapBuilder.createEvent("input_hashtag",
-                            "instagram_input_hashtag", "hashtag_dont_allowed", null).build());
+                    if (count > 0) {
+                        startActivity(new Intent(InstagramHashTagActivity.this, TwitterLoginActivity.class).putExtra("tas", twitterAutoStart));
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putString(ISConsts.prefstags.instagram_hashtag, hashTagEdit.getEditableText().toString());
+                        editor.apply();
+                        easyTracker.send(MapBuilder.createEvent("input_hashtag",
+                                "instagram_input_hashtag", hashTagEdit.getEditableText().toString(), null).build());
+                    } else {
+                        Toast.makeText(InstagramHashTagActivity.this, "Sorry but this hashtag don't allowed", Toast.LENGTH_SHORT).show();
+                        easyTracker.send(MapBuilder.createEvent("input_hashtag",
+                                "instagram_input_hashtag", "hashtag_dont_allowed", null).build());
 
+                    }
                 }
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();

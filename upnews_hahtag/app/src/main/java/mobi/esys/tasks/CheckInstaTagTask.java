@@ -1,6 +1,7 @@
 package mobi.esys.tasks;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import net.londatiga.android.instagram.InstagramRequest;
 
@@ -21,7 +22,7 @@ import mobi.esys.upnews_hashtag.UNHApp;
 /**
  * Created by Артем on 29.04.2015.
  */
-public class CheckInstaTagTask extends AsyncTask<String, Void, Boolean> {
+public class CheckInstaTagTask extends AsyncTask<String, Void, Integer> {
     private transient String mHashTag;
     private transient UNHApp mApp;
 
@@ -32,8 +33,8 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, Boolean> {
 
 
     @Override
-    protected Boolean doInBackground(String... params) {
-        boolean status = false;
+    protected Integer doInBackground(String... params) {
+        int count = 0;
         String response = "";
         if (mHashTag.length() >= 2) {
             final InstagramRequest request = new InstagramRequest(params[0]);
@@ -44,27 +45,26 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, Boolean> {
                 try {
                     final List<NameValuePair> reqParams = new ArrayList<NameValuePair>(
                             1);
-                    reqParams.add(new BasicNameValuePair("count", String
-                            .valueOf(ISConsts.instagramconsts.instagram_page_count)));
-                    response = request.requestGet("/tags/" + edTag
-                            + "/media/recent", reqParams);
+//                    reqParams.add(new BasicNameValuePair("count", String
+//                            .valueOf(ISConsts.instagramconsts.instagram_page_count)));
+//                    response = request.requestGet("/tags/" + edTag
+//                            + "/media/recent", reqParams);
+                    response = request.requestGet("/tags/" + edTag, reqParams);
                     if (isJSONValid(response)) {
                         JSONObject resObject = new JSONObject(response);
                         if (resObject.has("meta")
-                                && resObject.getJSONObject("meta").has(
-                                "error_type")) {
-                            status = false;
-                        } else {
-                            status = true;
+                                && resObject.getJSONObject("meta").get("code").equals(200)) {
+                            count = (Integer) resObject.getJSONObject("data").get("media_count");
                         }
                     }
                 } catch (Exception e) {
-                    status = false;
+                    Log.e("unTag_CheckInstaTag", "Error: " + e.getMessage());
                 }
+            } else {
+                count = -1;
             }
         }
-
-        return status;
+        return count;
     }
 
     public boolean isJSONValid(String test) {
