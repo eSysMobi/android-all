@@ -285,9 +285,13 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     }
 
     void checkPlaying() {
-        if (YPlayer != null && !YPlayer.isPlaying()) {
-            Log.d(TAG, "Start play again");
-            YPlayer.play();
+        try {
+            if (youTubeView != null && YPlayer != null && !YPlayer.isPlaying()) {
+                Log.d(TAG, "Start play again");
+                YPlayer.play();
+            }
+        } catch (IllegalStateException e) {
+            Log.d(TAG, "Error IllegalStateException. Can't start play again! " + e.getMessage());
         }
     }
 
@@ -907,6 +911,9 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         if (twitterFeedHandler != null) {
             twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
         }
+        if (YPlayer != null) {
+            YPlayer.pause();
+        }
         //instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
         //currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
         // locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
@@ -914,14 +921,18 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     @Override
     protected void onStop() {
-        super.onStop();
         trimCache(this);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         //do not return result in destroyed activity
         mYahooWeather.noNeedResult();
+        if (YPlayer != null) {
+            YPlayer.release();
+            YPlayer = null;
+        }
         super.onDestroy();
     }
 

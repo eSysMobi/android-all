@@ -7,6 +7,6 @@ import java.util.List;
 
 @Root(name = "ValCurs")
 public class CurrenciesList {
-    @ElementList(inline=true, name="Valute")
+    @ElementList(inline = true, name = "Valute")
     public List<Currency> currencies;
 }

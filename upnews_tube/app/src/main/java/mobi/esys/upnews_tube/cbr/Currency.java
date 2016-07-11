@@ -3,25 +3,22 @@ package mobi.esys.upnews_tube.cbr;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
-@Root(name="Valute")
+@Root(name = "Valute")
 public class Currency {
-    @Element(name="CharCode")
+    @Element(name = "CharCode")
     private String currCharCode;
-    @Element(name="Value")
+    @Element(name = "Value")
     private String currValue;
-    @Element (name="Nominal")
+    @Element(name = "Nominal")
     private String nominal;
 
     public final String getCurrCharCode() {
         return currCharCode;
     }
 
-
-
     public final String getCurrValue() {
         return currValue;
     }
-
 
     public final String getNominal() {
         return this.nominal;

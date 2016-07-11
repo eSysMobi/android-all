@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -66,13 +67,15 @@ public class InAppBillingActivity extends Activity {
                         ArrayList<String> purchaseDataList = ownedItems
                                 .getStringArrayList("INAPP_PURCHASE_DATA_LIST");
 
-                        for (int i = 0; i < purchaseDataList.size(); ++i) {
-                            purchaseData = purchaseDataList.get(i);
-                            Log.d("info", purchaseData);
+                        if (purchaseDataList != null) {
+                            for (int i = 0; i < purchaseDataList.size(); ++i) {
+                                purchaseData = purchaseDataList.get(i);
+                                Log.d("info", purchaseData);
+                            }
                         }
 
                     }
-                    if (purchaseData == "") {
+                    if (purchaseData.equals("")) {
                         Bundle buyIntentBundle = billingService.getBuyIntent(3,
                                 getPackageName(), "upnews_tube_one_month", "subs", "");
                         PendingIntent pendingIntent = buyIntentBundle
@@ -89,6 +92,7 @@ public class InAppBillingActivity extends Activity {
                     }
                 } catch (RemoteException e) {
                 } catch (IntentSender.SendIntentException e) {
+                } catch (NullPointerException e) {
                 }
             }
         };
@@ -101,9 +105,6 @@ public class InAppBillingActivity extends Activity {
             bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
                     billingServiceConn, BIND_AUTO_CREATE);
         }
-
-//        bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
-//                billingServiceConn, BIND_AUTO_CREATE);
 
         allOK();
     }
@@ -133,7 +134,8 @@ public class InAppBillingActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 333) {
-            if (grantResults.length > 0
+            if (grantResults != null
+                    && grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 permOK = true;
                 allOK();

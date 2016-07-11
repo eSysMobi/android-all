@@ -37,20 +37,23 @@ public class GetProductInfoTask extends
                     "subs", querySkus);
         } catch (RemoteException e1) {
         }
+        if (skuDetails != null) {
+            int response = skuDetails.getInt("RESPONSE_CODE");
+            if (response == 0) {
+                ArrayList<String> responseList = skuDetails
+                        .getStringArrayList("DETAILS_LIST");
 
-        int response = skuDetails.getInt("RESPONSE_CODE");
-        if (response == 0) {
-            ArrayList<String> responseList = skuDetails
-                    .getStringArrayList("DETAILS_LIST");
+                if (responseList != null) {
+                    for (String thisResponse : responseList) {
+                        JSONObject object;
+                        try {
+                            object = new JSONObject(thisResponse);
+                            Log.d("price", object.toString());
+                        } catch (JSONException e) {
+                        }
 
-            for (String thisResponse : responseList) {
-                JSONObject object;
-                try {
-                    object = new JSONObject(thisResponse);
-                    Log.d("price", object.toString());
-                } catch (JSONException e) {
+                    }
                 }
-
             }
         }
         return null;

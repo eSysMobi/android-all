@@ -20,7 +20,7 @@ import java.util.Locale;
 import mobi.esys.upnews_tube.PlayerActivityYouTube;
 
 public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
-    private static final String LOG_TAG = "getCurrencies";
+    private static final String TAG = "unTag_getCurr";
     private transient Context context;
     private transient Date yeasterDay;
     private transient CurrenciesList yeasterdayList;
@@ -57,14 +57,17 @@ public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
             //or http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml for europe
             Log.d("curr ulr", url.toString());
             if (url != null) {
-                Reader reader = new InputStreamReader(getInputStream(url));
+                InputStream is = getInputStream(url);
+                if (is != null) {
+                    Reader reader = new InputStreamReader(is);
 
-                Persister serializer = new Persister();
-                try {
-                    currenciesList = serializer.read(CurrenciesList.class, reader, false);
-                    Log.v("SimpleTest_curr", "stock: " + currenciesList.currencies.toString());
-                } catch (Exception e) {
-                    Log.e("SimpleTest_curr", e.getMessage());
+                    Persister serializer = new Persister();
+                    try {
+                        currenciesList = serializer.read(CurrenciesList.class, reader, false);
+                        Log.v("SimpleTest_curr", "stock: " + currenciesList.currencies.toString());
+                    } catch (Exception e) {
+                        Log.e("SimpleTest_curr", e.getMessage());
+                    }
                 }
             }
         } catch (IOException e) {
@@ -85,6 +88,10 @@ public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
     @Override
     protected void onPostExecute(CurrenciesList currenciesList) {
         super.onPostExecute(currenciesList);
-        ((PlayerActivityYouTube) context).loadCurrencyDashboard(currenciesList, yeasterdayList);
+        if (currenciesList != null) {
+            ((PlayerActivityYouTube) context).loadCurrencyDashboard(currenciesList, yeasterdayList);
+        } else {
+            Log.e(TAG, "Can't load currencies");
+        }
     }
 }
