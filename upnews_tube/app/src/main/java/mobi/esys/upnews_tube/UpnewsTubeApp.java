@@ -1,6 +1,5 @@
 package mobi.esys.upnews_tube;
 
-import android.app.Activity;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
@@ -20,25 +19,11 @@ public class UpnewsTubeApp extends Application {
     private static final String TWITTER_KEY = DevelopersKeys.TWITTER_KEY;
     private static final String TWITTER_SECRET = DevelopersKeys.TWITTER_SECRET;
 
-    private transient Activity currentActivityInstance;
     private static final String[] folders = {
             Folders.BASE_FOLDER,
             Folders.BASE_FOLDER.
                     concat(File.separator).
-                    concat(Folders.VIDEO_FOLDER),
-            Folders.BASE_FOLDER.
-                    concat(File.separator).
                     concat(Folders.PHOTO_FOLDER)};
-
-    private static String instagramFiles = "";
-
-    public void setInstagramFiles(String instagramFiles) {
-        UpnewsTubeApp.instagramFiles = instagramFiles;
-    }
-
-    public String getInstagramFiles() {
-        return instagramFiles;
-    }
 
     @Override
     public void onCreate() {
@@ -46,14 +31,6 @@ public class UpnewsTubeApp extends Application {
         TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
         createFolders();
-    }
-
-    public Activity getCurrentActivityInstance() {
-        return currentActivityInstance;
-    }
-
-    public void setCurrentActivityInstance(Activity currentActivityInstance) {
-        this.currentActivityInstance = currentActivityInstance;
     }
 
     public void createFolders() {

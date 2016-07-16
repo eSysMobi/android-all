@@ -1,10 +1,9 @@
 package mobi.esys.upnews_tube.cbr;
 
-
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
 import org.simpleframework.xml.core.Persister;
 
 import java.io.IOException;
@@ -17,13 +16,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import mobi.esys.upnews_tube.PlayerActivityYouTube;
+import mobi.esys.upnews_tube.eventbus.EventCurrency;
 
-public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
+public class GetCurrencies extends AsyncTask<Date, Void, Boolean> {
     private static final String TAG = "unTag_getCurr";
-    private transient Context context;
-    private transient Date yeasterDay;
     private transient CurrenciesList yeasterdayList;
+    private transient CurrenciesList todayList;
+    private EventBus bus = EventBus.getDefault();
 
     // всегда к доллару: евро, британский фунт, японская ена, китайский юань
     //u20ac euro
@@ -31,19 +30,20 @@ public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
     //u00a3 pound
     //u00a5 cny
 
-    public GetCurrencies(final Context context) {
-        this.context = context;
-    }
-
     @Override
-    protected CurrenciesList doInBackground(final Date... params) {
+    protected Boolean doInBackground(final Date... params) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
-        yeasterDay = cal.getTime();
+        Date yeasterDay = cal.getTime();
 
         yeasterdayList = getCurrencyListByDate(yeasterDay);
+        todayList = getCurrencyListByDate(params[0]);
 
-        return getCurrencyListByDate(params[0]);
+        Boolean result = false;
+        if (yeasterdayList != null && todayList != null) {
+            result = true;
+        }
+        return result;
     }
 
 
@@ -56,22 +56,20 @@ public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
             URL url = new URL("http://www.cbr.ru/scripts/XML_daily.asp?date_req=".concat(today));
             //or http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml for europe
             Log.d("curr ulr", url.toString());
-            if (url != null) {
-                InputStream is = getInputStream(url);
-                if (is != null) {
-                    Reader reader = new InputStreamReader(is);
+            InputStream is = getInputStream(url);
+            if (is != null) {
+                Reader reader = new InputStreamReader(is);
 
-                    Persister serializer = new Persister();
-                    try {
-                        currenciesList = serializer.read(CurrenciesList.class, reader, false);
-                        Log.v("SimpleTest_curr", "stock: " + currenciesList.currencies.toString());
-                    } catch (Exception e) {
-                        Log.e("SimpleTest_curr", e.getMessage());
-                    }
+                Persister serializer = new Persister();
+                try {
+                    currenciesList = serializer.read(CurrenciesList.class, reader, false);
+                    Log.v("SimpleTest_curr", "stock: " + currenciesList.currencies.toString());
+                } catch (Exception e) {
+                    Log.e("SimpleTest_curr", e.getMessage());
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("SimpleTest_curr", e.getMessage());
         }
 
         return currenciesList;
@@ -86,10 +84,10 @@ public class GetCurrencies extends AsyncTask<Date, Void, CurrenciesList> {
     }
 
     @Override
-    protected void onPostExecute(CurrenciesList currenciesList) {
-        super.onPostExecute(currenciesList);
-        if (currenciesList != null) {
-            ((PlayerActivityYouTube) context).loadCurrencyDashboard(currenciesList, yeasterdayList);
+    protected void onPostExecute(Boolean aBoolean) {
+        super.onPostExecute(aBoolean);
+        if (aBoolean) {
+            bus.post(new EventCurrency(todayList, yeasterdayList));
         } else {
             Log.e(TAG, "Can't load currencies");
         }

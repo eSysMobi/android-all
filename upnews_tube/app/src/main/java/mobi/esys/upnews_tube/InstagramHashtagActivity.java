@@ -20,12 +20,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import mobi.esys.upnews_tube.constants.DevelopersKeys;
 import mobi.esys.upnews_tube.constants.Folders;
+import mobi.esys.upnews_tube.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
 
 public class InstagramHashtagActivity extends Activity {
@@ -33,6 +37,7 @@ public class InstagramHashtagActivity extends Activity {
     private transient EditText hashTagEdit;
     private transient SharedPreferences preferences;
     private transient String prevHashtag;
+    private boolean isChecking;
 
     private static final int MIN_EDITABLE_LENGTH = 2;
 
@@ -115,12 +120,10 @@ public class InstagramHashtagActivity extends Activity {
             @Override
             public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
                 boolean handled = false;
-
                 if (EditorInfo.IME_ACTION_DONE == actionId) {
                     checkTagAndGo();
                     handled = true;
                 }
-
                 return handled;
             }
         });
@@ -130,38 +133,41 @@ public class InstagramHashtagActivity extends Activity {
     public void checkTagAndGo() {
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
-            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString().substring(1), mApp);
-            checkInstaTagTask.execute();
-            try {
-                String result = checkInstaTagTask.get();
-                if (!result.isEmpty()) {
-                    String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
-                    Log.d("curr tag", hashtag);
-                    Log.d("prev tag", prevHashtag);
-                    if (!"".equals(prevHashtag) && !hashtag.equals(prevHashtag)) {
-                        clearFolder();
-                    }
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString("instHashTag", hashtag);
-                    editor.putBoolean("instNeedShow", true);
-                    editor.apply();
-                    mApp.setInstagramFiles(result);
-                    startActivity(new Intent(InstagramHashtagActivity.this,
-                            TwitterLoginActivity.class));
-                    finish();
-                } else {
-                    Toast.makeText(this, "Sorry but this hashtag don't allowed", Toast.LENGTH_SHORT).show();
-
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            if (!isChecking) {
+                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString().substring(1));
+                checkInstaTagTask.execute();
+                isChecking = true;
+            } else {
+                Log.d("unTag_IgHashtagAct", "Checking is running");
             }
         } else {
             Toast.makeText(this, "Input Instagram hashtag", Toast.LENGTH_SHORT).show();
         }
     }
 
+    @Subscribe
+    public void onEvent(EventIgCheckingComplete event) {
+        isChecking = false;
+        String result = event.getUrls();
+        if (!result.isEmpty()) {
+            String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
+            Log.d("curr tag", hashtag);
+            Log.d("prev tag", prevHashtag);
+            if (!"".equals(prevHashtag) && !hashtag.equals(prevHashtag)) {
+                clearFolder();
+            }
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("instHashTag", hashtag);
+            editor.putBoolean("instNeedShow", true);
+            editor.apply();
+            startActivity(new Intent(InstagramHashtagActivity.this,
+                    TwitterLoginActivity.class));
+            finish();
+        } else {
+            Toast.makeText(this, "Sorry but this hashtag don't allowed", Toast.LENGTH_SHORT).show();
 
+        }
+    }
 
     public void clearFolder() {
         File tmpFolder = new File(Folders.SD_CARD.
@@ -179,5 +185,17 @@ public class InstagramHashtagActivity extends Activity {
         } else {
             tmpFolder.mkdir();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 }

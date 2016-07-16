@@ -82,7 +82,6 @@ public class YahooWeather implements LocationResult {
     private YahooWeatherExceptionListener mExceptionListener;
     private boolean mNeedDownloadIcons;
     private SEARCH_MODE mSearchMode;
-    private static boolean mAllowReturnResult = true;
 
     // Use Metric units by default
     private char mUnit = 'c';
@@ -151,7 +150,6 @@ public class YahooWeather implements LocationResult {
      * @return YahooWeather instance
      */
     public static YahooWeather getInstance(int connectTimeout, int socketTimeout) {
-        mAllowReturnResult = true;
         return getInstance(connectTimeout, socketTimeout, false);
     }
 
@@ -168,7 +166,6 @@ public class YahooWeather implements LocationResult {
         YahooWeatherLog.setDebuggable(isDebuggable);
         NetworkUtils.getInstance().setConnectTimeout(connectTimeout);
         NetworkUtils.getInstance().setSocketTimeout(socketTimeout);
-        mAllowReturnResult = true;
         return mInstance;
     }
 
@@ -496,11 +493,8 @@ public class YahooWeather implements LocationResult {
 
         @Override
         protected void onPostExecute(WeatherInfo result) {
-            // TODO Auto-generated method stub
             super.onPostExecute(result);
-            if (mAllowReturnResult) {
-                mWeatherInfoResult.gotWeatherInfo(result);
-            }
+            mWeatherInfoResult.gotWeatherInfo(result);
             mContext = null;
         }
     }
@@ -554,15 +548,10 @@ public class YahooWeather implements LocationResult {
         @Override
         protected void onPostExecute(WeatherInfo result) {
             super.onPostExecute(result);
-            if (mAllowReturnResult) {
-                mWeatherInfoResult.gotWeatherInfo(result);
-            }
+            mWeatherInfoResult.gotWeatherInfo(result);
             mContext = null;
         }
     }
 
-    public void noNeedResult(){
-        mAllowReturnResult = false;
-    }
 
 }

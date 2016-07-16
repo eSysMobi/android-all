@@ -5,7 +5,7 @@ import com.daimajia.slider.library.Indicators.PagerIndicator;
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.DefaultSliderView;
 import com.daimajia.slider.library.SliderTypes.TextSliderView;
-import com.google.analytics.tracking.android.EasyTracker;
+import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
@@ -19,11 +19,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,13 +39,12 @@ import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.upnews_tube.cbr.CurrenciesList;
@@ -59,9 +53,13 @@ import mobi.esys.upnews_tube.constants.DevelopersKeys;
 import mobi.esys.upnews_tube.constants.Folders;
 import mobi.esys.upnews_tube.constants.OtherConst;
 import mobi.esys.upnews_tube.constants.TimeConsts;
+import mobi.esys.upnews_tube.eventbus.EventCurrency;
+import mobi.esys.upnews_tube.eventbus.EventGetLocationComplete;
+import mobi.esys.upnews_tube.eventbus.EventIgCheckingComplete;
+import mobi.esys.upnews_tube.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
 import mobi.esys.upnews_tube.instagram.InstagramDownloader;
-import mobi.esys.upnews_tube.net.NetMonitor;
+import mobi.esys.upnews_tube.tasks.GetLocationTask;
 import mobi.esys.upnews_tube.twitter.TwitterHelper;
 import zh.wang.android.apis.yweathergetter4a.WeatherInfo;
 import zh.wang.android.apis.yweathergetter4a.YahooWeather;
@@ -70,7 +68,8 @@ import zh.wang.android.apis.yweathergetter4a.YahooWeatherInfoListener;
 
 
 public class PlayerActivityYouTube extends YouTubeBaseActivity implements
-        YouTubePlayer.OnInitializedListener, LocationListener, YahooWeatherInfoListener,
+        YouTubePlayer.OnInitializedListener,
+        YahooWeatherInfoListener,
         YahooWeatherExceptionListener {
 
     static private final String DEVELOPER_KEY = DevelopersKeys.YOUTUBE_ANDROID_KEY; // AIzaSyAzDPv_OSQp73qI7VLPWmzkBEEHk0Thq2E
@@ -80,12 +79,11 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private YouTubePlayerView youTubeView;
     private YouTubePlayer YPlayer;
 
-    private static final String URL = "url";
+    private String hashtag;
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
     private transient LinearLayout clockLayout;
     private transient SliderLayout mSlider;
-    private transient Location location;
     private transient LinearLayout dashLayout;
     private transient LinearLayout weatherLayout;
     private transient RelativeLayout rlForTwitter;
@@ -93,6 +91,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private YahooWeather mYahooWeather = YahooWeather.getInstance(
             TimeConsts.WEATHER_REQUEST_TIMEOUT,
             TimeConsts.WEATHER_REQUEST_TIMEOUT, true);
+    private transient boolean readyShowWeather = false;
 
     private transient Handler locationHandler;
     private transient Runnable locationRunnable;
@@ -123,7 +122,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     private transient boolean isFirst = true;
     private transient boolean youtubePlaylist = true;
-    private transient SharedPreferences preferences;
     private transient UpnewsTubeApp mApp;
 
     private transient boolean needIsnstagram;
@@ -140,14 +138,19 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
         setContentView(R.layout.activity_player_activity_you_tube);
 
-        preferences = getSharedPreferences(OtherConst.APP_PREF, MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences(OtherConst.APP_PREF, MODE_PRIVATE);
         needIsnstagram = preferences.getBoolean("instNeedShow", false);
         skip_twitter = preferences.getBoolean(OtherConst.APP_PREF_SKIP_TWITTER, true);
         playlistID = preferences.getString(OtherConst.APP_PREF_PLAYLIST, "");
+        hashtag = preferences.getString("instHashTag", "");
 
         clockLayout = (LinearLayout) findViewById(R.id.clockLayout);
         weatherLayout = (LinearLayout) findViewById(R.id.weatherLayout);
         dashLayout = (LinearLayout) findViewById(R.id.dashLayout);
+        mSlider = (SliderLayout) findViewById(R.id.slider);
+
+        mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
+        mSlider.setDuration(TimeConsts.SLIDER_DURATION);
 
         mApp = (UpnewsTubeApp) getApplication();
 
@@ -203,14 +206,13 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         locationRunnable = new Runnable() {
             @Override
             public void run() {
-                getLocation();
+                if (allowflag) {
+                    GetLocationTask glt = new GetLocationTask(mApp);
+                    glt.execute();
+                }
                 locationHandler.postDelayed(this, TimeConsts.WEATHER_AND_CURR_REFRESH_INTERVAL);
             }
         };
-        //locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);   //this is in onResume
-
-        mSlider = (SliderLayout) findViewById(R.id.slider);
-
 
         rlForTwitter = (RelativeLayout) findViewById(R.id.rlForTwitter);
         TwitterAuthConfig authConfig = new TwitterAuthConfig(DevelopersKeys.TWITTER_KEY, DevelopersKeys.TWITTER_SECRET);
@@ -219,41 +221,35 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         twitterFeedRunnable = new Runnable() {
             @Override
             public void run() {
-                if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
-                    Twitter.getInstance();
-                    TwitterHelper.startLoadTweets(Twitter.getApiClient(), rlForTwitter, PlayerActivityYouTube.this, isFirst);
-                    isFirst = false;
-                    twitterFeedHandler.postDelayed(this,
-                            TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
-                } else {
-                    Toast.makeText(PlayerActivityYouTube.this, "Twitter is unavailable", Toast.LENGTH_SHORT).show();
-                }
+                Twitter.getInstance();
+                TwitterHelper.startLoadTweets(Twitter.getApiClient(), rlForTwitter, PlayerActivityYouTube.this, isFirst);
+                isFirst = false;
+                twitterFeedHandler.postDelayed(this,
+                        TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
-
-        //twitterFeedHandler.postDelayed(twitterFeedRunnable, TimeConsts.TWITTER_LOAD_DELAY);   //this is in onResume
 
         instagramHandler = new Handler();
         instagramRunnable = new Runnable() {
             @Override
             public void run() {
-                updateIGPhotos();
+                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashtag);
+                checkInstaTagTask.execute();
                 instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
-        //instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);   //this is in onResume
 
 
         currHandler = new Handler();
         currRunnable = new Runnable() {
             @Override
             public void run() {
-                getCurrencies();
+                GetCurrencies getCurrencies = new GetCurrencies();
+                getCurrencies.execute(new Date());
                 currHandler.postDelayed(this,
                         TimeConsts.WEATHER_AND_CURR_REFRESH_INTERVAL);
             }
         };
-        //currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);  //this is in onResume
 
         //prepare handler for hide Android status bar
         if (Build.VERSION.SDK_INT >= 14) {
@@ -295,20 +291,26 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         }
     }
 
-    public void loadSlide(String tag) {
-        mApp.setInstagramFiles("");
-        mSlider.stopAutoCycle();
-        mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
+    @Subscribe
+    public void onEvent(EventIgLoadingComplete event) {
+        startSlides(event.getTag());
+    }
 
-        mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);
-
+    private void startSlides(String tag) {
         String path = Folders.SD_CARD.
                 concat(File.separator).
                 concat(Folders.BASE_FOLDER).
                 concat(File.separator).concat(Folders.PHOTO_FOLDER);
         File[] folderList = new File(path).listFiles();
 
+        Log.w(TAG, "Start autocycle " + folderList.length + " photos");
+
         if (folderList.length > 0) {
+            mSlider.stopAutoCycle();
+            mSlider.removeAllSliders();
+
+//        mSlider.setPresetTransformer(SliderLayout.Transformer.Fade);      //this is EVIL
+
             for (int i = 0; i < folderList.length; i++) {
 
                 final TextSliderView textSliderView = new TextSliderView(PlayerActivityYouTube.this);
@@ -319,76 +321,27 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
                 mSlider.addSlider(textSliderView);
 
-                if (i == folderList.length - 1) {
-                    mSlider.setDuration(TimeConsts.SLIDER_DURATION);
-                    //mSlider.startAutoCycle();
-                }
             }
 
-            Log.w(TAG, "Start autocycle " + folderList.length + " photos");
             mSlider.startAutoCycle();
         } else {
             Toast.makeText(this, "Instagram photos load fail", Toast.LENGTH_SHORT).show();
         }
     }
 
-
-    public void updateIGPhotos() {
-        if (NetMonitor.isNetworkAvailable(mApp)) {
-            String tag = preferences.getString("instHashTag", "");
-
+    @Subscribe
+    public void onEvent(EventIgCheckingComplete event) {
+        String urls = event.getUrls();
+        if (!urls.isEmpty()) {
             String folder = Folders.SD_CARD.concat(File.separator).
                     concat(Folders.BASE_FOLDER).
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER);
-
-            String urls = mApp.getInstagramFiles();
-            if (urls.isEmpty()) {
-                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(tag, mApp);
-                checkInstaTagTask.execute();
-                try {
-                    urls = checkInstaTagTask.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-            Log.w(TAG, "Loaded urls by tag #" + tag + " : " + urls);
-            if (!urls.isEmpty()) {
-
-                InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder, tag);
-                instagramDownloader.download(urls);
-            }
+            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder, hashtag);
+            instagramDownloader.download(urls);
         } else {
-            Toast.makeText(PlayerActivityYouTube.this, "Can't update instagram photos. No Internet connection.",
-                    Toast.LENGTH_SHORT).show();
+            Log.w(TAG, "Can't load IG images. Urls is empty");
         }
-    }
-    //loadSlide();
-
-    @Override
-    public void onLocationChanged(Location location) {
-        this.location = location;
-        Log.d("location", String.valueOf(location.getLatitude()) + ":" + String.valueOf(location.getLongitude()));
-    }
-
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 
     @Override
@@ -408,8 +361,8 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     @Override
     public void gotWeatherInfo(WeatherInfo weatherInfo) {
-        if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
-            if (weatherInfo != null) {
+        if (weatherInfo != null) {
+            if (readyShowWeather) {
                 weatherLayout.removeAllViews();
                 weatherLayout.setOrientation(LinearLayout.HORIZONTAL);
                 weatherLayout.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -439,27 +392,22 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
                 weatherLayout.addView(conditionImage);
                 weatherLayout.addView(tempText);
 
-
                 Glide.with(this).load(Uri.parse(weatherInfo.getCurrentConditionIconURL())).into(conditionImage);
             } else {
-                Toast.makeText(PlayerActivityYouTube.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Weather information is unavailable. weatherInfo = null");
+                Log.d(TAG, "Can't show weather. Activity is paused.");
             }
         } else {
-            Toast.makeText(PlayerActivityYouTube.this, "Weather information is unavailable. No inet.", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Weather information is unavailable. No inet.");
+            Toast.makeText(PlayerActivityYouTube.this, "Weather information is unavailable", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Weather information is unavailable. weatherInfo = null");
         }
     }
 
-    public void getCurrencies() {
-        if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
-            GetCurrencies getCurrencies = new GetCurrencies(this);
-            getCurrencies.execute(new Date());
-        }
-    }
-
-    public void loadCurrencyDashboard(CurrenciesList list, CurrenciesList yesterdayList) {
-        if (NetMonitor.isNetworkAvailable((UpnewsTubeApp) getApplication())) {
+    // Currencies
+    @Subscribe
+    public void onEvent(EventCurrency event) {
+        CurrenciesList list = event.getToday();
+        CurrenciesList yesterdayList = event.getYesterday();
+        if (list.currencies.size() > 0 && yesterdayList.currencies.size() > 0 && list.currencies.size() == yesterdayList.currencies.size()) {
             String euro = "\u20ac" + " 0,0";
             String dollar = "\u0024" + " 0,0";
             String pound = "\u00a3" + " 0,0";
@@ -480,263 +428,195 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
             double yesterdayUSD = 0;
             double todayUSD = 0;
 
-            if (list != null && yesterdayList != null && list.currencies.size() > 0 && yesterdayList.currencies.size() > 0 && list.currencies.size() == yesterdayList.currencies.size()) {
-                for (int i = 0; i < list.currencies.size(); i++) {
-                    if (list.currencies.get(i).getCurrCharCode().equals("USD")) {
-                        String usdValue = list.currencies.get(i).getCurrValue().replace(",", ".");
-                        String usdNominal = list.currencies.get(i).getNominal();
-                        double usdValueDouble = Double.valueOf(usdValue);
-                        int usdNominalInt = Integer.parseInt(usdNominal);
-                        todayUSD = usdValueDouble / usdNominalInt;
-                        //convert to usd
-                        //todayUSD = 1 / todayUSD;
+            for (int i = 0; i < list.currencies.size(); i++) {
+                if (list.currencies.get(i).getCurrCharCode().equals("USD")) {
+                    String usdValue = list.currencies.get(i).getCurrValue().replace(",", ".");
+                    String usdNominal = list.currencies.get(i).getNominal();
+                    double usdValueDouble = Double.valueOf(usdValue);
+                    int usdNominalInt = Integer.parseInt(usdNominal);
+                    todayUSD = usdValueDouble / usdNominalInt;
+                    //convert to usd
+                    //todayUSD = 1 / todayUSD;
 
-                        usdValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
-                        usdNominal = yesterdayList.currencies.get(i).getNominal();
-                        usdValueDouble = Double.valueOf(usdValue);
-                        usdNominalInt = Integer.parseInt(usdNominal);
-                        yesterdayUSD = usdValueDouble / usdNominalInt;
-                        //convert to usd
-                        //yesterdayUSD = 1 / yesterdayUSD;
+                    usdValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
+                    usdNominal = yesterdayList.currencies.get(i).getNominal();
+                    usdValueDouble = Double.valueOf(usdValue);
+                    usdNominalInt = Integer.parseInt(usdNominal);
+                    yesterdayUSD = usdValueDouble / usdNominalInt;
+                    //convert to usd
+                    //yesterdayUSD = 1 / yesterdayUSD;
 
-                        double tVal = todayUSD / usdNominalInt;
-                        double yVal = yesterdayUSD / usdNominalInt;
-                        tVal = 1 / tVal;
-                        yVal = 1 / yVal;
+                    double tVal = todayUSD / usdNominalInt;
+                    double yVal = yesterdayUSD / usdNominalInt;
+                    tVal = 1 / tVal;
+                    yVal = 1 / yVal;
 
-                        isRubUp = tVal > yVal;
+                    isRubUp = tVal > yVal;
 
-                        //rub = "\u20bd" + " " + df.format(tVal);
-                        rub = "Р " + df.format(tVal);
-                        rub = "RUB " + df.format(tVal);
+                    //rub = "\u20bd" + " " + df.format(tVal);
+                    //rub = "Р " + df.format(tVal);
+                    rub = "RUB " + df.format(tVal);
+                }
+            }
+
+            for (int i = 0; i < list.currencies.size(); i++) {
+                if (i < list.currencies.size()) {
+                    if (list.currencies.get(i).getCurrCharCode().equals("GBP")) {
+                        String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
+                        String nominal = list.currencies.get(i).getNominal();
+                        double poundValueDouble = Double.valueOf(poundValue);
+                        int nominalInt = Integer.parseInt(nominal);
+
+                        String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
+                        String ynominal = yesterdayList.currencies.get(i).getNominal();
+                        double ypoundValueDouble = Double.valueOf(ypoundValue);
+                        int ynominalInt = Integer.parseInt(ynominal);
+
+                        double tVal = poundValueDouble / nominalInt;
+                        double yVal = ypoundValueDouble / ynominalInt;
+                        tVal = tVal / todayUSD;
+                        yVal = yVal / yesterdayUSD;
+
+                        isPoundUp = tVal > yVal;
+
+                        //pound = "\u00a3" + " " + df.format(tVal);
+                        pound = "GBP " + df.format(tVal);
+                    } else if (list.currencies.get(i).getCurrCharCode().equals("CNY")) {
+                        String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
+                        String nominal = list.currencies.get(i).getNominal();
+                        double poundValueDouble = Double.valueOf(poundValue);
+                        int nominalInt = Integer.parseInt(nominal);
+
+                        String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
+                        String ynominal = yesterdayList.currencies.get(i).getNominal();
+                        double ypoundValueDouble = Double.valueOf(ypoundValue);
+                        int ynominalInt = Integer.parseInt(ynominal);
+
+                        double tVal = poundValueDouble / nominalInt;
+                        double yVal = ypoundValueDouble / ynominalInt;
+                        tVal = tVal / todayUSD;
+                        yVal = yVal / yesterdayUSD;
+
+                        isYanUp = tVal >= yVal;
+
+                        //yan = "\u5143" + " " + df.format(tVal);
+                        yan = "CNY " + df.format(tVal);
+                    } else if (list.currencies.get(i).getCurrCharCode().equals("JPY")) {
+                        String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
+                        String nominal = list.currencies.get(i).getNominal();
+                        double poundValueDouble = Double.valueOf(poundValue);
+                        int nominalInt = Integer.parseInt(nominal);
+
+                        String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
+                        String ynominal = yesterdayList.currencies.get(i).getNominal();
+                        double ypoundValueDouble = Double.valueOf(ypoundValue);
+                        int ynominalInt = Integer.parseInt(ynominal);
+
+                        double tVal = poundValueDouble / nominalInt;
+                        double yVal = ypoundValueDouble / ynominalInt;
+                        tVal = tVal / todayUSD;
+                        yVal = yVal / yesterdayUSD;
+
+                        isYenaUp = tVal >= yVal;
+
+                        //yena = "\u00a5" + " " + df.format(tVal);
+                        yena = "JPY " + df.format(tVal);
+                    } else if (list.currencies.get(i).getCurrCharCode().equals("EUR")) {
+
+                        String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
+                        String nominal = list.currencies.get(i).getNominal();
+                        double poundValueDouble = Double.valueOf(poundValue);
+                        int nominalInt = Integer.parseInt(nominal);
+
+                        String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
+                        String ynominal = yesterdayList.currencies.get(i).getNominal();
+                        double ypoundValueDouble = Double.valueOf(ypoundValue);
+                        int ynominalInt = Integer.parseInt(ynominal);
+
+                        double tVal = poundValueDouble / nominalInt;
+                        double yVal = ypoundValueDouble / ynominalInt;
+                        tVal = tVal / todayUSD;
+                        yVal = yVal / yesterdayUSD;
+
+                        isEuroUp = tVal >= yVal;
+
+                        //euro = "\u20ac" + " " + df.format(tVal);
+                        euro = "EUR " + df.format(tVal);
                     }
                 }
+                if (i == list.currencies.size() - 1) {
+                    dashLayout.removeAllViews();
+                    dashLayout.setOrientation(LinearLayout.VERTICAL);
+                    dashLayout.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    dashLayout.setBackgroundColor(getResources().getColor(R.color.rss_line));
 
-                for (int i = 0; i < list.currencies.size(); i++) {
-                    if (i < list.currencies.size()) {
-                        if (list.currencies.get(i).getCurrCharCode().equals("GBP")) {
-                            String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
-                            String nominal = list.currencies.get(i).getNominal();
-                            double poundValueDouble = Double.valueOf(poundValue);
-                            int nominalInt = Integer.parseInt(nominal);
+                    TextView eurText = new TextView(this);
+                    eurText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    TextView gbpText = new TextView(this);
+                    gbpText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    TextView rubText = new TextView(this);
+                    rubText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    TextView cnyText = new TextView(this);
+                    cnyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                    TextView jpnText = new TextView(this);
+                    jpnText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
 
-                            String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
-                            String ynominal = yesterdayList.currencies.get(i).getNominal();
-                            double ypoundValueDouble = Double.valueOf(ypoundValue);
-                            int ynominalInt = Integer.parseInt(ynominal);
+                    eurText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    gbpText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    rubText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    cnyText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    jpnText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-                            double tVal = poundValueDouble / nominalInt;
-                            double yVal = ypoundValueDouble / ynominalInt;
-                            tVal = tVal / todayUSD;
-                            yVal = yVal / yesterdayUSD;
+                    dashLayout.addView(eurText);
+                    dashLayout.addView(gbpText);
+                    dashLayout.addView(rubText);
+                    dashLayout.addView(cnyText);
+                    dashLayout.addView(jpnText);
 
-                            isPoundUp = tVal > yVal;
-
-                            pound = "\u00a3" + " " + df.format(tVal);
-                            pound = "GBP " + df.format(tVal);
-                        } else if (list.currencies.get(i).getCurrCharCode().equals("CNY")) {
-                            String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
-                            String nominal = list.currencies.get(i).getNominal();
-                            double poundValueDouble = Double.valueOf(poundValue);
-                            int nominalInt = Integer.parseInt(nominal);
-
-                            String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
-                            String ynominal = yesterdayList.currencies.get(i).getNominal();
-                            double ypoundValueDouble = Double.valueOf(ypoundValue);
-                            int ynominalInt = Integer.parseInt(ynominal);
-
-                            double tVal = poundValueDouble / nominalInt;
-                            double yVal = ypoundValueDouble / ynominalInt;
-                            tVal = tVal / todayUSD;
-                            yVal = yVal / yesterdayUSD;
-
-                            isYanUp = tVal >= yVal;
-
-                            yan = "\u5143" + " " + df.format(tVal);
-                            yan = "CNY " + df.format(tVal);
-                        } else if (list.currencies.get(i).getCurrCharCode().equals("JPY")) {
-                            String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
-                            String nominal = list.currencies.get(i).getNominal();
-                            double poundValueDouble = Double.valueOf(poundValue);
-                            int nominalInt = Integer.parseInt(nominal);
-
-                            String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
-                            String ynominal = yesterdayList.currencies.get(i).getNominal();
-                            double ypoundValueDouble = Double.valueOf(ypoundValue);
-                            int ynominalInt = Integer.parseInt(ynominal);
-
-                            double tVal = poundValueDouble / nominalInt;
-                            double yVal = ypoundValueDouble / ynominalInt;
-                            tVal = tVal / todayUSD;
-                            yVal = yVal / yesterdayUSD;
-
-                            isYenaUp = tVal >= yVal;
-
-                            yena = "\u00a5" + " " + df.format(tVal);
-                            yena = "JPY " + df.format(tVal);
-                        } else if (list.currencies.get(i).getCurrCharCode().equals("EUR")) {
-
-                            String poundValue = list.currencies.get(i).getCurrValue().replace(",", ".");
-                            String nominal = list.currencies.get(i).getNominal();
-                            double poundValueDouble = Double.valueOf(poundValue);
-                            int nominalInt = Integer.parseInt(nominal);
-
-                            String ypoundValue = yesterdayList.currencies.get(i).getCurrValue().replace(",", ".");
-                            String ynominal = yesterdayList.currencies.get(i).getNominal();
-                            double ypoundValueDouble = Double.valueOf(ypoundValue);
-                            int ynominalInt = Integer.parseInt(ynominal);
-
-                            double tVal = poundValueDouble / nominalInt;
-                            double yVal = ypoundValueDouble / ynominalInt;
-                            tVal = tVal / todayUSD;
-                            yVal = yVal / yesterdayUSD;
-
-                            isEuroUp = tVal >= yVal;
-
-                            euro = "\u20ac" + " " + df.format(tVal);
-                            euro = "EUR " + df.format(tVal);
-                        }
+                    if (isEuroUp) {
+                        eurText.setTextColor(Color.GREEN);
+                    } else {
+                        eurText.setTextColor(Color.RED);
                     }
-                    if (i == list.currencies.size() - 1) {
-                        dashLayout.removeAllViews();
-                        dashLayout.setOrientation(LinearLayout.VERTICAL);
-                        dashLayout.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                        dashLayout.setBackgroundColor(getResources().getColor(R.color.rss_line));
+                    eurText.setText(euro);
 
-                        TextView eurText = new TextView(this);
-                        eurText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                        TextView gbpText = new TextView(this);
-                        gbpText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                        TextView rubText = new TextView(this);
-                        rubText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                        TextView cnyText = new TextView(this);
-                        cnyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-                        TextView jpnText = new TextView(this);
-                        jpnText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-
-                        eurText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                        gbpText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                        rubText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                        cnyText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                        jpnText.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
-                        dashLayout.addView(eurText);
-                        dashLayout.addView(gbpText);
-                        dashLayout.addView(rubText);
-                        dashLayout.addView(cnyText);
-                        dashLayout.addView(jpnText);
-
-                        if (isEuroUp) {
-                            eurText.setTextColor(Color.GREEN);
-                        } else {
-                            eurText.setTextColor(Color.RED);
-                        }
-                        eurText.setText(euro);
-
-                        if (isRubUp) {
-                            rubText.setTextColor(Color.GREEN);
-                        } else {
-                            rubText.setTextColor(Color.RED);
-                        }
-                        rubText.setText(rub);
-
-                        if (isPoundUp) {
-                            gbpText.setTextColor(Color.GREEN);
-                        } else {
-                            gbpText.setTextColor(Color.RED);
-                        }
-                        gbpText.setText(pound);
-
-                        if (isYanUp) {
-                            cnyText.setTextColor(Color.GREEN);
-                        } else {
-                            cnyText.setTextColor(Color.RED);
-                        }
-                        cnyText.setText(yan);
-
-                        if (isYenaUp) {
-                            jpnText.setTextColor(Color.GREEN);
-                        } else {
-                            jpnText.setTextColor(Color.RED);
-                        }
-                        jpnText.setText(yena);
+                    if (isRubUp) {
+                        rubText.setTextColor(Color.GREEN);
+                    } else {
+                        rubText.setTextColor(Color.RED);
                     }
+                    rubText.setText(rub);
+
+                    if (isPoundUp) {
+                        gbpText.setTextColor(Color.GREEN);
+                    } else {
+                        gbpText.setTextColor(Color.RED);
+                    }
+                    gbpText.setText(pound);
+
+                    if (isYanUp) {
+                        cnyText.setTextColor(Color.GREEN);
+                    } else {
+                        cnyText.setTextColor(Color.RED);
+                    }
+                    cnyText.setText(yan);
+
+                    if (isYenaUp) {
+                        jpnText.setTextColor(Color.GREEN);
+                    } else {
+                        jpnText.setTextColor(Color.RED);
+                    }
+                    jpnText.setText(yena);
                 }
-
-            } else {
-                Toast.makeText(this, "Currencies data unavailable", Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(this, "Currencies data unavailable", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public Location getLocation() {
-        try {
-            LocationManager loc = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-            boolean isGPSEnabled = loc
-                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            boolean isNetworkEnabled = loc
-                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-            if (!isGPSEnabled && !isNetworkEnabled) {
-                Toast.makeText(this, "Please turn GPS or network for location searching",
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                if (allowflag) {
-                    if (isNetworkEnabled) {
-                        loc.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
-                                0,
-                                0, this);
-                        Log.d("Network", "Network Enabled");
-                        if (loc != null) {
-                            location = loc
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        }
-                    }
-                    if (isGPSEnabled) {
-                        if (location == null) {
-                            loc.requestLocationUpdates(
-                                    LocationManager.GPS_PROVIDER,
-                                    0,
-                                    0, this);
-                            Log.d("GPS", "GPS Enabled");
-                            if (loc != null) {
-                                location = loc
-                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (location != null) {
-            getLocationName(location);
-        } else {
-            Toast.makeText(this, "Can't define location", Toast.LENGTH_SHORT).show();
-        }
-        return location;
-    }
-
-
-    public String getLocationName(Location location) {
-
-        String cityName = "Not Found";
-        Geocoder gcd = new Geocoder(getBaseContext(), Locale.ENGLISH);
-        try {
-
-            List<Address> addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(),
-                    10);
-            cityName = addresses.get(0).getLocality();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Subscribe
+    public void onEvent(EventGetLocationComplete event) {
+        String cityName = event.getCity();
         if (cityName != null) {
             if (cityName.equals("Not Found")) {
                 Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
@@ -750,14 +630,13 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         } else {
             Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
         }
-        return cityName;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     allowflag = true;
 //                    getLocation();
                 }
@@ -779,7 +658,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         }
     }
 
-
     @Override
     public void onInitializationSuccess(Provider provider, final YouTubePlayer player, boolean wasRestored) {
         YPlayer = player;
@@ -788,7 +666,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
             YPlayer.setPlaybackEventListener(new YouTubePlayer.PlaybackEventListener() {
                 @Override
                 public void onPlaying() {
-
                 }
 
                 @Override
@@ -837,14 +714,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     }
 
     private static class mHandler extends Handler {
-        //need check this! may be memory leak
-
-//        WeakReference<FullscreenActivity> wrActivity;
-//
-//        public mHandler(FullscreenActivity activity) {
-//            wrActivity = new WeakReference<FullscreenActivity>(activity);
-//        }
-
         PlayerActivityYouTube wrActivity;
 
         public mHandler(PlayerActivityYouTube activity) {
@@ -854,9 +723,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-//            FullscreenActivity activity = wrActivity.get();
-//            if (activity != null)
-//                activity.setUISmall();
             wrActivity.setUISmall();
         }
     }
@@ -873,10 +739,13 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+        EventBus.getDefault().register(this);
         currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
         locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
+        readyShowWeather = true;
         if (needIsnstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
+            startSlides(hashtag);
         } else {
             mSlider.setVisibility(View.GONE);
         }
@@ -890,23 +759,31 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "Remove all handlers in onStop()");
+        Log.d(TAG, "Remove all handlers in onPause()");
+        EventBus.getDefault().unregister(this);
+//        if (mSlider != null) {
+//            mSlider.stopAutoCycle();
+//        }
         if (handlerHideUI != null) {
             handlerHideUI.removeMessages(32);
         }
         if (locationHandler != null) {
             locationHandler.removeCallbacks(locationRunnable);
         }
+        //do not return result in destroyed activity
+        readyShowWeather = false;
         if (instagramHandler != null) {
             instagramHandler.removeCallbacks(instagramRunnable);
         }
         if (currHandler != null) {
             currHandler.removeCallbacks(currRunnable);
-        }
-        if (twitterFeedHandler != null) {
-            twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
         }
         if (twitterFeedHandler != null) {
             twitterFeedHandler.removeCallbacks(twitterFeedRunnable);
@@ -927,8 +804,6 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     @Override
     protected void onDestroy() {
-        //do not return result in destroyed activity
-        mYahooWeather.noNeedResult();
         if (YPlayer != null) {
             YPlayer.release();
             YPlayer = null;
@@ -950,6 +825,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
                 deleteDir(dir);
             }
         } catch (Exception e) {
+            Log.d(TAG, "Can't delete cache");
         }
     }
 

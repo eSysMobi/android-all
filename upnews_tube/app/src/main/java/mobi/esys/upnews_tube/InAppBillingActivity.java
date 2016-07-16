@@ -102,8 +102,13 @@ public class InAppBillingActivity extends Activity {
             Log.d("buy", "It's debug version " + getPackageName() + " Not need to buy!");
             buyOK = true;
         } else {
-            bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
-                    billingServiceConn, BIND_AUTO_CREATE);
+            if (billingServiceConn != null) {
+                bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+                        billingServiceConn, BIND_AUTO_CREATE);
+            } else {
+                buyOK = false;
+                Toast.makeText(this, "Problem with Google Services. Please check that you have the latest version Google Services", Toast.LENGTH_SHORT).show();
+            }
         }
 
         allOK();
@@ -161,7 +166,7 @@ public class InAppBillingActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1001) {
+        if (requestCode == BILL_INTENT_CODE) {
             String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
 
             if (resultCode == RESULT_OK) {
