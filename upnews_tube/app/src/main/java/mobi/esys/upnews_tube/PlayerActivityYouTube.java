@@ -5,7 +5,6 @@ import com.daimajia.slider.library.Indicators.PagerIndicator;
 import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.DefaultSliderView;
 import com.daimajia.slider.library.SliderTypes.TextSliderView;
-import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
@@ -54,7 +53,7 @@ import mobi.esys.upnews_tube.constants.Folders;
 import mobi.esys.upnews_tube.constants.OtherConst;
 import mobi.esys.upnews_tube.constants.TimeConsts;
 import mobi.esys.upnews_tube.eventbus.EventCurrency;
-import mobi.esys.upnews_tube.eventbus.EventGetLocationComplete;
+import mobi.esys.upnews_tube.eventbus.EventGetLocComplete;
 import mobi.esys.upnews_tube.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tube.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
@@ -615,7 +614,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     }
 
     @Subscribe
-    public void onEvent(EventGetLocationComplete event) {
+    public void onEvent(EventGetLocComplete event) {
         String cityName = event.getCity();
         if (cityName != null) {
             if (cityName.equals("Not Found")) {

@@ -14,7 +14,7 @@ import android.os.Bundle;
 
 import org.greenrobot.eventbus.EventBus;
 
-import mobi.esys.upnews_tube.eventbus.EventGetLocationComplete;
+import mobi.esys.upnews_tube.eventbus.EventGetLocComplete;
 
 public class GetLocationTask extends AsyncTask<Void, Void, Void> implements LocationListener {
     private Context ContextAsync;
@@ -76,7 +76,7 @@ public class GetLocationTask extends AsyncTask<Void, Void, Void> implements Loca
     protected void onPostExecute(Void result) {
         onLocationChanged(location);
         if (city != null) {
-            bus.post(new EventGetLocationComplete(city));
+            bus.post(new EventGetLocComplete(city));
         }
         locationManagerAsync.removeUpdates(this);
         super.onPostExecute(result);
