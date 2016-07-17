@@ -70,7 +70,6 @@ public class FacebookGroupActivity extends Activity {
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
                 isEdit = true;
-                Log.d("is edit otc", String.valueOf(isEdit));
             }
 
             @Override
@@ -166,16 +165,17 @@ public class FacebookGroupActivity extends Activity {
     }
 
     public void clearFolder() {
-        File tmpFolder = new File(Folders.SD_CARD.
-                concat(File.separator).
-                concat(Folders.BASE_FOLDER).
-                concat(File.separator).concat(Folders.VIDEO_FOLDER));
+        File tmpFolder = new File(Folders.SD_CARD
+                .concat(File.separator)
+                .concat(Folders.BASE_FOLDER)
+                .concat(File.separator)
+                .concat(Folders.VIDEO_FOLDER));
 
         if (tmpFolder.exists()) {
-            File[] igPhotosFileList = tmpFolder.listFiles();
+            File[] videoFileList = tmpFolder.listFiles();
 
-            for (File photoFile : igPhotosFileList) {
-                photoFile.delete();
+            for (File videoFile : videoFileList) {
+                videoFile.delete();
             }
         } else {
             tmpFolder.mkdir();

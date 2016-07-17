@@ -19,12 +19,6 @@ import com.facebook.login.widget.LoginButton;
 import com.google.analytics.tracking.android.EasyTracker;
 import com.google.analytics.tracking.android.MapBuilder;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
-
 public class LoginActivity extends Activity {
     private transient CallbackManager callbackManager;
     private transient SharedPreferences prefs;

@@ -1,6 +1,5 @@
 package mobi.esys.upnews_tv;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -17,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.android.vending.billing.IInAppBillingService;
 
@@ -73,7 +73,7 @@ public class InAppBillingActivity extends Activity {
                         }
 
                     }
-                    if (purchaseData == "") {
+                    if (purchaseData.equals("")) {
                         Bundle buyIntentBundle = billingService.getBuyIntent(3,
                                 getPackageName(), "upnews_tv_one_month", "subs", "");
                         PendingIntent pendingIntent = buyIntentBundle
@@ -93,14 +93,19 @@ public class InAppBillingActivity extends Activity {
                 }
             }
         };
-        checkPermision();
+        checkPermission();
 
         if (BuildConfig.DEBUG) {
             Log.d("buy", "It's debug version. Not need to buy!");
             buyOK = true;
         } else {
-            bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
-                    billingServiceConn, BIND_AUTO_CREATE);
+            if (billingServiceConn != null) {
+                bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
+                        billingServiceConn, BIND_AUTO_CREATE);
+            } else {
+                buyOK = false;
+                Toast.makeText(this, "Problem with Google Services. Please check that you have the latest version Google Services", Toast.LENGTH_SHORT).show();
+            }
         }
 
 //        bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
@@ -116,7 +121,7 @@ public class InAppBillingActivity extends Activity {
         }
     }
 
-    void checkPermision() {
+    void checkPermission() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -160,7 +165,7 @@ public class InAppBillingActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1001) {
+        if (requestCode == BILL_INTENT_CODE) {
             String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
 
             if (resultCode == RESULT_OK) {

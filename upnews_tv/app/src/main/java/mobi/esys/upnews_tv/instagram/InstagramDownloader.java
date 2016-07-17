@@ -9,21 +9,26 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 
 import org.apache.commons.io.FilenameUtils;
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import mobi.esys.upnews_tv.PlayerActivity;
+import mobi.esys.upnews_tv.eventbus.EventIgLoadingComplete;
 import okio.BufferedSink;
 import okio.Okio;
 
 
 public class InstagramDownloader {
+    private final String TAG = "unTag_InstagramDown";
     private transient String photoDownDir;
     private transient Context context;
-    private transient String lastFileName;
     private transient String tag;
+    private transient int downloaded;
+    private transient int needDownload;
+    private EventBus bus = EventBus.getDefault();
 
 
     public InstagramDownloader(final Context context,
@@ -37,55 +42,66 @@ public class InstagramDownloader {
 
     public void download(List<InstagramItem> instagramPhotos) {
         Log.d("new download", instagramPhotos.toString());
-        lastFileName = "photo".concat(String.valueOf(instagramPhotos.size()).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
+
+        needDownload = instagramPhotos.size();
+
         for (int i = 0; i < instagramPhotos.size(); i++) {
-
-            String currFileName = "photo".concat(String.valueOf(i + 1).concat(".").concat(FilenameUtils.getExtension(instagramPhotos.get(0).getIgOriginURL())));
-            Log.d("file name", currFileName);
-
-            String url = instagramPhotos.get(i).getIgOriginURL();
-            downloadFileAsync(url, currFileName);
-
-
+            String currFileName = getNameFromArray(instagramPhotos.get(i).getIgOriginURL());
+            File picFile = new File(photoDownDir, currFileName);
+            if (!picFile.exists()) {
+                Log.d(TAG, "Download IG file " + currFileName);
+                String url = instagramPhotos.get(i).getIgOriginURL();
+                downloadFileAsync(url, currFileName);
+            } else {
+                Log.d(TAG, "IG file " + currFileName + " exists, not need download");
+                downloaded++;
+            }
         }
+    }
 
+    private String getNameFromArray(String url) {
+        String name = url;
+        int srt = name.lastIndexOf("/") + 1;
+        int end = name.length();
+        int end2 = name.indexOf("?");
+        if (end2 != -1) {
+            end = end2;
+        }
+        name = name.substring(srt, end);
 
+        return name;
     }
 
     public void downloadFileAsync(String url, final String fileName) {
-
-        Glide.with(context).load(url).asBitmap().toBytes().into(new SimpleTarget<byte[]>() {
-                                                                    @Override
-                                                                    public void onResourceReady(byte[] resource, GlideAnimation<? super byte[]> glideAnimation) {
-                                                                        File picFile = new File(photoDownDir, fileName);
-                                                                        Log.d("pic file", picFile.getAbsolutePath());
-                                                                        try {
-                                                                            if (!picFile.exists()) {
-
-                                                                                picFile.createNewFile();
-
-                                                                            }
-
-
-                                                                            BufferedSink sink = Okio.buffer(Okio.sink(picFile));
-                                                                            sink.write(resource);
-                                                                            sink.close();
-                                                                        } catch (
-                                                                                IOException e
-                                                                                )
-
-                                                                        {
-                                                                            e.printStackTrace();
-                                                                        }
-                                                                        if (fileName.equals(lastFileName)) {
-                                                                            ((PlayerActivity) context).loadSlide(tag);
-
-                                                                        }
-                                                                    }
-                                                                }
-
-        );
-
+        SimpleTarget target = new SimpleTarget<byte[]>() {
+            @Override
+            public void onResourceReady(byte[] resource, GlideAnimation<? super byte[]> glideAnimation) {
+                File picFile = new File(photoDownDir, fileName);
+                Log.d("pic file", picFile.getAbsolutePath());
+                try {
+                    boolean fileIsOk;
+                    if (!picFile.exists()) {
+                        fileIsOk = picFile.createNewFile();
+                    } else {
+                        fileIsOk = true;
+                    }
+                    if (fileIsOk) {
+                        BufferedSink sink = Okio.buffer(Okio.sink(picFile));
+                        sink.write(resource);
+                        sink.close();
+                    } else {
+                        Log.e(TAG, "Can't save image. Problem with creating file " + picFile.getAbsolutePath());
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+                downloaded++;
+                if (downloaded == needDownload) {
+                    bus.post(new EventIgLoadingComplete(tag));
+                }
+            }
+        };
+        Glide.with(context).load(url).asBitmap().toBytes().into(target);
     }
 
 

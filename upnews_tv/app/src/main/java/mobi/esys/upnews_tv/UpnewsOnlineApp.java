@@ -1,6 +1,5 @@
 package mobi.esys.upnews_tv;
 
-import android.app.Activity;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
@@ -21,7 +20,6 @@ public class UpnewsOnlineApp extends Application {
     private static final String TWITTER_KEY = DevelopersKeys.TWITTER_KEY;
     private static final String TWITTER_SECRET = DevelopersKeys.TWITTER_SECRET;
 
-    private transient Activity currentActivityInstance;
     private static final String[] folders = {
             Folders.BASE_FOLDER,
             Folders.BASE_FOLDER.
@@ -38,14 +36,6 @@ public class UpnewsOnlineApp extends Application {
         Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
         FacebookSdk.sdkInitialize(getApplicationContext());
         createFolders();
-    }
-
-    public Activity getCurrentActivityInstance() {
-        return currentActivityInstance;
-    }
-
-    public void setCurrentActivityInstance(Activity currentActivityInstance) {
-        this.currentActivityInstance = currentActivityInstance;
     }
 
     public void createFolders() {
