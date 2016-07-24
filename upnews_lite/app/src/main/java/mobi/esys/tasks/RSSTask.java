@@ -52,7 +52,7 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
 
         //check inet and get MD5 from gd RSS-file
         String gdRSSMD5 = gdRSS.getGdFileMD5();
-        if (NetWork.isNetworkAvailable(mApp) && !gdRSSMD5.equals("empty")) {
+        if (NetWork.isNetworkAvailable(mApp) && gdRSSMD5 != null && !gdRSSMD5.equals("empty")) {
             FileWorks fw = new FileWorks(localRssFile);
             String localMD5 = fw.getFileMD5();
 

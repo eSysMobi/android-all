@@ -197,7 +197,9 @@ public class UNLServer {
                                 file.getMd5Checksum(), file));
                     }
 
-                    if (!file.getExplicitlyTrashed() && UNLConsts.GD_RSS_FILE_TITLE.equals(file.getTitle())) {
+                    if (!file.getExplicitlyTrashed()
+                            && UNLConsts.GD_RSS_FILE_TITLE.equals(file.getTitle())
+                            && UNLConsts.GD_RSS_FILE_MIME_TYPE.equals(file.getMimeType())) {
                         gdRSS = new GDFile(file.getId(),
                                 file.getTitle(),
                                 file.getWebContentLink(),
