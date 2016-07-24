@@ -11,11 +11,8 @@ import android.graphics.PixelFormat;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,8 +58,6 @@ import net.londatiga.android.instagram.Instagram;
 import org.apache.commons.io.FilenameUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -75,7 +70,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.upnews_tv.cbr.CurrenciesList;
@@ -85,38 +79,38 @@ import mobi.esys.upnews_tv.constants.Folders;
 import mobi.esys.upnews_tv.constants.TimeConsts;
 import mobi.esys.upnews_tv.download.DownloadState;
 import mobi.esys.upnews_tv.download.FacebookVideoDownloadHelper;
+import mobi.esys.upnews_tv.eventbus.EventCurrency;
+import mobi.esys.upnews_tv.eventbus.EventGetLocComplete;
+import mobi.esys.upnews_tv.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tv.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tv.facebook.FacebookVideoItem;
 import mobi.esys.upnews_tv.filesystem.FileSystemHelper;
-import mobi.esys.upnews_tv.instagram.GetIGPhotosTask;
-import mobi.esys.upnews_tv.instagram.InstagramDownloader;
-import mobi.esys.upnews_tv.instagram.InstagramItem;
+import mobi.esys.upnews_tv.instagram.CheckInstaTagTaskWeb;
+import mobi.esys.upnews_tv.instagram.InstagramDownloaderWeb;
 import mobi.esys.upnews_tv.net.NetMonitor;
+import mobi.esys.upnews_tv.tasks.GetLocationTask;
 import mobi.esys.upnews_tv.twitter.TwitterHelper;
 import zh.wang.android.apis.yweathergetter4a.WeatherInfo;
 import zh.wang.android.apis.yweathergetter4a.YahooWeather;
 import zh.wang.android.apis.yweathergetter4a.YahooWeatherExceptionListener;
 import zh.wang.android.apis.yweathergetter4a.YahooWeatherInfoListener;
 
-public class PlayerActivity extends Activity implements LocationListener, YahooWeatherInfoListener,
+public class PlayerActivity extends Activity implements YahooWeatherInfoListener,
         YahooWeatherExceptionListener {
 
     private transient UpnewsOnlineApp mApp;
 
     private transient RelativeLayout relativeLayout;
-    private transient Instagram instagram;
+    //private transient Instagram instagram;
     private transient SliderLayout mSlider;
-    private transient List<InstagramItem> igPhotos;
+    //private transient List<InstagramItem> igPhotos;
     private transient List<FacebookVideoItem> videoItemsTmp;
-    private static final String URL = "url";
     private transient List<FacebookVideoItem> videoItems;
     private transient int videoIndex = 0;
 
     public static final String[] VIDEOS_EXTS = {"avi", "mp4"};
 
     private transient VideoView playerView;
-
-    private transient Location location;
 
     private transient ProgressDialog dialog;
 
@@ -260,7 +254,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
 
 
-        igPhotos = new ArrayList<>();
+        //igPhotos = new ArrayList<>();
         videoItems = new ArrayList<>();
         videoItemsTmp = new ArrayList<>();
 
@@ -288,7 +282,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 // Init Video
         playerView.setMediaController(mediaController);
 
-        instagram = new Instagram(PlayerActivity.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
+        //instagram = new Instagram(PlayerActivity.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
 
         if (Build.VERSION.SDK_INT >= 23) {
@@ -302,12 +296,15 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         } else {
             allowflag = true;
         }
+
         locationHandler = new Handler();
         locationRunnable = new Runnable() {
             @Override
             public void run() {
                 if (allowflag) {
-                    getLocation();
+                    GetLocationTask glt = new GetLocationTask(mApp);
+                    glt.execute();
+                    //getLocation();
                 }
                 locationHandler.postDelayed(this, TimeConsts.WEATHER_AND_CURR_REFRESH_INTERVAL);
             }
@@ -354,11 +351,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         playerView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                String path = Folders.SD_CARD.
-                        concat(File.separator).
-                        concat(Folders.BASE_FOLDER).
-                        concat(File.separator).concat(Folders.VIDEO_FOLDER);
-
                 easyTracker.send(MapBuilder.createEvent("playback",
                         "video_playback_error", "Error while video playback, go to next video", null).build());
 
@@ -384,11 +376,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
         if (mp4Files.size() > 0) {
             nextFile();
-//            Collections.sort(mp4Files);
-//            playerView.setVideoURI(Uri.parse(mp4Files.get(videoIndex).getAbsolutePath()));
-//            if (mp4Files.size() > videoIndex+1) {
-//                nextVideo = mp4Files.get(videoIndex+1).getName();
-//            }
         } else {
             playerView.setVideoURI(embUri);
             Log.d(TAG, "We have NO mp4 files in video folder, start default video");
@@ -422,7 +409,9 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         instagramRunnable = new Runnable() {
             @Override
             public void run() {
-                updateIGPhotos();
+                CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(hashTag);
+                checkInstaTagTask.execute();
+                //updateIGPhotos();
                 instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
@@ -481,75 +470,90 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-    public void updateIGPhotos() {
-        if (NetMonitor.isNetworkAvailable(mApp)) {
-
-            final GetIGPhotosTask getTagPhotoIGTask = new GetIGPhotosTask(hashTag);
-            getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-
-            try {
-                JSONObject igObject = new JSONObject(getTagPhotoIGTask.get());
-                Log.d("object", igObject.toString());
-                getIGPhotos(igObject);
-            } catch (JSONException e) {
-                Log.d("error", "json error");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                Log.d("error", "interrupted error");
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                Log.d("error", "execution error");
-                e.printStackTrace();
-            }
+    @Subscribe
+    public void onEvent(EventIgCheckingComplete event) {
+        String urls = event.getUrls();
+        if (!urls.isEmpty()) {
             String folder = Folders.SD_CARD.concat(File.separator).
                     concat(Folders.BASE_FOLDER).
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER);
-            Log.d(TAG + "_IG", "photos: " + igPhotos.toString());
-
-            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivity.this, folder, hashTag);
-            instagramDownloader.download(igPhotos);
+            InstagramDownloaderWeb instagramDownloader = new InstagramDownloaderWeb(PlayerActivity.this, folder, hashTag);
+            instagramDownloader.download(urls);
         } else {
-            Toast.makeText(PlayerActivity.this, "Can't update instagram photos",
-                    Toast.LENGTH_SHORT).show();
+            Log.w(TAG, "Can't load IG images. Urls is empty");
         }
     }
 
-    private void getIGPhotos(JSONObject igObject) {
-        if (NetMonitor.isNetworkAvailable(mApp)) {
-            igPhotos = new ArrayList<>();
-            try {
-                Log.d("object main", igObject.toString());
-                final JSONArray igData = igObject.getJSONArray("data");
-
-                for (int i = 0; i < igData.length(); i++) {
-
-                    final JSONObject currObj = igData.getJSONObject(i)
-                            .getJSONObject("images");
-                    Log.d("images main", currObj.toString());
-                    final String origURL = currObj.getJSONObject("standard_resolution")
-                            .getString(URL);
-                    Log.d("images url main", origURL);
-                    Log.d("data", igData.toString());
-                    String fsComm;
-                    if (igData.getJSONObject(i).getJSONObject("comments").getInt("count") > 0) {
-                        fsComm = igData.getJSONObject(i).getJSONObject("comments")
-                                .getJSONArray("data").getJSONObject(0).getString("text");
-                    } else {
-                        fsComm = "";
-                    }
-                    igPhotos.add(new InstagramItem(igData.getJSONObject(i)
-                            .getString("id"), currObj.getJSONObject("standard_resolution")
-                            .getString(URL), origURL, fsComm, igData.getJSONObject(i).getJSONObject("user").getString("username")));
-                }
-            } catch (JSONException e) {
-                Log.d("json", "json_error: ".concat(e.getMessage()));
-                e.printStackTrace();
-            }
-        } else {
-            Toast.makeText(PlayerActivity.this, "Can't get photos from Instagram", Toast.LENGTH_SHORT).show();
-        }
-    }
+//    public void updateIGPhotos() {
+//        if (NetMonitor.isNetworkAvailable(mApp)) {
+//
+//            final GetIGPhotosTask getTagPhotoIGTask = new GetIGPhotosTask(hashTag);
+//            getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+//
+//            try {
+//                JSONObject igObject = new JSONObject(getTagPhotoIGTask.get());
+//                Log.d("object", igObject.toString());
+//                getIGPhotos(igObject);
+//            } catch (JSONException e) {
+//                Log.d("error", "json error");
+//                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                Log.d("error", "interrupted error");
+//                e.printStackTrace();
+//            } catch (ExecutionException e) {
+//                Log.d("error", "execution error");
+//                e.printStackTrace();
+//            }
+//            String folder = Folders.SD_CARD.concat(File.separator).
+//                    concat(Folders.BASE_FOLDER).
+//                    concat(File.separator).
+//                    concat(Folders.PHOTO_FOLDER);
+//            Log.d(TAG + "_IG", "photos: " + igPhotos.toString());
+//
+//            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivity.this, folder, hashTag);
+//            instagramDownloader.download(igPhotos);
+//        } else {
+//            Toast.makeText(PlayerActivity.this, "Can't update instagram photos",
+//                    Toast.LENGTH_SHORT).show();
+//        }
+//    }
+//
+//    private void getIGPhotos(JSONObject igObject) {
+//        if (NetMonitor.isNetworkAvailable(mApp)) {
+//            igPhotos = new ArrayList<>();
+//            try {
+//                Log.d("object main", igObject.toString());
+//                final JSONArray igData = igObject.getJSONArray("data");
+//
+//                for (int i = 0; i < igData.length(); i++) {
+//
+//                    final JSONObject currObj = igData.getJSONObject(i)
+//                            .getJSONObject("images");
+//                    Log.d("images main", currObj.toString());
+//                    final String origURL = currObj.getJSONObject("standard_resolution")
+//                            .getString(URL);
+//                    Log.d("images url main", origURL);
+//                    Log.d("data", igData.toString());
+//                    String fsComm;
+//                    if (igData.getJSONObject(i).getJSONObject("comments").getInt("count") > 0) {
+//                        fsComm = igData.getJSONObject(i).getJSONObject("comments")
+//                                .getJSONArray("data").getJSONObject(0).getString("text");
+//                    } else {
+//                        fsComm = "";
+//                    }
+//                    igPhotos.add(new InstagramItem(igData.getJSONObject(i)
+//                            .getString("id"), currObj.getJSONObject("standard_resolution")
+//                            .getString(URL), origURL, fsComm, igData.getJSONObject(i).getJSONObject("user").getString("username")));
+//                }
+//            } catch (JSONException e) {
+//                Log.d("json", "json_error: ".concat(e.getMessage()));
+//                e.printStackTrace();
+//            }
+//        } else {
+//            Toast.makeText(PlayerActivity.this, "Can't get photos from Instagram", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     private void loadfbGroupVideos() {
         if (NetMonitor.isNetworkAvailable(mApp)) {
@@ -622,26 +626,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        this.location = location;
-        Log.d("location", String.valueOf(location.getLatitude()) + ":" + String.valueOf(location.getLongitude()));
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
 
     @Override
     public void onFailConnection(Exception e) {
@@ -714,8 +698,12 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-    public void loadCurrencyDashboard(CurrenciesList list, CurrenciesList yesterdayList) {
-        if (NetMonitor.isNetworkAvailable(mApp)) {
+    // Currencies
+    @Subscribe
+    public void onEvent(EventCurrency event) {
+        CurrenciesList list = event.getToday();
+        CurrenciesList yesterdayList = event.getYesterday();
+        if (list.currencies.size() > 0 && yesterdayList.currencies.size() > 0 && list.currencies.size() == yesterdayList.currencies.size()) {
             String euro = "\u20ac" + " 0,0";
             String dollar = "\u0024" + " 0,0";
             String pound = "\u00a3" + " 0,0";
@@ -937,83 +925,9 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         }
     }
 
-    public Location getLocation() {
-        try {
-            LocationManager loc = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-            boolean isGPSEnabled = loc
-                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            boolean isNetworkEnabled = loc
-                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-            if (!isGPSEnabled && !isNetworkEnabled) {
-                Toast.makeText(this, "Please turn GPS or network for location searching",
-                        Toast.LENGTH_SHORT).show();
-            } else {
-//                boolean allowflag = false;
-//
-//                if (Build.VERSION.SDK_INT>=23){
-//                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                        ActivityCompat.requestPermissions(this,
-//                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                                PERMISSION_REQUEST_CODE);
-//                    }else {allowflag = true;}
-//                }else {
-//                    allowflag = true;
-//                }
-                if (allowflag) {
-                    if (isNetworkEnabled) {
-                        loc.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
-                                0,
-                                0, this);
-                        Log.d("Network", "Network Enabled");
-                        if (loc != null) {
-                            location = loc
-                                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        }
-                    }
-                    if (isGPSEnabled) {
-                        if (location == null) {
-                            loc.requestLocationUpdates(
-                                    LocationManager.GPS_PROVIDER,
-                                    0,
-                                    0, this);
-                            Log.d("GPS", "GPS Enabled");
-                            if (loc != null) {
-                                location = loc
-                                        .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (location != null) {
-            getLocationName(location);
-        } else {
-            Toast.makeText(this, "Can't define location", Toast.LENGTH_SHORT).show();
-        }
-        return location;
-    }
-
-
-    public String getLocationName(Location location) {
-
-        String cityName = "Not Found";
-        Geocoder gcd = new Geocoder(getBaseContext(), Locale.ENGLISH);
-        try {
-
-            List<Address> addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(),
-                    10);
-            cityName = addresses.get(0).getLocality();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Subscribe
+    public void onEvent(EventGetLocComplete event) {
+        String cityName = event.getCity();
         if (cityName != null) {
             if (cityName.equals("Not Found")) {
                 Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
@@ -1027,7 +941,6 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
         } else {
             Toast.makeText(this, "Can't define current location name", Toast.LENGTH_SHORT).show();
         }
-        return cityName;
     }
 
     @Override
@@ -1118,7 +1031,7 @@ public class PlayerActivity extends Activity implements LocationListener, YahooW
 
     public void getCurrencies() {
         if (NetMonitor.isNetworkAvailable(mApp)) {
-            GetCurrencies getCurrencies = new GetCurrencies(this);
+            GetCurrencies getCurrencies = new GetCurrencies();
             getCurrencies.execute(new Date());
         }
     }

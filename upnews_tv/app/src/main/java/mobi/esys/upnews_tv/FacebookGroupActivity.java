@@ -150,7 +150,7 @@ public class FacebookGroupActivity extends Activity {
                                 clearFolder();
                             }
                             saveGroupID(fbGroupIDEdit.getText().toString());
-                            startActivity(new Intent(FacebookGroupActivity.this, InstagramLoginActivity.class));
+                            startActivity(new Intent(FacebookGroupActivity.this, InstagramHashtagActivityWeb.class));
                             finish();
                         } else {
                             Toast.makeText(FacebookGroupActivity.this, "This group id don't existed", Toast.LENGTH_SHORT).show();
