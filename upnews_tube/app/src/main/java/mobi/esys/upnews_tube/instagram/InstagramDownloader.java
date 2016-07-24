@@ -46,6 +46,9 @@ public class InstagramDownloader {
             } else{
                 Log.d(TAG, "IG file exists, not need download");
                 downloaded++;
+                if (downloaded == needDownload) {
+                    bus.post(new EventIgLoadingComplete(tag));
+                }
             }
         }
     }

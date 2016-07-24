@@ -42,8 +42,8 @@ android {
         applicationId "mobi.esys.upnews_tube"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 15
-        versionName "1.4.1"
+        versionCode 16
+        versionName "1.4.2"
         signingConfig signingConfigs.config
     }
     sourceSets {
