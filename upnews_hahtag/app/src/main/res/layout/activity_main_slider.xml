@@ -65,7 +65,8 @@
                     android:layout_alignTop="@+id/tvTagView"
                     android:layout_toRightOf="@+id/tvTagView"
                     android:layout_toEndOf="@+id/tvTagView"
-                    android:layout_marginLeft="12dp" />
+                    android:layout_marginLeft="12dp"
+                    android:visibility="gone" />
             </LinearLayout>
 
         </RelativeLayout>

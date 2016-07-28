@@ -24,13 +24,10 @@ import mobi.esys.upnews_hashtag.UNHApp;
  */
 public class CheckInstaTagTask extends AsyncTask<String, Void, Integer> {
     private transient String mHashTag;
-    private transient UNHApp mApp;
 
-    public CheckInstaTagTask(String hashTag, UNHApp app) {
+    public CheckInstaTagTask(String hashTag) {
         mHashTag = hashTag;
-        mApp = app;
     }
-
 
     @Override
     protected Integer doInBackground(String... params) {
@@ -40,31 +37,32 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, Integer> {
             final InstagramRequest request = new InstagramRequest(params[0]);
 
             String edTag = mHashTag.substring(1).toLowerCase(Locale.ENGLISH);
-
-            if (NetMonitor.isNetworkAvailable(mApp)) {
-                try {
-                    final List<NameValuePair> reqParams = new ArrayList<NameValuePair>(
-                            1);
+            try {
+                final List<NameValuePair> reqParams = new ArrayList<NameValuePair>(
+                        1);
 //                    reqParams.add(new BasicNameValuePair("count", String
 //                            .valueOf(ISConsts.instagramconsts.instagram_page_count)));
 //                    response = request.requestGet("/tags/" + edTag
 //                            + "/media/recent", reqParams);
-                    response = request.requestGet("/tags/" + edTag, reqParams);
-                    if (isJSONValid(response)) {
-                        JSONObject resObject = new JSONObject(response);
-                        if (resObject.has("meta")
-                                && resObject.getJSONObject("meta").get("code").equals(200)) {
-                            count = (Integer) resObject.getJSONObject("data").get("media_count");
-                        }
+                response = request.requestGet("/tags/" + edTag, reqParams);
+                if (isJSONValid(response)) {
+                    JSONObject resObject = new JSONObject(response);
+                    if (resObject.has("meta")
+                            && resObject.getJSONObject("meta").get("code").equals(200)) {
+                        count = (Integer) resObject.getJSONObject("data").get("media_count");
                     }
-                } catch (Exception e) {
-                    Log.e("unTag_CheckInstaTag", "Error: " + e.getMessage());
                 }
-            } else {
-                count = -1;
+            } catch (Exception e) {
+                Log.e("unTag_CheckInstaTag", "Error: " + e.getMessage());
             }
         }
         return count;
+    }
+
+    @Override
+    protected void onPostExecute(Integer integer) {
+        super.onPostExecute(integer);
+
     }
 
     public boolean isJSONValid(String test) {

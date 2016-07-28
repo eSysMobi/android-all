@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PersistableBundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -30,28 +29,25 @@ import android.widget.TextView;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 
-import net.londatiga.android.instagram.Instagram;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.consts.ISConsts;
-import mobi.esys.downloaders.InstagramPhotoDownloader;
+import mobi.esys.downloaders.InstagramPhotoDownloaderWeb;
+import mobi.esys.eventbus.EventIgCheckingComplete;
+import mobi.esys.eventbus.EventIgLoadingComplete;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.filesystem.files.FilesHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.tasks.CheckInstaTagTask;
+import mobi.esys.tasks.CheckInstaTagTaskWeb;
 import mobi.esys.view.PhotoElement;
-import mobi.esys.tasks.GetTagPhotoIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 
 
@@ -67,13 +63,10 @@ public class MainSliderActivity extends Activity {
 
     private transient String[] photoFiles;
 
-    private transient JSONObject igObject;
-
-    private transient Instagram instagram;
+    //private transient Instagram instagram;
 
     private transient String igHashTag;
     private transient String twHashTag;
-    private transient int tagPhotoCount = 0;
 
     private transient boolean isTwAllow;
 
@@ -158,9 +151,9 @@ public class MainSliderActivity extends Activity {
             }
         };
 
-        instagram = new Instagram(MainSliderActivity.this,
-                ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
-                ISConsts.instagramconsts.instagram_redirect_uri);
+//        instagram = new Instagram(MainSliderActivity.this,
+//                ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
+//                ISConsts.instagramconsts.instagram_redirect_uri);
 
         mApp = (UNHApp) getApplicationContext();
 
@@ -195,89 +188,119 @@ public class MainSliderActivity extends Activity {
         }
     }
 
-    private void updateTagCount(final String tag) {
-        final CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(tag, mApp);
+    private void updateIGPhotos(final String tag) {
+        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
+        checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
 
-        try {
-            checkInstaTagTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-            tagPhotoCount = checkInstaTagTask.get();
-            if(tagPhotoCount > 0){
-                String text = String.valueOf(tagPhotoCount).concat(" publications");
+    @Subscribe
+    public void onEvent(EventIgCheckingComplete event) {
+        boolean fromCache = event.isCached();
+        if (fromCache) {
+            if (event.getPhotoCount() > 0) {
+                tvTagCount.setVisibility(View.VISIBLE);
+                String text = String.valueOf(event.getPhotoCount()).concat(" publications");
                 tvTagCount.setText(text);
             } else {
                 tvTagCount.setVisibility(View.GONE);
             }
-        } catch (InterruptedException e) {
-            Log.d("error", "interrupted error");
-        } catch (ExecutionException e) {
-            Log.d("error", "execution error");
+        } else {
+            String text = String.valueOf(event.getPhotoCount()).concat(" publications");
+            tvTagCount.setText(text);
+
+            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
+            downloader.download(event.getPhotoUrls());
         }
     }
 
-    private void updateIGPhotos(final String tag) {
-        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
-                MainSliderActivity.this,
-                "default", tag, false, mApp);
-        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-
-        Log.d("aT main", instagram.getSession().getAccessToken());
-        try {
-            igObject = new JSONObject(getTagPhotoIGTask.get());
-            Log.d("object", igObject.toString());
-            updateTagCount(tag);
-            getIGPhotos(igObject);
-        } catch (JSONException e) {
-            Log.d("error", "json error");
-        } catch (InterruptedException e) {
-            Log.d("error", "interrupted error");
-        } catch (ExecutionException e) {
-            Log.d("error", "execution error");
-        }
-
+    @Subscribe
+    public void onEvent(EventIgLoadingComplete event) {
+        loadSlide();
     }
 
-    private void getIGPhotos(JSONObject igObject) {
-        igPhotos = new ArrayList<>();
-        try {
-            final JSONArray igData = igObject.getJSONArray("data");
-            Log.d("igData", igData.toString());
 
-            for (int i = 0; i < igData.length(); i++) {
-
-                final JSONObject currLikeObj = igData.getJSONObject(i)
-                        .getJSONObject("likes");
-
-                final JSONObject currObj = igData.getJSONObject(i)
-                        .getJSONObject("images");
-                Log.d("images main", currObj.toString());
-                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
-                        .getString(URL);
-                int tmpIndex = origURL.indexOf("?");
-                if (tmpIndex > 0) {
-                    origURL = origURL.substring(0, tmpIndex);
-                }
-                Log.d("images url main", origURL);
-
-                final String idDown = igData.getJSONObject(i).getString("id");
-                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
-                tmpIndex = thumbDown.indexOf("?");
-                if (tmpIndex > 0) {
-                    thumbDown = thumbDown.substring(0, tmpIndex);
-                }
-                final int likesDown = currLikeObj.getInt("count");
-
-                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
-                Log.d("ig photos main", igPhotos.get(i).toString());
-
-            }
-
-            InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(MainSliderActivity.this, true);
-            instagramPhotoDownloader.download(igPhotos);
-
-        } catch (JSONException e) {
-            Log.d("json", "json_error");
-        }
-    }
+//    private void updateTagCount(final String tag) {
+//        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
+//
+//        try {
+//            checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+//            tagPhotoCount = checkInstaTagTask.get();
+//            if(tagPhotoCount > 0){
+//                String text = String.valueOf(tagPhotoCount).concat(" publications");
+//                tvTagCount.setText(text);
+//            } else {
+//                tvTagCount.setVisibility(View.GONE);
+//            }
+//        } catch (InterruptedException e) {
+//            Log.d("error", "interrupted error");
+//        } catch (ExecutionException e) {
+//            Log.d("error", "execution error");
+//        }
+//    }
+//
+//    private void updateIGPhotos(final String tag) {
+//        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
+//                MainSliderActivity.this,
+//                "default", tag, false, mApp);
+//        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+//
+//        Log.d("aT main", instagram.getSession().getAccessToken());
+//        try {
+//            igObject = new JSONObject(getTagPhotoIGTask.get());
+//            Log.d("object", igObject.toString());
+//            updateTagCount(tag);
+//            getIGPhotos(igObject);
+//        } catch (JSONException e) {
+//            Log.d("error", "json error");
+//        } catch (InterruptedException e) {
+//            Log.d("error", "interrupted error");
+//        } catch (ExecutionException e) {
+//            Log.d("error", "execution error");
+//        }
+//    }
+//
+//    private void getIGPhotos(JSONObject igObject) {
+//        igPhotos = new ArrayList<>();
+//        try {
+//            final JSONArray igData = igObject.getJSONArray("data");
+//            Log.d("igData", igData.toString());
+//
+//            for (int i = 0; i < igData.length(); i++) {
+//
+//                final JSONObject currLikeObj = igData.getJSONObject(i)
+//                        .getJSONObject("likes");
+//
+//                final JSONObject currObj = igData.getJSONObject(i)
+//                        .getJSONObject("images");
+//                Log.d("images main", currObj.toString());
+//                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
+//                        .getString(URL);
+//                int tmpIndex = origURL.indexOf("?");
+//                if (tmpIndex > 0) {
+//                    origURL = origURL.substring(0, tmpIndex);
+//                }
+//                Log.d("images url main", origURL);
+//
+//                final String idDown = igData.getJSONObject(i).getString("id");
+//                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
+//                tmpIndex = thumbDown.indexOf("?");
+//                if (tmpIndex > 0) {
+//                    thumbDown = thumbDown.substring(0, tmpIndex);
+//                }
+//                final int likesDown = currLikeObj.getInt("count");
+//
+//                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
+//                Log.d("ig photos main", igPhotos.get(i).toString());
+//
+//            }
+//
+//            InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(MainSliderActivity.this, true);
+//            instagramPhotoDownloader.download(igPhotos);
+//
+//        } catch (JSONException e) {
+//            Log.d("json", "json_error");
+//        }
+//    }
 
     public void loadSlide() {
         Log.d(TAG.concat("_photo"), igPhotos.toString());
@@ -398,7 +421,7 @@ public class MainSliderActivity extends Activity {
                         Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                         photoElements.get(2).getImageView().setImageBitmap(bitmap);
                         nextElementsState[2]++;
-                        String target = imgFile.getName().substring(0,imgFile.getName().lastIndexOf("."));
+                        String target = imgFile.getName().substring(0, imgFile.getName().lastIndexOf("."));
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
@@ -508,27 +531,21 @@ public class MainSliderActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        super.onPause();
-        if (mediaPlayer != null) {
-            mediaPlayer.pause();
-            musicPosition = mediaPlayer.getCurrentPosition();
-        }
-        stopSlidesHandlersRefresh();
-        stopTwitterHandlersRefresh();
+    protected void onStart() {
+        super.onStart();
+        checkLogo();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        EventBus.getDefault().register(this);
         if (mediaPlayer != null) {
             mediaPlayer.seekTo(musicPosition);
             mediaPlayer.start();
         }
         restartSlidesHandlersRefresh();
         restartTwitterHandlersRefresh();
-        checkLogo();
     }
 
     //Check logo.
@@ -537,6 +554,18 @@ public class MainSliderActivity extends Activity {
         logoFileHelper.createLogoInExternalStorage();
         Bitmap logoFromFile = logoFileHelper.getLogoFromExternalStorage();
         logoView.setImageBitmap(logoFromFile);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        EventBus.getDefault().unregister(this);
+        if (mediaPlayer != null) {
+            mediaPlayer.pause();
+            musicPosition = mediaPlayer.getCurrentPosition();
+        }
+        stopSlidesHandlersRefresh();
+        stopTwitterHandlersRefresh();
     }
 
     @Override
@@ -566,8 +595,8 @@ public class MainSliderActivity extends Activity {
 
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
 
@@ -634,7 +663,7 @@ public class MainSliderActivity extends Activity {
         try {
             File dir = context.getCacheDir();
             if (dir != null && dir.isDirectory()) {
-                Log.d("unTagMainSlider","Start deleting cache");
+                Log.d("unTagMainSlider", "Start deleting cache");
                 deleteDir(dir);
             }
         } catch (Exception e) {
@@ -651,7 +680,7 @@ public class MainSliderActivity extends Activity {
                 }
             }
             return dir.delete();
-        } else if(dir!= null && dir.isFile()) {
+        } else if (dir != null && dir.isFile()) {
             return dir.delete();
         } else {
             return false;

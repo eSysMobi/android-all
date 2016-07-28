@@ -74,7 +74,7 @@ public class InAppBillingActivity extends Activity {
                         }
                     } else {
                         startActivity(new Intent(InAppBillingActivity.this,
-                                InstaLoginActivity.class));
+                                InstagramHashtagActivityWeb.class));
                         finish();
 
                     }
@@ -88,7 +88,7 @@ public class InAppBillingActivity extends Activity {
         if (BuildConfig.DEBUG) {
             Log.d("buy", "It's debug version. Not need to buy!");
             startActivity(new Intent(InAppBillingActivity.this,
-                    InstaLoginActivity.class));
+                    InstagramHashtagActivityWeb.class));
         } else {
             bindService(new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage("com.android.vending"),
                     billingServiceConn, BIND_AUTO_CREATE);
@@ -123,7 +123,7 @@ public class InAppBillingActivity extends Activity {
                     Log.d("buy", "You have bought the " + sku
                             + ". Excellent choice," + "adventurer!");
                     startActivity(new Intent(InAppBillingActivity.this,
-                            InstaLoginActivity.class));
+                            InstagramHashtagActivityWeb.class));
 
                 } catch (JSONException e) {
                     Log.d("buy", "Failed to parse purchase data.");

@@ -155,7 +155,7 @@ public class InstagramHashTagActivity extends Activity implements View.OnClickLi
             if (!"".equals(prevHashTag) && !hashTagEdit.getEditableText().toString().equals(prevHashTag)) {
                 clearFolder();
             }
-            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString(), mApp);
+            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString());
             checkInstaTagTask.execute(instagram.getSession().getAccessToken());
             try {
                 int count = checkInstaTagTask.get();

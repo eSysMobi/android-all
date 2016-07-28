@@ -24,31 +24,29 @@ import android.widget.TextView;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 
-import net.londatiga.android.instagram.Instagram;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import de.greenrobot.event.EventBus;
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.consts.ISConsts;
-import mobi.esys.downloaders.InstagramPhotoDownloader;
+import mobi.esys.downloaders.InstagramPhotoDownloaderWeb;
+import mobi.esys.eventbus.EventIgCheckingComplete;
+import mobi.esys.eventbus.EventIgLoadingComplete;
 import mobi.esys.eventbus.SongStopEvent;
 import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.view.PhotoElement;
-import mobi.esys.tasks.GetTagPhotoIGTask;
+import mobi.esys.tasks.CheckInstaTagTaskWeb;
 import mobi.esys.twitter.model.TwitterHelper;
+import mobi.esys.view.PhotoElement;
 
 
 public class SliderActivity extends Activity {
+    private EventBus bus = EventBus.getDefault();
     private transient MediaPlayer mediaPlayer;
     private transient TextView textView;
     private transient RelativeLayout relativeLayout;
@@ -67,9 +65,7 @@ public class SliderActivity extends Activity {
 
     private static final String URL = "url";
 
-    private transient JSONObject igObject;
-
-    private transient Instagram instagram;
+//    private transient Instagram instagram;
 
     private transient String igHashTag;
     private transient String twHashTag;
@@ -111,10 +107,10 @@ public class SliderActivity extends Activity {
 
         mApp = (UNHApp) getApplicationContext();
 
-        instagram = new Instagram(SliderActivity.this,
-                ISConsts.instagramconsts.instagram_client_id,
-                ISConsts.instagramconsts.instagram_client_secret,
-                ISConsts.instagramconsts.instagram_redirect_uri);
+//        instagram = new Instagram(SliderActivity.this,
+//                ISConsts.instagramconsts.instagram_client_id,
+//                ISConsts.instagramconsts.instagram_client_secret,
+//                ISConsts.instagramconsts.instagram_redirect_uri);
 
         rawIds = new ArrayList<>();
         rawIds.addAll(getAllResourceIDs(R.raw.class));
@@ -210,7 +206,7 @@ public class SliderActivity extends Activity {
 
                                                     if (photoFileList.length == 0) {
                                                         playEmbedded();
-                                                        EventBus.getDefault().post(new SongStopEvent());
+                                                        bus.post(new SongStopEvent());
                                                         // restartPhotoDownload();
                                                         //restartMusicDownload();
                                                     } else {
@@ -221,7 +217,7 @@ public class SliderActivity extends Activity {
 
                                                         } else {
                                                             playEmbedded();
-                                                            EventBus.getDefault().post(new SongStopEvent());
+                                                            bus.post(new SongStopEvent());
                                                             //restartPhotoDownload();
                                                             //restartMusicDownload();
                                                         }
@@ -246,6 +242,7 @@ public class SliderActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        bus.unregister(this);
         if (mediaPlayer != null) {
             mediaPlayer.pause();
             musicPosition = mediaPlayer.getCurrentPosition();
@@ -257,6 +254,7 @@ public class SliderActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        bus.register(this);
         if (mediaPlayer != null) {
             mediaPlayer.seekTo(musicPosition);
             mediaPlayer.start();
@@ -282,7 +280,6 @@ public class SliderActivity extends Activity {
             mediaPlayer.stop();
             mediaPlayer.release();
         }
-        EventBus.getDefault().unregister(this);
         stopTwitterHandlersRefresh();
         stopSlidesHandlersRefresh();
     }
@@ -383,58 +380,77 @@ public class SliderActivity extends Activity {
     }
 
     private void updateIGPhotos(final String tag) {
-        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
-                SliderActivity.this,
-                "default", tag, false, mApp);
-        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
+        checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
 
-        Log.d("aT", instagram.getSession().getAccessToken());
-        try {
-            igObject = new JSONObject(getTagPhotoIGTask.get());
-            getIGPhotos();
-        } catch (JSONException e) {
-        } catch (InterruptedException e) {
-        } catch (ExecutionException e) {
+    @Subscribe
+    public void onEvent(EventIgCheckingComplete event) {
+        boolean fromCache = event.isCached();
+        if (!fromCache) {
+            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
+            downloader.download(event.getPhotoUrls());
         }
     }
 
-    private void getIGPhotos() {
-        igPhotos = new ArrayList<>();
-        try {
-            final JSONArray igData = igObject.getJSONArray("data");
-            for (int i = 0; i < igData.length(); i++) {
-
-                final JSONObject currLikeObj = igData.getJSONObject(i)
-                        .getJSONObject("likes");
-
-                final JSONObject currObj = igData.getJSONObject(i)
-                        .getJSONObject("images");
-                Log.d("images main", currObj.toString());
-                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
-                        .getString(URL);
-                int tmpIndex = origURL.indexOf("?");
-                if (tmpIndex > 0) {
-                    origURL = origURL.substring(0, tmpIndex);
-                }
-                Log.d("images url main", origURL);
-
-                final String idDown = igData.getJSONObject(i).getString("id");
-                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
-                tmpIndex = thumbDown.indexOf("?");
-                if (tmpIndex > 0) {
-                    thumbDown = thumbDown.substring(0, tmpIndex);
-                }
-                final int likesDown = currLikeObj.getInt("count");
-
-                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
-                Log.d("ig photos main", igPhotos.get(i).toString());
-
-            }
-        } catch (JSONException e) {
-        }
-        InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(SliderActivity.this, false);
-        instagramPhotoDownloader.download(igPhotos);
+    @Subscribe
+    public void onEvent(EventIgLoadingComplete event) {
+        loadSlide();
     }
+
+//    private void updateIGPhotos(final String tag) {
+//        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
+//                SliderActivity.this,
+//                "default", tag, false, mApp);
+//        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
+//
+//        Log.d("aT", instagram.getSession().getAccessToken());
+//        try {
+//            igObject = new JSONObject(getTagPhotoIGTask.get());
+//            getIGPhotos();
+//        } catch (JSONException e) {
+//        } catch (InterruptedException e) {
+//        } catch (ExecutionException e) {
+//        }
+//    }
+//
+//    private void getIGPhotos() {
+//        igPhotos = new ArrayList<>();
+//        try {
+//            final JSONArray igData = igObject.getJSONArray("data");
+//            for (int i = 0; i < igData.length(); i++) {
+//
+//                final JSONObject currLikeObj = igData.getJSONObject(i)
+//                        .getJSONObject("likes");
+//
+//                final JSONObject currObj = igData.getJSONObject(i)
+//                        .getJSONObject("images");
+//                Log.d("images main", currObj.toString());
+//                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
+//                        .getString(URL);
+//                int tmpIndex = origURL.indexOf("?");
+//                if (tmpIndex > 0) {
+//                    origURL = origURL.substring(0, tmpIndex);
+//                }
+//                Log.d("images url main", origURL);
+//
+//                final String idDown = igData.getJSONObject(i).getString("id");
+//                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
+//                tmpIndex = thumbDown.indexOf("?");
+//                if (tmpIndex > 0) {
+//                    thumbDown = thumbDown.substring(0, tmpIndex);
+//                }
+//                final int likesDown = currLikeObj.getInt("count");
+//
+//                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
+//                Log.d("ig photos main", igPhotos.get(i).toString());
+//
+//            }
+//        } catch (JSONException e) {
+//        }
+//        InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(SliderActivity.this, false);
+//        instagramPhotoDownloader.download(igPhotos);
+//    }
 
     public void playEmbedded() {
         musicIndex++;
@@ -496,6 +512,7 @@ public class SliderActivity extends Activity {
         }
     }
 
+    @Subscribe
     public void onEvent(SongStopEvent songStop) {
         updateIGPhotos(igHashTag);
     }

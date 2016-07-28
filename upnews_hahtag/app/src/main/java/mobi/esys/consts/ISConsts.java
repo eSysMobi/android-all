@@ -9,8 +9,6 @@ public final class ISConsts {
         public static final String dir_name = "/upnewshashtag/";
         public static final String gd_dir_name = "upnewshashtag";
         public static final String pref_prefix = "UNHPref";
-        public static final String gd_rss_file_name_type = "text/plain";
-        public static final String gd_folder_query = "'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed=false";
         public static final String photo_dir_name = "photo/";
         public static final String music_dir_name = "music/";
         public static final String dir_changeable_logo_name = "logo/";
@@ -51,15 +49,9 @@ public final class ISConsts {
 
     public static final class prefstags {
         public static final String twitter_allow = "twitter_allow";
-        public static final String drive_allow = "drive_allow";
         public static final String twitter_hashtag = "twHashTag";
         public static final String instagram_hashtag = "igHashTag";
-        public static final String drive_folder_id = "drive_folder_id";
-        public static final String music_files_urls = "music_files_urls";
-        public static final String music_files_urls_set = "music_files_urls_set";
-        public static final String music_files_md5s = "music_files_md5s";
-        public static final String drive_acc_name = "drive_acc_name";
-        public static final String is_music_download = "is_music_download";
+        public static final String instagram_photo_count = "photoCount";
     }
 
 

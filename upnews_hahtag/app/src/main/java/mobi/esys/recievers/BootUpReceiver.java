@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import mobi.esys.consts.ISConsts;
-import mobi.esys.upnews_hashtag.InstaLoginActivity;
+import mobi.esys.upnews_hashtag.InAppBillingActivity;
 
 /**
  * Created by Артем on 14.04.2015.
@@ -18,7 +18,7 @@ public class BootUpReceiver extends BroadcastReceiver {
                 Thread.sleep(ISConsts.times.app_start_delay);
             } catch (InterruptedException e) {
             }
-            context.startActivity(new Intent(context, InstaLoginActivity.class)
+            context.startActivity(new Intent(context, InAppBillingActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
 
         }

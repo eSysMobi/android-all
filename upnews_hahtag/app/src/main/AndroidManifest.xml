@@ -73,6 +73,11 @@
             android:screenOrientation="landscape" />
 
         <activity
+            android:name=".InstagramHashtagActivityWeb"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+
+        <activity
             android:name=".TweeterHashTagActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape" />

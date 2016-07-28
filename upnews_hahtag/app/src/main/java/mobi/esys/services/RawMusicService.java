@@ -8,10 +8,11 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import de.greenrobot.event.EventBus;
 import mobi.esys.eventbus.SongStartEvent;
 import mobi.esys.eventbus.SongStopEvent;
 import mobi.esys.mediahelpers.RawMusicGetter;
@@ -23,6 +24,7 @@ public class RawMusicService extends Service implements MediaPlayer.OnPreparedLi
     private transient int musicIndex;
     private transient List<Integer> soundIds;
     private transient RawMusicGetter rawMusicGetter;
+    private EventBus bus = EventBus.getDefault();
 
     enum RawMusicServiceStates {
         Playing,
@@ -48,8 +50,8 @@ public class RawMusicService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().post(new SongStartEvent());
+        if (bus.isRegistered(this)) {
+            bus.post(new SongStartEvent());
         }
     }
 
@@ -62,16 +64,16 @@ public class RawMusicService extends Service implements MediaPlayer.OnPreparedLi
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().post(new SongStopEvent());
+        if (bus.isRegistered(this)) {
+            bus.post(new SongStopEvent());
         }
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
+        if (!bus.isRegistered(this)) {
+            bus.register(this);
         }
         if (mPlayer == null) {
             mPlayer = new MediaPlayer();
@@ -85,7 +87,7 @@ public class RawMusicService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
+        bus.unregister(this);
         if (mPlayer != null) {
             mPlayer.reset();
             mPlayer.release();
@@ -118,7 +120,7 @@ public class RawMusicService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     private void releaseRes() {
-        EventBus.getDefault().unregister(this);
+        bus.unregister(this);
         if (mPlayer != null) {
             mPlayer.release();
             if (mPlayer.isPlaying()) {
