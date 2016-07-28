@@ -2,16 +2,17 @@ package mobi.esys.upnews_lite;
 
 import android.app.Application;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.api.services.drive.Drive;
 
-import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.fabric.sdk.android.Fabric;
 import mobi.esys.system.HashCache;
 
 
@@ -27,18 +28,32 @@ public class UNLApp extends Application {
     private static AtomicBoolean isStatFileWriting;
     private static AtomicBoolean isStatNetFileWriting;
     private static String curPlayFile;
-    private static String fullDeviceIdForStatistic;
+    private static String fullDeviceIdForStatistic = "";
     private static String appExtCachePath;
     private static Integer[] camerasID = null;
     private static List<HashCache> hashCaches;
 
-    public static void setFullDeviceIdForStatistic(String incDeviceId) {
-        Log.d("unTag_UNLApp", "Set fullDeviceIdForStatistic " + incDeviceId);
-        fullDeviceIdForStatistic = incDeviceId;
+    public static String getFullDeviceIdForStatistic() {
+        if (fullDeviceIdForStatistic.isEmpty()) {
+            fullDeviceIdForStatistic = getDeviceId();
+        }
+        return fullDeviceIdForStatistic;
     }
 
-    public static String getFullDeviceIdForStatistic() {
-        return fullDeviceIdForStatistic;
+    private static String getDeviceId() {
+        String result = "";
+        try {
+            String manufacturer = Build.MANUFACTURER;
+            String model = Build.MODEL;
+            String serial = Build.SERIAL;
+            if (model.startsWith(manufacturer)) {
+                return model + "-" + serial;
+            }
+            result = manufacturer + " " + model + "-" + serial;
+        } catch (Exception e) {
+            result = "UNKNOWN DEVICE";
+        }
+        return result;
     }
 
     public static void setIsCamerasWorking(boolean state) {

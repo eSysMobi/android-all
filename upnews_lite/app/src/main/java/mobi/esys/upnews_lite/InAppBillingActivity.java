@@ -152,9 +152,6 @@ public class InAppBillingActivity extends Activity {
         //call checking version
         //checkVersion();
 
-        //setting full device id
-        UNLApp.setFullDeviceIdForStatistic(getDeviceId());
-
         //call checking permissions
         checkPermision();
 
@@ -169,16 +166,6 @@ public class InAppBillingActivity extends Activity {
                     billingServiceConn, BIND_AUTO_CREATE);
         }
         allOK();
-    }
-
-    private static String getDeviceId() {
-        String manufacturer = Build.MANUFACTURER;
-        String model = Build.MODEL;
-        String serial = Build.SERIAL;
-        if (model.startsWith(manufacturer)) {
-            return model + "-" + serial;
-        }
-        return manufacturer + " " + model + "-" + serial;
     }
 
     private void checkVersion() {
