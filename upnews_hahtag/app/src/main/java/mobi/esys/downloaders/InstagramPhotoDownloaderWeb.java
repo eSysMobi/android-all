@@ -11,8 +11,10 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import mobi.esys.eventbus.EventIgLoadingComplete;
+import mobi.esys.instagram.model.InstagramPhoto;
 import okio.BufferedSink;
 import okio.Okio;
 
@@ -37,15 +39,15 @@ public class InstagramPhotoDownloaderWeb {
         this.tag = tag;
     }
 
-    public void download(String urls) {
-        String[] urlArray = urls.split(",");
+    public void download(List<InstagramPhoto> igPhotos) {
 
-        needDownload = urlArray.length;
-        for (int i = 0; i < urlArray.length; i++) {
-            String currFileName = getNameFromArray(urlArray[i]);
+        needDownload = igPhotos.size();
+        for (int i = 0; i < igPhotos.size(); i++) {
+            String url = igPhotos.get(i).getIgThumbURL();
+            String currFileName = igPhotos.get(i).getIgPhotoID() + getExtension(url);
             File picFile = new File(photoDownDir, currFileName);
             if (!picFile.exists()) {
-                downloadFileAsync(urlArray[i], currFileName);
+                downloadFileAsync(url, currFileName);
             } else {
                 Log.d(TAG, "IG file exists, not need download");
                 downloaded++;
@@ -56,17 +58,11 @@ public class InstagramPhotoDownloaderWeb {
         }
     }
 
-    private String getNameFromArray(String url) {
-        String name = url;
-        int srt = name.lastIndexOf("/") + 1;
-        int end = name.length();
-        int end2 = name.indexOf("?");
-        if (end2 != -1) {
-            end = end2;
-        }
-        name = name.substring(srt, end);
-
-        return name;
+    private String getExtension(String url) {
+        String extension = url;
+        int srt = extension.lastIndexOf(".");
+        extension = extension.substring(srt, extension.length());
+        return extension;
     }
 
     private void downloadFileAsync(String url, final String fileName) {

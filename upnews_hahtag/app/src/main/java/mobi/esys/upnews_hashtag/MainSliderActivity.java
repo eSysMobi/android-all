@@ -47,8 +47,8 @@ import mobi.esys.filesystem.directories.DirectoryHelper;
 import mobi.esys.filesystem.files.FilesHelper;
 import mobi.esys.instagram.model.InstagramPhoto;
 import mobi.esys.tasks.CheckInstaTagTaskWeb;
-import mobi.esys.view.PhotoElement;
 import mobi.esys.twitter.model.TwitterHelper;
+import mobi.esys.view.PhotoElement;
 
 
 public class MainSliderActivity extends Activity {
@@ -161,7 +161,6 @@ public class MainSliderActivity extends Activity {
         photoFiles = photoDirHelper.getDirFileList(TAG);
 
         loadRes();
-        loadSlide();
         initTwitter();
         playMP3();
         updateIGPhotos(igHashTag);
@@ -189,33 +188,30 @@ public class MainSliderActivity extends Activity {
     }
 
     private void updateIGPhotos(final String tag) {
-        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
+        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, false, preferences);
         checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
-        boolean fromCache = event.isCached();
-        if (fromCache) {
-            if (event.getPhotoCount() > 0) {
-                tvTagCount.setVisibility(View.VISIBLE);
-                String text = String.valueOf(event.getPhotoCount()).concat(" publications");
-                tvTagCount.setText(text);
-            } else {
-                tvTagCount.setVisibility(View.GONE);
-            }
-        } else {
+        if (event.getIgPhotos().size() > 0) {
+            igPhotos = event.getIgPhotos();
+            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
+            downloader.download(event.getIgPhotos());
+        }
+        if (event.getPhotoCount() > 0) {
+            tvTagCount.setVisibility(View.VISIBLE);
             String text = String.valueOf(event.getPhotoCount()).concat(" publications");
             tvTagCount.setText(text);
-
-            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
-            downloader.download(event.getPhotoUrls());
+        } else {
+            tvTagCount.setVisibility(View.GONE);
         }
     }
 
     @Subscribe
     public void onEvent(EventIgLoadingComplete event) {
-        loadSlide();
+        Log.d(TAG, "Load IG photo is complete");
+        //loadSlide();
     }
 
 
@@ -361,7 +357,7 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            if (searchable.equals(target)) {
+                            if (target.contains(searchable)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
                             }
@@ -393,7 +389,7 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            if (searchable.equals(target)) {
+                            if (target.contains(searchable)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
                             }
@@ -425,7 +421,7 @@ public class MainSliderActivity extends Activity {
                         int likes = 0;
                         for (int k = 0; k < igPhotos.size(); k++) {
                             String searchable = igPhotos.get(k).getIgPhotoID();
-                            if (searchable.equals(target)) {
+                            if (target.contains(searchable)) {
                                 likes = igPhotos.get(k).getIgLikes();
                                 break;
                             }

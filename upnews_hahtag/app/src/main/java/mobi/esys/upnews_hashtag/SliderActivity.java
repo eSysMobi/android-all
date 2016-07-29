@@ -380,16 +380,16 @@ public class SliderActivity extends Activity {
     }
 
     private void updateIGPhotos(final String tag) {
-        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
+        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, false, preferences);
         checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
-        boolean fromCache = event.isCached();
-        if (!fromCache) {
+        List<InstagramPhoto> igPhotos = event.getIgPhotos();
+        if (igPhotos.size() > 0) {
             InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
-            downloader.download(event.getPhotoUrls());
+            downloader.download(igPhotos);
         }
     }
 

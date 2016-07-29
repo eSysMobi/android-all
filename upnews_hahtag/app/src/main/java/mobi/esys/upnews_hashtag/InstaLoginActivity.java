@@ -23,7 +23,6 @@ public class InstaLoginActivity extends Activity implements View.OnClickListener
     private transient Button instAuthBtn;
     private transient EasyTracker easyTracker;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

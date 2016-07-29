@@ -1,28 +1,27 @@
 package mobi.esys.eventbus;
 
+import java.util.List;
+
+import mobi.esys.instagram.model.InstagramPhoto;
+
 /**
  * Created by ZeyUzh on 27.07.2016.
  */
 public class EventIgCheckingComplete {
     private int photoCount;
-    private String photoUrls = "";
-    private boolean isCached;
+    List<InstagramPhoto> igPhotos;
 
-    public EventIgCheckingComplete(int photoCount, String photoUrls, boolean isCached) {
+
+    public EventIgCheckingComplete(int photoCount, List<InstagramPhoto> igPhotos) {
         this.photoCount = photoCount;
-        this.photoUrls = photoUrls;
-        this.isCached = isCached;
+        this.igPhotos = igPhotos;
     }
 
     public int getPhotoCount() {
         return photoCount;
     }
 
-    public String getPhotoUrls() {
-        return photoUrls;
-    }
-
-    public boolean isCached() {
-        return isCached;
+    public List<InstagramPhoto> getIgPhotos() {
+        return igPhotos;
     }
 }

@@ -28,10 +28,12 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import mobi.esys.consts.ISConsts;
 import mobi.esys.eventbus.EventIgCheckingComplete;
+import mobi.esys.instagram.model.InstagramPhoto;
 import mobi.esys.tasks.CheckInstaTagTask;
 import mobi.esys.tasks.CheckInstaTagTaskWeb;
 
@@ -127,7 +129,7 @@ public class InstagramHashtagActivityWeb extends Activity {
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
             if (!isChecking) {
                 String tag = hashTagEdit.getEditableText().toString().substring(1);
-                CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(tag, preferences);
+                CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(tag, true, preferences);
                 checkInstaTagTask.execute();
                 isChecking = true;
             } else {
@@ -141,9 +143,8 @@ public class InstagramHashtagActivityWeb extends Activity {
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
         isChecking = false;
-        boolean isCached = event.isCached();
         int result = event.getPhotoCount();
-        if (!isCached && result > 0) {
+        if (result > 0) {
             String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
             Log.d("curr tag", hashtag);
             Log.d("prev tag", prevHashtag);
