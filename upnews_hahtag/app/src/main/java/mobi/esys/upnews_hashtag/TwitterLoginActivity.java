@@ -76,7 +76,7 @@ public class TwitterLoginActivity extends Activity implements View.OnClickListen
                     startActivity(new Intent(TwitterLoginActivity.this, TweeterHashTagActivity.class));
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putBoolean(ISConsts.prefstags.twitter_allow, true);
-                    editor.commit();
+                    editor.apply();
                     easyTracker.send(MapBuilder.createEvent("auth",
                             "twitter_auth", "success", null).build());
                 }
@@ -89,11 +89,11 @@ public class TwitterLoginActivity extends Activity implements View.OnClickListen
                 }
             });
         } else {
-            finish();
-            startActivity(new Intent(TwitterLoginActivity.this, SliderActivity.class).putExtra("tas",getIntent().getBooleanExtra("tas",false)));
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean(ISConsts.prefstags.twitter_allow, false);
-            editor.commit();
+            editor.apply();
+            startActivity(new Intent(TwitterLoginActivity.this, SliderActivity.class));
+            finish();
             easyTracker.send(MapBuilder.createEvent("auth",
                     "twitter_auth", "skip", null).build());
         }

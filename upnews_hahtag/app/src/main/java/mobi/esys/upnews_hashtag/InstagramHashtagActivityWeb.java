@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -19,33 +20,36 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import mobi.esys.consts.ISConsts;
 import mobi.esys.eventbus.EventIgCheckingComplete;
-import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.tasks.CheckInstaTagTask;
 import mobi.esys.tasks.CheckInstaTagTaskWeb;
-
 
 public class InstagramHashtagActivityWeb extends Activity {
     private transient UNHApp mApp;
     private transient EditText hashTagEdit;
+    private transient Button enterHashBtn;
+    private transient ProgressBar instSpinner;
+
     private transient SharedPreferences preferences;
     private transient String prevHashtag;
-    private boolean isChecking;
+
+    //autostart
+    private boolean needStartSlider = true;
+    private final Handler autoStartHandler = new Handler();
+    private Runnable autoStartRunnable;
 
     private static final int MIN_EDITABLE_LENGTH = 2;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,7 +62,8 @@ public class InstagramHashtagActivityWeb extends Activity {
 
         hashTagEdit = (EditText) findViewById(R.id.instHashTagEdit);
         hashTagEdit.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        Button enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+        enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+        instSpinner = (ProgressBar) findViewById(R.id.instSpinner);
 
         preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
         prevHashtag = preferences.getString(ISConsts.prefstags.instagram_hashtag, "");
@@ -75,38 +80,37 @@ public class InstagramHashtagActivityWeb extends Activity {
         enterHashBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopAS();
                 checkTagAndGo();
             }
         });
 
-        enterHashBtn.requestFocus();
-        hashTagEdit.addTextChangedListener(new TextWatcher() {
-
+        hashTagEdit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
+            public void onClick(View v) {
+                stopAS();
+            }
+        });
 
+        hashTagEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
                 if (!s.toString().startsWith("#")) {
                     String unSpaceStr = ("#" + s.toString()).replaceAll(" ",
                             "");
                     hashTagEdit.setText(unSpaceStr);
                 }
-
                 if (s.toString().length() == 1) {
                     hashTagEdit.setSelection(1);
                 }
-
             }
         });
 
@@ -122,19 +126,22 @@ public class InstagramHashtagActivityWeb extends Activity {
             }
         });
 
+        autoStartRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkTagAndGo();
+            }
+        };
+        startAS();
     }
 
     public void checkTagAndGo() {
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
-            if (!isChecking) {
-                String tag = hashTagEdit.getEditableText().toString().substring(1);
-                CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(tag, true, preferences);
-                checkInstaTagTask.execute();
-                isChecking = true;
-            } else {
-                Log.d("unTag_IgHashtagAct", "Checking is running");
-            }
+            loadingShow();
+            String tag = hashTagEdit.getEditableText().toString().substring(1);
+            CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(tag, true, preferences);
+            checkInstaTagTask.execute();
         } else {
             Toast.makeText(this, "Input Instagram hashtag", Toast.LENGTH_SHORT).show();
         }
@@ -142,7 +149,7 @@ public class InstagramHashtagActivityWeb extends Activity {
 
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
-        isChecking = false;
+        loadingHide();
         int result = event.getPhotoCount();
         if (result > 0) {
             String hashtag = hashTagEdit.getEditableText().toString().replace("#", "");
@@ -154,8 +161,11 @@ public class InstagramHashtagActivityWeb extends Activity {
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(ISConsts.prefstags.instagram_hashtag, hashtag);
             editor.apply();
-            startActivity(new Intent(InstagramHashtagActivityWeb.this,
-                    TwitterLoginActivity.class));
+            if (needStartSlider) {
+                startActivity(new Intent(InstagramHashtagActivityWeb.this, SliderActivity.class));
+            } else {
+                startActivity(new Intent(InstagramHashtagActivityWeb.this, TwitterLoginActivity.class));
+            }
             finish();
         } else {
             Toast.makeText(this, "Sorry but this hashtag don't allowed", Toast.LENGTH_SHORT).show();
@@ -178,10 +188,47 @@ public class InstagramHashtagActivityWeb extends Activity {
         }
     }
 
+    private void loadingShow() {
+        enterHashBtn.setVisibility(View.GONE);
+        enterHashBtn.setEnabled(false);
+        hashTagEdit.setEnabled(false);
+        instSpinner.setVisibility(View.VISIBLE);
+    }
+
+    private void loadingHide() {
+        enterHashBtn.setVisibility(View.VISIBLE);
+        enterHashBtn.setEnabled(true);
+        hashTagEdit.setEnabled(true);
+        instSpinner.setVisibility(View.GONE);
+    }
+
+    private void startAS() {
+        if (autoStartHandler != null && autoStartRunnable != null) {
+            long startTime = 15 * 1000;
+            autoStartHandler.postDelayed(autoStartRunnable, startTime);
+            Log.d("unTag_IgHashtagAct", "Autostart is running (" + startTime + " sec)");
+        }
+    }
+
+    private void stopAS() {
+        if (autoStartHandler != null && autoStartRunnable != null) {
+            needStartSlider = false;
+            autoStartHandler.removeCallbacks(autoStartRunnable);
+            autoStartRunnable = null;
+            Log.d("unTag_IgHashtagAct", "Autostart is cancelled");
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopAS();
     }
 
     @Override

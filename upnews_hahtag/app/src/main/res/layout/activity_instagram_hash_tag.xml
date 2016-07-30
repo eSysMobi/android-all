@@ -1,52 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="#9e9e9e"
+    android:orientation="vertical">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/instHashTagEdit"
-        android:layout_gravity="center_horizontal"
-        android:layout_centerVertical="true"
-        android:digits="0,1,2,3,4,5,6,7,8,9,_,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM,йцукенгшщзхъфывапролджэячсмитьбю,ЙЦУКЕНГШЩЗХФЫВАПРОЛДЖЭЯЧСМИТЬБЮ"
-        android:ellipsize="end"
-        android:focusableInTouchMode="true"
-        android:imeOptions="actionDone"
-        android:lines="1"
-        android:textColor="@android:color/black"
-        android:maxLines="1"
-        android:inputType="textNoSuggestions"
-        android:scrollHorizontally="false"
-        android:singleLine="true"
-        android:text="#" />
+    <FrameLayout
+        android:id="@+id/flNav"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/imageView"
-        android:src="@drawable/instagram_logo"
-        android:layout_above="@+id/textView"
-        android:layout_centerHorizontal="true" />
-
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="OK"
-        android:id="@+id/enterHashTagBtn"
-        android:layout_below="@+id/instHashTagEdit"
-        android:layout_centerHorizontal="true" />
+        android:layout_above="@+id/flNav"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/instagram_logo" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Введите тэг для поиска изображений в Instagram"
-        android:id="@+id/textView"
-        android:textColor="@android:color/black"
-        android:layout_above="@+id/instHashTagEdit"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/flNav"
+        android:layout_marginLeft="96dp"
+        android:layout_marginRight="96dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/instHashTagEdit"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:digits="0,1,2,3,4,5,6,7,8,9,_,.,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM,йцукенгшщзхъфывапролджэячсмитьбю,ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:hint="@string/hint_instagram"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLength="80"
+            android:maxLines="1"
+            android:nextFocusRight="@+id/enterHashTagBtn"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            android:text="#"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/enterHashTagBtn"
+            android:layout_width="50dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_ig"
+            android:focusable="true"
+            android:nextFocusLeft="@+id/instHashTagEdit"
+            android:text="OK"
+            android:textColor="#ffffff">
+            <requestFocus />
+        </Button>
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/instSpinner"
+            android:indeterminate="false"
+            android:visibility="gone" />
+
+
+    </LinearLayout>
+
 </RelativeLayout>

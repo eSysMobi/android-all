@@ -16,5 +16,6 @@
     <string name="okString">OK</string>
     <string name="twitterTagNeed">Enter the tag to search for messages in Twitter</string>
     <string name="no_inet">No Internet connection</string>
+    <string name="hint_instagram">Input Instagram hashtag</string>
 
 </resources>

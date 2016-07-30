@@ -99,7 +99,6 @@ public class SliderActivity extends Activity {
         } else {
             init();
         }
-
     }
 
     public void init() {
@@ -395,7 +394,8 @@ public class SliderActivity extends Activity {
 
     @Subscribe
     public void onEvent(EventIgLoadingComplete event) {
-        loadSlide();
+        Log.d(TAG, "Load IG photo is complete");
+        //loadSlide();
     }
 
 //    private void updateIGPhotos(final String tag) {

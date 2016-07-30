@@ -15,7 +15,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import mobi.esys.consts.ISConsts;
 import mobi.esys.eventbus.EventIgCheckingComplete;
@@ -114,8 +113,14 @@ public class CheckInstaTagTaskWeb extends AsyncTask<Void, Void, Boolean> {
                     }
                 }
 
-                if (count > 0 && igPhotos.size() > 0) {
-                    result = true;
+                if (needOnlyCount) {
+                    if (count > 0) {
+                        result = true;
+                    }
+                } else {
+                    if (count > 0 && igPhotos.size() > 0) {
+                        result = true;
+                    }
                 }
             } catch (Exception e) {
                 Log.d("unTag_CheckInstaTag", "Error checking");

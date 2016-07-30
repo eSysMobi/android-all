@@ -1,53 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="#9e9e9e"
+    android:orientation="vertical">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/twHashTagEdit"
-        android:layout_gravity="center_horizontal"
-        android:layout_centerVertical="true"
-        android:digits="0,1,2,3,4,5,6,7,8,9,_,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
-        android:ellipsize="end"
-        android:focusableInTouchMode="true"
-        android:imeOptions="actionDone"
-        android:inputType="textNoSuggestions"
-        android:lines="1"
-        android:textColor="@android:color/black"
-        android:maxLines="1"
-        android:scrollHorizontally="false"
-        android:singleLine="true"
-        android:text="@string/hashsymbol" />
+    <FrameLayout
+        android:id="@+id/flNav"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/imageView"
-        android:src="@drawable/twitter_128"
-        android:layout_above="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/flNav"
         android:layout_centerHorizontal="true"
-        android:contentDescription="@string/twLogoDesc" />
+        android:contentDescription="@string/twLogoDesc"
+        android:src="@drawable/twitter_128" />
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/okString"
-        android:id="@+id/enterHashTagBtn"
-        android:layout_below="@+id/twHashTagEdit"
-        android:layout_centerHorizontal="true" />
+        android:layout_below="@+id/flNav"
+        android:layout_marginLeft="96dp"
+        android:layout_marginRight="96dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/twitterTagNeed"
-        android:id="@+id/textView"
-        android:textColor="@android:color/black"
-        android:layout_above="@+id/twHashTagEdit"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        <EditText
+            android:id="@+id/twHashTagEdit"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:digits="0,1,2,3,4,5,6,7,8,9,_,.,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM,йцукенгшщзхъфывапролджэячсмитьбю,ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ"
+            android:ellipsize="end"
+            android:focusable="true"
+            android:hint="@string/hint_instagram"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLength="80"
+            android:maxLines="1"
+            android:nextFocusRight="@+id/enterHashTagBtn"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            android:text="#"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/enterHashTagBtn"
+            android:layout_width="50dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/button_tw"
+            android:focusable="true"
+            android:nextFocusLeft="@+id/twHashTagEdit"
+            android:text="OK"
+            android:textColor="#ffffff">
+            <requestFocus/>
+        </Button>
+    </LinearLayout>
 </RelativeLayout>
