@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class CheckInstaTagTaskWeb extends AsyncTask<Void, Void, Boolean> {
             String inputStr;
             HttpURLConnection urlConnection = null;
             try {
-                String path = "https://www.instagram.com/explore/tags/" + edTag;
+                String path = "https://www.instagram.com/explore/tags/" + URLEncoder.encode(edTag, "UTF-8");
                 URL url = new URL(path);
                 Log.w("unTagCheckInstaTag", "request: " + path);
 

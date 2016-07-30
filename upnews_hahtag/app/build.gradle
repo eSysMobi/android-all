@@ -19,27 +19,33 @@ repositories {
 }
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'upnewshashtag'
+            keyPassword 'puxa6apeS!a'
+            storeFile file('D:/esys-mobi/keystore_hashtag/upnewshashtag.jks')
+            storePassword 'puxa6apeS!a'
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
     useLibrary 'org.apache.http.legacy'
-
     defaultConfig {
         applicationId "mobi.esys.upnews_hashtag"
         minSdkVersion 11
         targetSdkVersion 23
-        versionCode 15
-        versionName "2.3.2"
+        versionCode 16
+        versionName "2.3.3"
     }
-
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 }
