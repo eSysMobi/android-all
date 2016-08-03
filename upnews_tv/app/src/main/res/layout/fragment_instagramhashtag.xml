@@ -43,7 +43,7 @@
             android:id="@+id/instHashTagEdit"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:digits="0,1,2,3,4,5,6,7,8,9,_,.,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM"
+            android:digits="0,1,2,3,4,5,6,7,8,9,_,.,*,qwertzuiopasdfghjklyxcvbnm,QWERTZUIOPASDFGHJKLYXCVBNM,йцукенгшщзхъфывапролджэячсмитьбю,ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ"
             android:ellipsize="end"
             android:hint="@string/hint_instagram"
             android:imeOptions="actionDone"
@@ -58,13 +58,12 @@
             android:nextFocusLeft="@+id/instHashTagSkip"
             android:layout_weight="1"
             android:focusable="true"
-            />
+            android:layout_marginRight="8dp" />
 
         <Button
             android:id="@+id/enterHashTagBtn"
             android:layout_width="50dp"
             android:layout_height="48dp"
-            android:layout_marginLeft="8dp"
             android:nextFocusLeft="@+id/instHashTagEdit"
             android:text="OK" android:background="@drawable/buttons_backgrounds_ig"
             android:textColor="#ffffff"
@@ -72,6 +71,13 @@
             >
             <requestFocus/>
         </Button>
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/instHashtagPb"
+            android:indeterminate="false"
+            android:visibility="gone" />
 
     </LinearLayout>
 

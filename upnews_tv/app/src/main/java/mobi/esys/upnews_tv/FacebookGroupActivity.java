@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +35,8 @@ import mobi.esys.upnews_tv.constants.Folders;
 public class FacebookGroupActivity extends Activity {
     private transient SharedPreferences preferences;
     private transient EditText fbGroupIDEdit;
+    private transient Button fbGroupIDButtonEdit;
+    private transient ProgressBar fbGroupPb;
     private transient String prevGroupID;
     private transient boolean isEdit = false;
     private transient boolean isFirstLaunch = true;
@@ -49,10 +52,11 @@ public class FacebookGroupActivity extends Activity {
         easyTracker.send(MapBuilder.createEvent("auth",
                 "start_app", "start_app at input facebook group id", null).build());
 
-
         preferences = getSharedPreferences("unoPref", MODE_PRIVATE);
 
         prevGroupID = preferences.getString("fbGroupID", "");
+
+        fbGroupPb = (ProgressBar) findViewById(R.id.fbGroupPb);
 
         fbGroupIDEdit = (EditText) findViewById(R.id.fbGroupEdit);
         fbGroupIDEdit.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -62,28 +66,22 @@ public class FacebookGroupActivity extends Activity {
             fbGroupIDEdit.setText(prevGroupID);
         }
 
-        Button fbGroupIDButtonEdit = (Button) findViewById(R.id.enterfbGroupBtn);
+        fbGroupIDButtonEdit = (Button) findViewById(R.id.enterfbGroupBtn);
 
         fbGroupIDEdit.addTextChangedListener(new TextWatcher() {
-
             @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 isEdit = true;
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
             }
         });
-
 
         fbGroupIDEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -137,6 +135,7 @@ public class FacebookGroupActivity extends Activity {
     }
 
     private void checkAndGo(String groupID) {
+        lockUI();
         GraphRequest request = new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
                 "/" + groupID + "/videos",
@@ -145,15 +144,20 @@ public class FacebookGroupActivity extends Activity {
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
                         Log.d("resp", response.toString());
-                        if (!response.toString().contains("responseCode: 404")) {
-                            if (!fbGroupIDEdit.getText().toString().equals(prevGroupID)) {
-                                clearFolder();
+                        unLockUI();
+                        if (!response.toString().contains("HttpStatus: -1")) {
+                            if (!response.toString().contains("responseCode: 404")) {
+                                if (!fbGroupIDEdit.getText().toString().equals(prevGroupID)) {
+                                    clearFolder();
+                                }
+                                saveGroupID(fbGroupIDEdit.getText().toString());
+                                startActivity(new Intent(FacebookGroupActivity.this, InstagramLoginActivity.class));
+                                finish();
+                            } else {
+                                Toast.makeText(FacebookGroupActivity.this, "This group id don't existed", Toast.LENGTH_SHORT).show();
                             }
-                            saveGroupID(fbGroupIDEdit.getText().toString());
-                            startActivity(new Intent(FacebookGroupActivity.this, InstagramHashtagActivityWeb.class));
-                            finish();
                         } else {
-                            Toast.makeText(FacebookGroupActivity.this, "This group id don't existed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(FacebookGroupActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -162,6 +166,20 @@ public class FacebookGroupActivity extends Activity {
 
         request.setParameters(parameters);
         request.executeAsync();
+    }
+
+    private void lockUI() {
+        fbGroupIDEdit.setEnabled(false);
+        fbGroupIDButtonEdit.setEnabled(false);
+        fbGroupIDButtonEdit.setVisibility(View.GONE);
+        fbGroupPb.setVisibility(View.VISIBLE);
+    }
+
+    private void unLockUI() {
+        fbGroupIDEdit.setEnabled(true);
+        fbGroupIDButtonEdit.setEnabled(true);
+        fbGroupPb.setVisibility(View.GONE);
+        fbGroupIDButtonEdit.setVisibility(View.VISIBLE);
     }
 
     public void clearFolder() {

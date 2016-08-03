@@ -42,7 +42,8 @@
             android:text=""
             android:textColor="@android:color/black"
             android:nextFocusRight="@+id/enterfbGroupBtn"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:layout_marginRight="8dp">
             <requestFocus/>
             </EditText>
 
@@ -50,11 +51,17 @@
             android:id="@+id/enterfbGroupBtn"
             android:layout_width="50dp"
             android:layout_height="48dp"
-            android:layout_marginLeft="8dp"
             android:background="@drawable/buttons_backgrounds_ig"
             android:nextFocusLeft="@+id/fbGroupEdit"
             android:text="OK"
             android:textColor="#ffffff" />
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/fbGroupPb"
+            android:indeterminate="false"
+            android:visibility="gone" />
     </LinearLayout>
 
 </RelativeLayout>

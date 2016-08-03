@@ -14,5 +14,5 @@ public final class TimeConsts {
     public static final int TWITTER_LOAD_DELAY = 1700;
     public static final int INSTAGRAM_LOAD_DELAY = 2000;
     public static final int CURRENCIES_LOAD_DELAY = 2200;
-    public static final int SLIDER_DURATION = 5 * 1000;//250;
+    public static final int SLIDER_DURATION = 6 * 1000;//250;
 }

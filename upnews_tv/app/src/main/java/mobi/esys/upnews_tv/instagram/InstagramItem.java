@@ -5,57 +5,51 @@ public class InstagramItem {
     private String igPhotoID;
     private String igThumbURL;
     private String igOriginURL;
-    private String igComment;
-    private String igUserName;
 
-    public InstagramItem(String igPhotoID, String igThumbURL, String igOriginURL, String igComment, String igUserName) {
+    public InstagramItem(String igPhotoID, String igThumbURL, String igOriginURL) {
         this.igPhotoID = igPhotoID;
         this.igThumbURL = igThumbURL;
         this.igOriginURL = igOriginURL;
-        this.igComment = igComment;
-        this.igUserName = igUserName;
     }
 
+    public String getIgPhotoID() {
+        return igPhotoID;
+    }
 
+    public String getIgThumbURL() {
+        return igThumbURL;
+    }
 
-    public final  String getIgOriginURL() {
+    public String getIgOriginURL() {
         return igOriginURL;
     }
 
-
-
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof InstagramItem)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         InstagramItem that = (InstagramItem) o;
 
-        if (!igPhotoID.equals(that.igPhotoID)) return false;
-        if (!igThumbURL.equals(that.igThumbURL)) return false;
-        if (!igOriginURL.equals(that.igOriginURL)) return false;
-        if (!igComment.equals(that.igComment)) return false;
-        return igUserName.equals(that.igUserName);
+        if (igPhotoID != null ? !igPhotoID.equals(that.igPhotoID) : that.igPhotoID != null)
+            return false;
+        if (igThumbURL != null ? !igThumbURL.equals(that.igThumbURL) : that.igThumbURL != null)
+            return false;
+        return !(igOriginURL != null ? !igOriginURL.equals(that.igOriginURL) : that.igOriginURL != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = igPhotoID.hashCode();
-        result = 31 * result + igThumbURL.hashCode();
-        result = 31 * result + igOriginURL.hashCode();
-        result = 31 * result + igComment.hashCode();
-        result = 31 * result + igUserName.hashCode();
+        int result = igPhotoID != null ? igPhotoID.hashCode() : 0;
+        result = 31 * result + (igThumbURL != null ? igThumbURL.hashCode() : 0);
+        result = 31 * result + (igOriginURL != null ? igOriginURL.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "InstagramItem{" + "igPhotoID='" + igPhotoID + '\'' + ", igThumbURL='" + igThumbURL + '\'' + ", igOriginURL='" + igOriginURL + '\'' + ", igComment='" + igComment + '\'' + ", igUserName='" + igUserName + '\'' + '}';
-    }
-
-    public String getIgUserName() {
-        return igUserName;
+        return "InstagramItem{" + "igPhotoID='" + igPhotoID + '\'' + ", igThumbURL='" + igThumbURL + '\'' + ", igOriginURL='" + igOriginURL + '\'' + '}';
     }
 
 }

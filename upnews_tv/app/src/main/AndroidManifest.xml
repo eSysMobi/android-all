@@ -90,9 +90,6 @@
             android:name=".InstagramHashtagActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".InstagramHashtagActivityWeb"
-            android:screenOrientation="landscape" />
-        <activity
             android:name=".TwitterLoginActivity"
             android:screenOrientation="landscape" />
 

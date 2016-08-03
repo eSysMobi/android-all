@@ -8,9 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -61,7 +58,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -69,7 +65,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.upnews_tv.cbr.CurrenciesList;
@@ -85,8 +80,9 @@ import mobi.esys.upnews_tv.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tv.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tv.facebook.FacebookVideoItem;
 import mobi.esys.upnews_tv.filesystem.FileSystemHelper;
-import mobi.esys.upnews_tv.instagram.CheckInstaTagTaskWeb;
-import mobi.esys.upnews_tv.instagram.InstagramDownloaderWeb;
+import mobi.esys.upnews_tv.instagram.CheckInstaTagTask;
+import mobi.esys.upnews_tv.instagram.InstagramDownloader;
+import mobi.esys.upnews_tv.instagram.InstagramItem;
 import mobi.esys.upnews_tv.net.NetMonitor;
 import mobi.esys.upnews_tv.tasks.GetLocationTask;
 import mobi.esys.upnews_tv.twitter.TwitterHelper;
@@ -101,7 +97,7 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
     private transient UpnewsOnlineApp mApp;
 
     private transient RelativeLayout relativeLayout;
-    //private transient Instagram instagram;
+    private transient Instagram instagram;
     private transient SliderLayout mSlider;
     //private transient List<InstagramItem> igPhotos;
     private transient List<FacebookVideoItem> videoItemsTmp;
@@ -279,11 +275,10 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
         mediaController.setVisibility(View.GONE);
         mediaController.setAnchorView(playerView);
 
-// Init Video
+        // Init Video
         playerView.setMediaController(mediaController);
 
-        //instagram = new Instagram(PlayerActivity.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
-
+        instagram = new Instagram(PlayerActivity.this, DevelopersKeys.INSTAGRAM_CLIENT_ID, DevelopersKeys.INSTAGRAM_CLIENT_SECRET, DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -409,10 +404,12 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
         instagramRunnable = new Runnable() {
             @Override
             public void run() {
-                CheckInstaTagTaskWeb checkInstaTagTask = new CheckInstaTagTaskWeb(hashTag);
-                checkInstaTagTask.execute();
-                //updateIGPhotos();
-                instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
+                try {
+                    CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTag, mApp);
+                    checkInstaTagTask.execute(instagram.getSession().getAccessToken());
+                } finally {
+                    instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
+                }
             }
         };
 
@@ -443,14 +440,15 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
 
     @Subscribe
     public void onEvent(EventIgLoadingComplete event) {
-        startSlides(event.getTag());
+        startSlides();
     }
 
-    private void startSlides(String tag) {
-        String path = Folders.SD_CARD.
-                concat(File.separator).
-                concat(Folders.BASE_FOLDER).
-                concat(File.separator).concat(Folders.PHOTO_FOLDER);
+    private void startSlides() {
+        String path = Folders.SD_CARD
+                .concat(File.separator)
+                .concat(Folders.BASE_FOLDER)
+                .concat(File.separator)
+                .concat(Folders.PHOTO_FOLDER);
         File[] folderList = new File(path).listFiles();
 
         if (folderList.length > 0) {
@@ -462,7 +460,7 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
 
             for (int i = 0; i < folderList.length; i++) {
                 final TextSliderView textSliderView = new TextSliderView(PlayerActivity.this);
-                textSliderView.description("#".concat(tag)).
+                textSliderView.description("#".concat(hashTag)).
                         image(folderList[i]).setScaleType(DefaultSliderView.ScaleType.Fit);
                 mSlider.addSlider(textSliderView);
             }
@@ -472,88 +470,18 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
 
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
-        String urls = event.getUrls();
-        if (!urls.isEmpty()) {
+        List<InstagramItem> result = event.getIgPhotos();
+        if (result.size() > 0) {
             String folder = Folders.SD_CARD.concat(File.separator).
                     concat(Folders.BASE_FOLDER).
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER);
-            InstagramDownloaderWeb instagramDownloader = new InstagramDownloaderWeb(PlayerActivity.this, folder, hashTag);
-            instagramDownloader.download(urls);
+            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivity.this, folder);
+            instagramDownloader.download(result);
         } else {
             Log.w(TAG, "Can't load IG images. Urls is empty");
         }
     }
-
-//    public void updateIGPhotos() {
-//        if (NetMonitor.isNetworkAvailable(mApp)) {
-//
-//            final GetIGPhotosTask getTagPhotoIGTask = new GetIGPhotosTask(hashTag);
-//            getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-//
-//            try {
-//                JSONObject igObject = new JSONObject(getTagPhotoIGTask.get());
-//                Log.d("object", igObject.toString());
-//                getIGPhotos(igObject);
-//            } catch (JSONException e) {
-//                Log.d("error", "json error");
-//                e.printStackTrace();
-//            } catch (InterruptedException e) {
-//                Log.d("error", "interrupted error");
-//                e.printStackTrace();
-//            } catch (ExecutionException e) {
-//                Log.d("error", "execution error");
-//                e.printStackTrace();
-//            }
-//            String folder = Folders.SD_CARD.concat(File.separator).
-//                    concat(Folders.BASE_FOLDER).
-//                    concat(File.separator).
-//                    concat(Folders.PHOTO_FOLDER);
-//            Log.d(TAG + "_IG", "photos: " + igPhotos.toString());
-//
-//            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivity.this, folder, hashTag);
-//            instagramDownloader.download(igPhotos);
-//        } else {
-//            Toast.makeText(PlayerActivity.this, "Can't update instagram photos",
-//                    Toast.LENGTH_SHORT).show();
-//        }
-//    }
-//
-//    private void getIGPhotos(JSONObject igObject) {
-//        if (NetMonitor.isNetworkAvailable(mApp)) {
-//            igPhotos = new ArrayList<>();
-//            try {
-//                Log.d("object main", igObject.toString());
-//                final JSONArray igData = igObject.getJSONArray("data");
-//
-//                for (int i = 0; i < igData.length(); i++) {
-//
-//                    final JSONObject currObj = igData.getJSONObject(i)
-//                            .getJSONObject("images");
-//                    Log.d("images main", currObj.toString());
-//                    final String origURL = currObj.getJSONObject("standard_resolution")
-//                            .getString(URL);
-//                    Log.d("images url main", origURL);
-//                    Log.d("data", igData.toString());
-//                    String fsComm;
-//                    if (igData.getJSONObject(i).getJSONObject("comments").getInt("count") > 0) {
-//                        fsComm = igData.getJSONObject(i).getJSONObject("comments")
-//                                .getJSONArray("data").getJSONObject(0).getString("text");
-//                    } else {
-//                        fsComm = "";
-//                    }
-//                    igPhotos.add(new InstagramItem(igData.getJSONObject(i)
-//                            .getString("id"), currObj.getJSONObject("standard_resolution")
-//                            .getString(URL), origURL, fsComm, igData.getJSONObject(i).getJSONObject("user").getString("username")));
-//                }
-//            } catch (JSONException e) {
-//                Log.d("json", "json_error: ".concat(e.getMessage()));
-//                e.printStackTrace();
-//            }
-//        } else {
-//            Toast.makeText(PlayerActivity.this, "Can't get photos from Instagram", Toast.LENGTH_SHORT).show();
-//        }
-//    }
 
     private void loadfbGroupVideos() {
         if (NetMonitor.isNetworkAvailable(mApp)) {
@@ -973,6 +901,7 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
         if (needShowInstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
             mSlider.setVisibility(View.VISIBLE);
+            startSlides();
         } else {
             mSlider.setVisibility(View.GONE);
         }

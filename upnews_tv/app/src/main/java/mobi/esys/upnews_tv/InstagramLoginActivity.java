@@ -31,7 +31,7 @@ public class InstagramLoginActivity extends Activity implements View.OnClickList
                 DevelopersKeys.INSTAGRAM_CLIENT_SECRET,
                 DevelopersKeys.INSTAGRAM_REDIRECT_URI);
 
-        if (instagram.getSession().getAccessToken().isEmpty() || instagram.getSession().getAccessToken() == null) {
+        if (instagram.getSession().getAccessToken() == null || instagram.getSession().getAccessToken().isEmpty()) {
             setContentView(R.layout.fragment_instagramlogin);
             Button bIgLgBtn = (Button) findViewById(R.id.bIgLgBtn);
             bIgLgBtn.setOnClickListener(this);
