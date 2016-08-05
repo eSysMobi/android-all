@@ -28,6 +28,12 @@ repositories {
 
 android {
     signingConfigs {
+        config {
+            keyAlias 'upnewsedu'
+            keyPassword '95147zsR%Thn75369'
+            storeFile file('D:/esys-mobi/android-all/upnews_edu/keystore_edu/upnewsedu.jks')
+            storePassword '95147zsR%Thn75369'
+        }
     }
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
@@ -49,8 +55,10 @@ android {
             debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
         debug {
+            signingConfig signingConfigs.config
         }
     }
     productFlavors {
