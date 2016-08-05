@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "D:\\esys-mobi\\android-all\\upnews_edu\\yWeatherGetter4a\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-ldpi-v4\\ic_launcher.png",
+        "source": "D:\\esys-mobi\\android-all\\upnews_edu\\yWeatherGetter4a\\src\\androidTest\\res\\drawable-ldpi\\ic_launcher.png"
+    },
+    {
+        "merged": "D:\\esys-mobi\\android-all\\upnews_tv\\yWeatherGetter4a\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-ldpi-v4\\ic_launcher.png",
+        "source": "D:\\esys-mobi\\android-all\\upnews_tv\\yWeatherGetter4a\\src\\androidTest\\res\\drawable-ldpi\\ic_launcher.png"
+    }
+]
