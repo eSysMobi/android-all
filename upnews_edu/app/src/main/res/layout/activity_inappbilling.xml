@@ -13,6 +13,6 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:background="@null"
-        android:src="@drawable/upnews_tv" />
+        android:src="@drawable/upnews_edu" />
 
 </RelativeLayout>

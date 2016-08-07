@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">upnews | EDU</string>
-    <string name="fb_app_id" translatable="false">753657894754257</string>
+    <string name="fb_app_id" translatable="false">1745301355743681</string>
     <string name="loginFacebookButton">Log in with Facebook</string>
     <string name="unloginFacebookButton">Log out</string>
     <string name="hint_facebook">Input facebook group id</string>
