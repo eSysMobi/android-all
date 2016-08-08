@@ -80,7 +80,7 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, List<InstagramIte
                                         JSONArray tags = result.getJSONArray("tags");
                                         boolean proceed = false;
                                         for (int k = 0; k < tags.length(); k++) {
-                                            if(mHashTag.equals(tags.getString(k))){
+                                            if(edTag.equals(tags.getString(k))){
                                                 proceed = true;
                                                 break;
                                             }
