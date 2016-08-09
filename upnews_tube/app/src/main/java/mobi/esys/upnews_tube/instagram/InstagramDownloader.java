@@ -11,6 +11,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import mobi.esys.upnews_tube.eventbus.EventIgLoadingComplete;
 import okio.BufferedSink;
@@ -22,48 +23,37 @@ public class InstagramDownloader {
     private transient Context context;
     private transient int downloaded;
     private transient int needDownload;
-    private transient String tag;
     private EventBus bus = EventBus.getDefault();
 
 
     public InstagramDownloader(final Context context,
-                               final String photoDownDir,
-                               final String tag) {
+                               final String photoDownDir) {
         this.context = context;
         this.photoDownDir = photoDownDir;
-        this.tag = tag;
     }
 
-    public void download(String urls) {
-        String[] urlArray = urls.split(",");
-
-        needDownload = urlArray.length;
-        for (int i = 0; i < urlArray.length; i++) {
-            String currFileName = getNameFromArray(urlArray[i]);
+    public void download(List<InstagramItem> igPhotos) {
+        needDownload = igPhotos.size();
+        for (int i = 0; i < igPhotos.size(); i++) {
+            String currFileName = igPhotos.get(i).getIgPhotoID() + getExtensionFromURL(igPhotos.get(i).getIgThumbURL());
             File picFile = new File(photoDownDir, currFileName);
-            if(!picFile.exists()){
-                downloadFileAsync(urlArray[i], currFileName);
-            } else{
+            if (!picFile.exists()) {
+                downloadFileAsync(igPhotos.get(i).getIgThumbURL(), currFileName);
+            } else {
                 Log.d(TAG, "IG file exists, not need download");
                 downloaded++;
                 if (downloaded == needDownload) {
-                    bus.post(new EventIgLoadingComplete(tag));
+                    bus.post(new EventIgLoadingComplete());
                 }
             }
         }
     }
 
-    private String getNameFromArray(String url) {
-        String name = url;
-        int srt = name.lastIndexOf("/") + 1;
-        int end = name.length();
-        int end2 = name.indexOf("?");
-        if (end2 != -1) {
-            end = end2;
-        }
-        name = name.substring(srt, end);
-
-        return name;
+    private String getExtensionFromURL(String url) {
+        String ext = url;
+        int srt = ext.lastIndexOf(".");
+        ext = ext.substring(srt);
+        return ext;
     }
 
     private void downloadFileAsync(String url, final String fileName) {
@@ -82,7 +72,7 @@ public class InstagramDownloader {
                         BufferedSink sink = Okio.buffer(Okio.sink(picFile));
                         sink.write(resource);
                         sink.close();
-                    } else{
+                    } else {
                         Log.e(TAG, "Can't save image. Problem with creating file " + picFile.getAbsolutePath());
                     }
                 } catch (IOException e) {
@@ -90,7 +80,7 @@ public class InstagramDownloader {
                 }
                 downloaded++;
                 if (downloaded == needDownload) {
-                    bus.post(new EventIgLoadingComplete(tag));
+                    bus.post(new EventIgLoadingComplete());
                 }
             }
         };

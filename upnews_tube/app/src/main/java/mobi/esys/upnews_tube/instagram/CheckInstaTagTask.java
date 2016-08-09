@@ -3,108 +3,137 @@ package mobi.esys.upnews_tube.instagram;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import net.londatiga.android.instagram.InstagramRequest;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 import mobi.esys.upnews_tube.constants.Folders;
+import mobi.esys.upnews_tube.constants.TimeConsts;
 import mobi.esys.upnews_tube.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tube.eventbus.EventIgLoadingComplete;
 
 
-public class CheckInstaTagTask extends AsyncTask<String, Void, String> {
+public class CheckInstaTagTask extends AsyncTask<String, Void, List<InstagramItem>> {
     private transient String mHashTag;
+    private transient boolean needFull;
+
+
+
     private EventBus bus = EventBus.getDefault();
 
-    public CheckInstaTagTask(String hashTag) {
+    public CheckInstaTagTask(String hashTag, boolean needFull) {
         mHashTag = hashTag;
+        this.needFull = needFull;
     }
 
-
     @Override
-    protected String doInBackground(String... params) {
-        String result = "";
+    protected List<InstagramItem> doInBackground(String... params) {
+        List<InstagramItem> photos = new ArrayList<>();
+        String response = "";
         if (mHashTag.length() >= 2) {
-            String edTag = mHashTag.toLowerCase(Locale.ENGLISH);
-
             try {
-                String path = "https://www.instagram.com/explore/tags/" + edTag;
-                URL url = new URL(path);
-                Log.w("unTagCheckInstaTag", "request: " + path);
+                final InstagramRequest request = new InstagramRequest(params[0]);
 
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setReadTimeout(2 * 1000); // 2 sec timeout
+                String edTag = mHashTag.toLowerCase();
 
-                InputStream is = urlConnection.getInputStream();
+                String max_tag_id = "";
+                boolean hasNext = true;
 
-                BufferedReader streamReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                int MAX_PAGES = TimeConsts.PAGINATION_MAX_PAGES;
 
-                String inputStr;
-                String startPrefix = "<script type=\"text/javascript\">window._sharedData";
-                while ((inputStr = streamReader.readLine()) != null) {
-                    if (inputStr.startsWith(startPrefix)) {
-                        break;
+                for (int i = 0; (i < MAX_PAGES) && hasNext; i++) {
+
+                    List<NameValuePair> reqParams = new ArrayList<NameValuePair>();
+                    reqParams.add(new BasicNameValuePair("count", String.valueOf(100)));
+                    if (!max_tag_id.isEmpty()) {
+                        reqParams.add(new BasicNameValuePair("max_tag_id", max_tag_id));
                     }
-                }
-                int srt = inputStr.indexOf("}, \"nodes\": [") + 2;
-                int end = inputStr.indexOf(", \"content_advisory");
-                inputStr = "{" + inputStr.substring(srt, end);
+                    response = request.requestGet("/tags/" + edTag + "/media/recent", reqParams);
 
-                JSONObject jsonObject = new JSONObject(inputStr);
-
-                // Getting JSON Array node
-                StringBuilder sb2 = new StringBuilder();
-                boolean firstElement = true;
-                JSONArray instElements = jsonObject.getJSONArray("nodes");
-                if (instElements.length() > 0) {
-                    for (int i = 0; i < instElements.length(); i++) {
-                        JSONObject c = instElements.getJSONObject(i);
-
-                        boolean is_video = c.getBoolean("is_video");
-
-                        if (!is_video) {
-                            if (!firstElement) {
-                                sb2.append(",");
+                    if (isJSONValid(response)) {
+                        JSONObject resObject = new JSONObject(response);
+                        if (resObject.has("meta") && resObject.getJSONObject("meta").getInt("code") == 200) {
+                            Log.d("unTag_CheckInstaTag", "Instagram tag is valid.");
+                            if (resObject.has("pagination") && resObject.getJSONObject("pagination").has("next_max_tag_id")) {
+                                max_tag_id = resObject.getJSONObject("pagination").getString("next_max_tag_id");
+                            } else {
+                                hasNext = false;
                             }
-                            sb2.append(c.getString("thumbnail_src"));
-                            firstElement = false;
+                            JSONArray results = resObject.getJSONArray("data");
+                            for (int j = 0; j < results.length(); j++) {
+                                JSONObject result = results.getJSONObject(j);
+                                if (result.getString("type").equals("image")) {
+                                    String id = result.getString("id");
+                                    JSONObject images = result.getJSONObject("images");
+
+                                    JSONObject thumbnail = images.getJSONObject("thumbnail");
+                                    String thumbnailUrl = thumbnail.getString("url");
+                                    int end = thumbnailUrl.indexOf("?");
+                                    if (end != -1) {
+                                        thumbnailUrl = thumbnailUrl.substring(0, end);
+                                    }
+
+                                    InstagramItem igItem = new InstagramItem(id, thumbnailUrl, null);
+                                    photos.add(igItem);
+                                    if (!needFull) {
+                                        hasNext = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            hasNext = false;
                         }
+                    } else {
+                        hasNext = false;
                     }
                 }
-                result = sb2.toString();
-
             } catch (Exception e) {
                 Log.d("unTag_CheckInstaTag", "Error checking");
             }
-        } else {
-            Log.d("unTag_CheckInstaTag", "Tag too short");
         }
-        return result;
+
+        return photos;
     }
 
     @Override
-    protected void onPostExecute(String s) {
-        if (s.isEmpty()) {
+    protected void onPostExecute(List<InstagramItem> photos) {
+        bus.post(new EventIgCheckingComplete(photos));
+        if (photos.size() <= 0) {
+            Log.d("unTag_CheckInstaTag", "Can't load from instagram. Use cached.");
             String folder = Folders.SD_CARD.concat(File.separator).
                     concat(Folders.BASE_FOLDER).
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER);
             File[] folderList = new File(folder).listFiles();
             if (folderList.length > 0) {
-                Log.d("unTag_CheckInstaTag", "Can't load from instagram. Use cached.");
-                bus.post(new EventIgLoadingComplete(mHashTag));
+                bus.post(new EventIgLoadingComplete());
+            } else {
+                Log.d("unTag_CheckInstaTag", "No cached files!");
             }
-        } else {
-            bus.post(new EventIgCheckingComplete(s));
         }
-        super.onPostExecute(s);
+        super.onPostExecute(photos);
+    }
+
+    public boolean isJSONValid(String test) {
+        try {
+            new JSONObject(test);
+        } catch (JSONException ex) {
+            try {
+                new JSONArray(test);
+            } catch (JSONException ex1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

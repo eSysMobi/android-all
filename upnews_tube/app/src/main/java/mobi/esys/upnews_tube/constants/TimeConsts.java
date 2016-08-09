@@ -18,4 +18,7 @@ public final class TimeConsts {
     public static final int AUTOSTART = 15 * 1000;
     //10sec
     public static final int PLAYING_CHECK = 14 * 1000;
+
+    //times
+    public static final int PAGINATION_MAX_PAGES = 3;
 }

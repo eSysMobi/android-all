@@ -52,7 +52,7 @@
         android:required="false" />
 
     <application
-        android:name=".UpnewsTubeApp"
+        android:name=".UpnewsApp"
         android:allowBackup="true"
         android:banner="@drawable/upnews_tube_banner"
         android:fullBackupContent="@xml/backup"
@@ -82,6 +82,9 @@
         <activity
             android:name="mobi.esys.upnews_tube.InAppBillingActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name="mobi.esys.upnews_tube.InstagramLoginActivity"
             android:screenOrientation="landscape" />
         <activity
             android:name="mobi.esys.upnews_tube.InstagramHashtagActivity"

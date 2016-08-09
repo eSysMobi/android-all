@@ -38,12 +38,15 @@ import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.londatiga.android.instagram.Instagram;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.upnews_tube.cbr.CurrenciesList;
@@ -58,6 +61,7 @@ import mobi.esys.upnews_tube.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tube.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tube.instagram.CheckInstaTagTask;
 import mobi.esys.upnews_tube.instagram.InstagramDownloader;
+import mobi.esys.upnews_tube.instagram.InstagramItem;
 import mobi.esys.upnews_tube.tasks.GetLocationTask;
 import mobi.esys.upnews_tube.twitter.TwitterHelper;
 import zh.wang.android.apis.yweathergetter4a.WeatherInfo;
@@ -79,6 +83,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
     private YouTubePlayer YPlayer;
 
     private String hashtag;
+    private transient Instagram instagram;
 
     private static final int RECOVERY_DIALOG_REQUEST = 1;
     private transient LinearLayout clockLayout;
@@ -121,7 +126,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     private transient boolean isFirst = true;
     private transient boolean youtubePlaylist = true;
-    private transient UpnewsTubeApp mApp;
+    private transient UpnewsApp mApp;
 
     private transient boolean needIsnstagram;
     private transient boolean skip_twitter = true;
@@ -138,7 +143,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         setContentView(R.layout.activity_player_activity_you_tube);
 
         SharedPreferences preferences = getSharedPreferences(OtherConst.APP_PREF, MODE_PRIVATE);
-        needIsnstagram = preferences.getBoolean("instNeedShow", false);
+        needIsnstagram = preferences.getBoolean(OtherConst.APP_PREF_SKIP_INSTAGRAM, false);
         skip_twitter = preferences.getBoolean(OtherConst.APP_PREF_SKIP_TWITTER, true);
         playlistID = preferences.getString(OtherConst.APP_PREF_PLAYLIST, "");
         hashtag = preferences.getString("instHashTag", "");
@@ -151,7 +156,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         mSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
         mSlider.setDuration(TimeConsts.SLIDER_DURATION);
 
-        mApp = (UpnewsTubeApp) getApplication();
+        mApp = (UpnewsApp) getApplication();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             TextClock digitalClock = new TextClock(this);
@@ -228,12 +233,16 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
             }
         };
 
+        instagram = new Instagram(this, DevelopersKeys.INSTAGRAM_CLIENT_ID,
+                DevelopersKeys.INSTAGRAM_CLIENT_SECRET,
+                DevelopersKeys.INSTAGRAM_REDIRECT_URI);
+
         instagramHandler = new Handler();
         instagramRunnable = new Runnable() {
             @Override
             public void run() {
-                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashtag);
-                checkInstaTagTask.execute();
+                CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashtag, true);
+                checkInstaTagTask.execute(instagram.getSession().getAccessToken());
                 instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);
             }
         };
@@ -292,10 +301,10 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
 
     @Subscribe
     public void onEvent(EventIgLoadingComplete event) {
-        startSlides(event.getTag());
+        startSlides();
     }
 
-    private void startSlides(String tag) {
+    private void startSlides() {
         String path = Folders.SD_CARD.
                 concat(File.separator).
                 concat(Folders.BASE_FOLDER).
@@ -315,7 +324,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
                 final TextSliderView textSliderView = new TextSliderView(PlayerActivityYouTube.this);
 
 
-                textSliderView.description("#".concat(tag)).
+                textSliderView.description("#".concat(hashtag)).
                         image(folderList[i]).setScaleType(DefaultSliderView.ScaleType.Fit);
 
                 mSlider.addSlider(textSliderView);
@@ -323,23 +332,21 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
             }
 
             mSlider.startAutoCycle();
-        } else {
-            Toast.makeText(this, "Instagram photos load fail", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Subscribe
     public void onEvent(EventIgCheckingComplete event) {
-        String urls = event.getUrls();
-        if (!urls.isEmpty()) {
+        List<InstagramItem> result = event.getIgPhotos();
+        if (result.size() > 0) {
             String folder = Folders.SD_CARD.concat(File.separator).
                     concat(Folders.BASE_FOLDER).
                     concat(File.separator).
                     concat(Folders.PHOTO_FOLDER);
-            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder, hashtag);
-            instagramDownloader.download(urls);
+            InstagramDownloader instagramDownloader = new InstagramDownloader(PlayerActivityYouTube.this, folder);
+            instagramDownloader.download(result);
         } else {
-            Log.w(TAG, "Can't load IG images. Urls is empty");
+            Log.w(TAG, "Can't load IG images. Server results is empty");
         }
     }
 
@@ -744,7 +751,7 @@ public class PlayerActivityYouTube extends YouTubeBaseActivity implements
         readyShowWeather = true;
         if (needIsnstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
-            startSlides(hashtag);
+            startSlides();
         } else {
             mSlider.setVisibility(View.GONE);
         }

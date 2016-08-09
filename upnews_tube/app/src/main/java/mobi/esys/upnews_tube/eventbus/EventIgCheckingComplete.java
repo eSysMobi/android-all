@@ -1,16 +1,17 @@
 package mobi.esys.upnews_tube.eventbus;
 
-/**
- * Created by ZeyUzh on 15.07.2016.
- */
-public class EventIgCheckingComplete {
-    private String urls;
+import java.util.List;
 
-    public EventIgCheckingComplete(String urls) {
-        this.urls = urls;
+import mobi.esys.upnews_tube.instagram.InstagramItem;
+
+public class EventIgCheckingComplete {
+    private final List<InstagramItem> igPhotos;
+
+    public EventIgCheckingComplete(List<InstagramItem> igPhotos) {
+        this.igPhotos = igPhotos;
     }
 
-    public String getUrls() {
-        return urls;
+    public List<InstagramItem> getIgPhotos() {
+        return igPhotos;
     }
 }

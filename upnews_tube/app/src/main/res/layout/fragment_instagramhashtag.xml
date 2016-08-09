@@ -26,8 +26,8 @@
         android:layout_marginRight="40dp"
         android:focusableInTouchMode="false"
         android:focusable="false"
-        android:gravity="bottom"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <Button
             android:id="@+id/igSkipBtn"
@@ -89,6 +89,12 @@
             android:nextFocusLeft="@+id/instHashTagEdit"
             android:text="OK" />
         <requestFocus/>
+
+        <ProgressBar
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/instHashtagPb"
+            android:visibility="gone" />
     </LinearLayout>
 
 

@@ -13,7 +13,7 @@ import mobi.esys.upnews_tube.constants.Folders;
 import mobi.esys.upnews_tube.filesystem.FolderHelper;
 
 
-public class UpnewsTubeApp extends Application {
+public class UpnewsApp extends Application {
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
     private static final String TWITTER_KEY = DevelopersKeys.TWITTER_KEY;

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import mobi.esys.upnews_tube.InstagramHashtagActivity;
+import mobi.esys.upnews_tube.InstagramLoginActivity;
 import mobi.esys.upnews_tube.R;
 import mobi.esys.upnews_tube.constants.OtherConst;
 
@@ -78,7 +78,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                 SharedPreferences.Editor editor = mPrefs.edit();
                 editor.putString(OtherConst.APP_PREF_PLAYLIST, viewHolder.playlistID);
                 editor.apply();
-                Intent nextActivity = new Intent(mContext, InstagramHashtagActivity.class);
+                Intent nextActivity = new Intent(mContext, InstagramLoginActivity.class);
                 mContext.startActivity(nextActivity);
             }
         });

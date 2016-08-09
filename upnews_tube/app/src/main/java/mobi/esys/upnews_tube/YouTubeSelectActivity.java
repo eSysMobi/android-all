@@ -52,14 +52,6 @@ public class YouTubeSelectActivity extends Activity {
     private Runnable youtubePlaylistAutostartRunnable;
     private boolean userInterrupt = false;
 
-//get id channel from channel name
-//https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=USER_NAME&key=API_KEY
-//https://www.googleapis.com/youtube/v3/channels?part=snippet&forUsername=Northernlion&key=AIzaSyAd_TjlIQ606ypYNLuJANzKP8AnSIKJu9Q
-
-//get playlists from channel id
-//https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=UC3tNpTOHsTnkmbwztCs30sA&maxResults=50&order=date&type=playlist&key=AIzaSyAd_TjlIQ606ypYNLuJANzKP8AnSIKJu9Q
-//https://www.googleapis.com/youtube/v3/search?part=id%2C+snippet&channelId=UC3tNpTOHsTnkmbwztCs30sA&maxResults=50&order=date&type=playlist&key=AIzaSyAd_TjlIQ606ypYNLuJANzKP8AnSIKJu9Q
-
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -311,7 +303,7 @@ public class YouTubeSelectActivity extends Activity {
         }
     }
 
-    private void stopAutostart(){
+    private void stopAutostart() {
         if (startHandler != null && youtubePlaylistAutostartRunnable != null) {
             Log.d("unTag_YouTubeSelectAct", "Cancel autostart PlayerActivityYouTube");
             startHandler.removeCallbacks(youtubePlaylistAutostartRunnable);
