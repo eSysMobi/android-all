@@ -159,6 +159,7 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
     private final static String TAG = "unTag_PlayerActivity";
     private transient boolean needShowInstagram = false;
     private transient boolean needShowTwitter = false;
+    private transient boolean needShowCurrency = false;
     private transient boolean readyShowWeather = false;
     private transient String hashTag;
 
@@ -897,7 +898,9 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
 
         readyShowWeather = true;
         locationHandler.postDelayed(locationRunnable, TimeConsts.WEATHER_LOAD_DELAY);
-        currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
+        if (needShowCurrency) {
+            currHandler.postDelayed(currRunnable, TimeConsts.CURRENCIES_LOAD_DELAY);
+        }
         if (needShowInstagram) {
             instagramHandler.postDelayed(instagramRunnable, TimeConsts.INSTAGRAM_LOAD_DELAY);
             mSlider.setVisibility(View.VISIBLE);

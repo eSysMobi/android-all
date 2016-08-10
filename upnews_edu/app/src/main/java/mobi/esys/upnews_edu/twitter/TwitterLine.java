@@ -114,7 +114,7 @@ public class TwitterLine implements ViewSwitcher.ViewFactory {
 
         RelativeLayout.LayoutParams tsLp = new RelativeLayout.LayoutParams(1000, 150);
         tsLp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        tsLp.setMargins(0, 0, 250, 60);
+        tsLp.setMargins(0, 0, 0, 40);
         twitterLayout.setLayoutParams(tsLp);
 
 
