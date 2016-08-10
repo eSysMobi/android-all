@@ -15,4 +15,7 @@ public final class TimeConsts {
     public static final int INSTAGRAM_LOAD_DELAY = 2000;
     public static final int CURRENCIES_LOAD_DELAY = 2200;
     public static final int SLIDER_DURATION = 6 * 1000;//250;
+
+    //times
+    public static final int PAGINATION_MAX_PAGES = 3;
 }

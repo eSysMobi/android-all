@@ -405,7 +405,7 @@ public class PlayerActivity extends Activity implements YahooWeatherInfoListener
             @Override
             public void run() {
                 try {
-                    CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTag, mApp);
+                    CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTag, true);
                     checkInstaTagTask.execute(instagram.getSession().getAccessToken());
                 } finally {
                     instagramHandler.postDelayed(this, TimeConsts.TWITTER_AND_INSTAGRAM_REFRESH_INTERVAL);

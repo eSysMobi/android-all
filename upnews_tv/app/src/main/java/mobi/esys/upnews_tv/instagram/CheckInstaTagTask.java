@@ -18,6 +18,7 @@ import java.util.List;
 
 import mobi.esys.upnews_tv.UpnewsOnlineApp;
 import mobi.esys.upnews_tv.constants.Folders;
+import mobi.esys.upnews_tv.constants.TimeConsts;
 import mobi.esys.upnews_tv.eventbus.EventIgCheckingComplete;
 import mobi.esys.upnews_tv.eventbus.EventIgLoadingComplete;
 import mobi.esys.upnews_tv.net.NetMonitor;
@@ -25,12 +26,12 @@ import mobi.esys.upnews_tv.net.NetMonitor;
 
 public class CheckInstaTagTask extends AsyncTask<String, Void, List<InstagramItem>> {
     private transient String mHashTag;
-    private transient UpnewsOnlineApp mApp;
+    private transient boolean needFull;
     private EventBus bus = EventBus.getDefault();
 
-    public CheckInstaTagTask(String hashTag, UpnewsOnlineApp app) {
+    public CheckInstaTagTask(String hashTag, boolean needFull) {
         mHashTag = hashTag;
-        mApp = app;
+        this.needFull = needFull;
     }
 
     @Override
@@ -38,25 +39,37 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, List<InstagramIte
         List<InstagramItem> photos = new ArrayList<>();
         String response = "";
         if (mHashTag.length() >= 2) {
-            if (NetMonitor.isNetworkAvailable(mApp)) {
-                try {
-                    final InstagramRequest request = new InstagramRequest(params[0]);
+            try {
+                final InstagramRequest request = new InstagramRequest(params[0]);
 
-                    String edTag = mHashTag.toLowerCase();
+                String edTag = mHashTag.toLowerCase();
 
-                    final List<NameValuePair> reqParams = new ArrayList<NameValuePair>(
-                            1);
-                    reqParams.add(new BasicNameValuePair("count", String
-                            .valueOf(100)));
-                    response = request.requestGet("/tags/" + edTag
-                            + "/media/recent", reqParams);
+                String max_tag_id = "";
+                boolean hasNext = true;
+
+                int MAX_PAGES = TimeConsts.PAGINATION_MAX_PAGES;
+
+                for (int i = 0; (i < MAX_PAGES) && hasNext; i++) {
+
+                    List<NameValuePair> reqParams = new ArrayList<NameValuePair>();
+                    reqParams.add(new BasicNameValuePair("count", String.valueOf(100)));
+                    if (!max_tag_id.isEmpty()) {
+                        reqParams.add(new BasicNameValuePair("max_tag_id", max_tag_id));
+                    }
+                    response = request.requestGet("/tags/" + edTag + "/media/recent", reqParams);
+
                     if (isJSONValid(response)) {
                         JSONObject resObject = new JSONObject(response);
                         if (resObject.has("meta") && resObject.getJSONObject("meta").getInt("code") == 200) {
-                            Log.d("unTag_CheckInstaTag", "All ok. Instagram tag is valid.");
+                            Log.d("unTag_CheckInstaTag", "Instagram tag is valid.");
+                            if (resObject.has("pagination") && resObject.getJSONObject("pagination").has("next_max_tag_id")) {
+                                max_tag_id = resObject.getJSONObject("pagination").getString("next_max_tag_id");
+                            } else {
+                                hasNext = false;
+                            }
                             JSONArray results = resObject.getJSONArray("data");
-                            for (int i = 0; i < results.length(); i++) {
-                                JSONObject result = results.getJSONObject(i);
+                            for (int j = 0; j < results.length(); j++) {
+                                JSONObject result = results.getJSONObject(j);
                                 if (result.getString("type").equals("image")) {
                                     String id = result.getString("id");
                                     JSONObject images = result.getJSONObject("images");
@@ -70,15 +83,21 @@ public class CheckInstaTagTask extends AsyncTask<String, Void, List<InstagramIte
 
                                     InstagramItem igItem = new InstagramItem(id, thumbnailUrl, null);
                                     photos.add(igItem);
+                                    if (!needFull) {
+                                        hasNext = false;
+                                        break;
+                                    }
                                 }
                             }
+                        } else {
+                            hasNext = false;
                         }
+                    } else {
+                        hasNext = false;
                     }
-                } catch (Exception e) {
-                    Log.d("unTag_CheckInstaTag", "Error checking");
                 }
-            } else {
-                Log.d("unTag_CheckInstaTag", "No inet, can't check instagram tag");
+            } catch (Exception e) {
+                Log.d("unTag_CheckInstaTag", "Error checking");
             }
         }
 

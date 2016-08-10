@@ -35,7 +35,6 @@ import mobi.esys.upnews_tv.instagram.CheckInstaTagTask;
 import mobi.esys.upnews_tv.instagram.InstagramItem;
 
 public class InstagramHashtagActivity extends Activity {
-    private transient UpnewsOnlineApp mApp;
     private transient EditText hashTagEdit;
     private transient Button enterHashBtn;
     private transient Button instHashTagSkip;
@@ -53,7 +52,6 @@ public class InstagramHashtagActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.fragment_instagramhashtag);
 
-        mApp = (UpnewsOnlineApp) getApplicationContext();
         instagram = new Instagram(this, DevelopersKeys.INSTAGRAM_CLIENT_ID,
                 DevelopersKeys.INSTAGRAM_CLIENT_SECRET,
                 DevelopersKeys.INSTAGRAM_REDIRECT_URI);
@@ -138,7 +136,7 @@ public class InstagramHashtagActivity extends Activity {
     public void checkTagAndGo() {
         if (!hashTagEdit.getEditableText().toString().isEmpty() && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
             lockUI();
-            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString().substring(1), mApp);
+            CheckInstaTagTask checkInstaTagTask = new CheckInstaTagTask(hashTagEdit.getEditableText().toString().substring(1), false);
             checkInstaTagTask.execute(instagram.getSession().getAccessToken());
         } else {
             Toast.makeText(this, "Input Instagram hashtag", Toast.LENGTH_SHORT).show();
