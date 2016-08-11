@@ -5,13 +5,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
-import mobi.esys.upnews_hashtag.UNHApp;
+import mobi.esys.upnews_hashtag.UpnewsApp;
 
 /**
  * Created by Артем on 14.04.2015.
  */
 public class NetMonitor {
-    public static final boolean isNetworkAvailable(UNHApp app) {
+    public static final boolean isNetworkAvailable(UpnewsApp app) {
         Context context = app.getApplicationContext();
         ConnectivityManager connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -34,7 +34,7 @@ public class NetMonitor {
         }
     }
 
-    public static final boolean isNetworkAvailableOnlyWIFI(UNHApp app) {
+    public static final boolean isNetworkAvailableOnlyWIFI(UpnewsApp app) {
         Context context = app.getApplicationContext();
         ConnectivityManager connectivityManager = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);

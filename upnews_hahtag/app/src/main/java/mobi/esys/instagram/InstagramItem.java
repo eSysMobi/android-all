@@ -1,15 +1,15 @@
-package mobi.esys.instagram.model;
+package mobi.esys.instagram;
 
-public class InstagramPhoto {
+public class InstagramItem {
     private String igPhotoID;
     private String igThumbURL;
     private String igOriginURL;
     private int igLikes;
 
-    public InstagramPhoto(final String igPhotoID,
-                          final String igThumbURL,
-                          final String igOriginURL,
-                          int igLikes) {
+    public InstagramItem(final String igPhotoID,
+                         final String igThumbURL,
+                         final String igOriginURL,
+                         int igLikes) {
         this.igPhotoID = igPhotoID;
         this.igThumbURL = igThumbURL;
         this.igOriginURL = igOriginURL;
@@ -46,7 +46,7 @@ public class InstagramPhoto {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("InstagramPhoto{");
+        final StringBuilder sb = new StringBuilder("InstagramItem{");
         sb.append("igPhotoID='").append(igPhotoID).append('\'');
         sb.append(", igThumbURL='").append(igThumbURL).append('\'');
         sb.append(", igOriginURL='").append(igOriginURL).append('\'');

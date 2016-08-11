@@ -11,7 +11,6 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
@@ -25,9 +24,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+
+import net.londatiga.android.instagram.Instagram;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,13 +42,14 @@ import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.consts.ISConsts;
-import mobi.esys.downloaders.InstagramPhotoDownloaderWeb;
-import mobi.esys.eventbus.EventIgCheckingComplete;
+import mobi.esys.downloaders.InstagramPhotoDownloader;
+import mobi.esys.eventbus.EventGetCountTagsIGComplete;
+import mobi.esys.eventbus.EventGetTagsIGComplete;
 import mobi.esys.eventbus.EventIgLoadingComplete;
-import mobi.esys.filesystem.directories.DirectoryHelper;
-import mobi.esys.filesystem.files.FilesHelper;
-import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.tasks.CheckInstaTagTaskWeb;
+import mobi.esys.filesystem.IOHelper;
+import mobi.esys.instagram.InstagramItem;
+import mobi.esys.tasks.GetCountTagIGTask;
+import mobi.esys.tasks.GetTagsIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 import mobi.esys.view.PhotoElement;
 
@@ -58,12 +61,12 @@ public class MainSliderActivity extends Activity {
 
     private transient RelativeLayout relativeLayout;
     private transient TextView tvTagCount;
-    private transient UNHApp mApp;
+    private transient UpnewsApp mApp;
     private transient SharedPreferences preferences;
 
     private transient String[] photoFiles;
 
-    //private transient Instagram instagram;
+    private transient Instagram instagram;
 
     private transient String igHashTag;
     private transient String twHashTag;
@@ -72,7 +75,7 @@ public class MainSliderActivity extends Activity {
 
     private transient final String TAG = "unTagMainSlider";
 
-    private transient List<InstagramPhoto> igPhotos;
+    private transient List<InstagramItem> igPhotos;
 
     private transient int musicIndex;
     private transient MediaPlayer mediaPlayer;
@@ -89,9 +92,10 @@ public class MainSliderActivity extends Activity {
     private transient Runnable twitterFeedRunnable;
 
     private transient ImageView logoView;
-    private FilesHelper logoFileHelper;
 
     private transient int musicPosition = 0;
+
+    private transient int countOfLoadings = 0;
 
     private transient Handler handlerHideUI = new uiHandler();
     private transient View decorView = null;
@@ -140,36 +144,29 @@ public class MainSliderActivity extends Activity {
         relativeLayout = (RelativeLayout) findViewById(R.id.layoutTwitter);
         logoView = (ImageView) findViewById(R.id.logoMainSlider);
         TextView tvTagView = (TextView) findViewById(R.id.tvTagView);
-        tvTagView.setText(igHashTag);
+        tvTagView.setText('#' + igHashTag);
         tvTagCount = (TextView) findViewById(R.id.tvTagCount);
 
         changeImagesRunnable = new Runnable() {
             @Override
             public void run() {
                 loadSlide();
-                changeImagesHandler.postDelayed(this, 14 * 1000);
+                changeImagesHandler.postDelayed(this, ISConsts.times.SLIDE_CHANGE_INTERVAL);
             }
         };
 
-//        instagram = new Instagram(MainSliderActivity.this,
-//                ISConsts.instagramconsts.instagram_client_id, ISConsts.instagramconsts.instagram_client_secret,
-//                ISConsts.instagramconsts.instagram_redirect_uri);
+        instagram = new Instagram(this, ISConsts.instagramconsts.INSTAGRAM_CLIENT_ID,
+                ISConsts.instagramconsts.INSTAGRAM_CLIENT_SECRET,
+                ISConsts.instagramconsts.INSTAGRAM_REDIRECT_URI);
 
-        mApp = (UNHApp) getApplicationContext();
+        mApp = (UpnewsApp) getApplicationContext();
 
-        DirectoryHelper photoDirHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
-        photoFiles = photoDirHelper.getDirFileList(TAG);
+        photoFiles = IOHelper.getDirFileList();
 
         loadRes();
         initTwitter();
         playMP3();
         updateIGPhotos(igHashTag);
-
-        String logoFile = Environment.getExternalStorageDirectory()
-                .getAbsolutePath().concat(ISConsts.globals.dir_name)
-                .concat(ISConsts.globals.dir_changeable_logo_name)
-                .concat(ISConsts.globals.changeable_logo_name);
-        logoFileHelper = new FilesHelper(logoFile, getApplicationContext());
 
         //prepare handler for hide Android status bar
         if (Build.VERSION.SDK_INT >= 14) {
@@ -188,17 +185,15 @@ public class MainSliderActivity extends Activity {
     }
 
     private void updateIGPhotos(final String tag) {
-        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, false, preferences);
-        checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        GetTagsIGTask getTagsIGTask = new GetTagsIGTask(tag, instagram.getSession().getAccessToken());
+        getTagsIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        GetCountTagIGTask getCountTagIGTask = new GetCountTagIGTask(tag, instagram.getSession().getAccessToken());
+        getCountTagIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Subscribe
-    public void onEvent(EventIgCheckingComplete event) {
-        if (event.getIgPhotos().size() > 0) {
-            igPhotos = event.getIgPhotos();
-            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
-            downloader.download(event.getIgPhotos());
-        }
+    public void onEvent(EventGetCountTagsIGComplete event) {
         if (event.getPhotoCount() > 0) {
             tvTagCount.setVisibility(View.VISIBLE);
             String text = String.valueOf(event.getPhotoCount()).concat(" publications");
@@ -209,100 +204,32 @@ public class MainSliderActivity extends Activity {
     }
 
     @Subscribe
-    public void onEvent(EventIgLoadingComplete event) {
-        Log.d(TAG, "Load IG photo is complete");
-        //loadSlide();
+    public void onEvent(EventGetTagsIGComplete event) {
+        if (event.getIgPhotos().size() > 0) {
+            igPhotos = event.getIgPhotos();
+            InstagramPhotoDownloader downloader = new InstagramPhotoDownloader(this);
+            downloader.download(event.getIgPhotos());
+        }
     }
 
+    @Subscribe
+    public void onEvent(EventIgLoadingComplete event) {
+        Log.d(TAG, "Load IG photo is complete");
 
-//    private void updateTagCount(final String tag) {
-//        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, preferences);
-//
-//        try {
-//            checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-//            tagPhotoCount = checkInstaTagTask.get();
-//            if(tagPhotoCount > 0){
-//                String text = String.valueOf(tagPhotoCount).concat(" publications");
-//                tvTagCount.setText(text);
-//            } else {
-//                tvTagCount.setVisibility(View.GONE);
-//            }
-//        } catch (InterruptedException e) {
-//            Log.d("error", "interrupted error");
-//        } catch (ExecutionException e) {
-//            Log.d("error", "execution error");
-//        }
-//    }
-//
-//    private void updateIGPhotos(final String tag) {
-//        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
-//                MainSliderActivity.this,
-//                "default", tag, false, mApp);
-//        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-//
-//        Log.d("aT main", instagram.getSession().getAccessToken());
-//        try {
-//            igObject = new JSONObject(getTagPhotoIGTask.get());
-//            Log.d("object", igObject.toString());
-//            updateTagCount(tag);
-//            getIGPhotos(igObject);
-//        } catch (JSONException e) {
-//            Log.d("error", "json error");
-//        } catch (InterruptedException e) {
-//            Log.d("error", "interrupted error");
-//        } catch (ExecutionException e) {
-//            Log.d("error", "execution error");
-//        }
-//    }
-//
-//    private void getIGPhotos(JSONObject igObject) {
-//        igPhotos = new ArrayList<>();
-//        try {
-//            final JSONArray igData = igObject.getJSONArray("data");
-//            Log.d("igData", igData.toString());
-//
-//            for (int i = 0; i < igData.length(); i++) {
-//
-//                final JSONObject currLikeObj = igData.getJSONObject(i)
-//                        .getJSONObject("likes");
-//
-//                final JSONObject currObj = igData.getJSONObject(i)
-//                        .getJSONObject("images");
-//                Log.d("images main", currObj.toString());
-//                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
-//                        .getString(URL);
-//                int tmpIndex = origURL.indexOf("?");
-//                if (tmpIndex > 0) {
-//                    origURL = origURL.substring(0, tmpIndex);
-//                }
-//                Log.d("images url main", origURL);
-//
-//                final String idDown = igData.getJSONObject(i).getString("id");
-//                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
-//                tmpIndex = thumbDown.indexOf("?");
-//                if (tmpIndex > 0) {
-//                    thumbDown = thumbDown.substring(0, tmpIndex);
-//                }
-//                final int likesDown = currLikeObj.getInt("count");
-//
-//                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
-//                Log.d("ig photos main", igPhotos.get(i).toString());
-//
-//            }
-//
-//            InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(MainSliderActivity.this, true);
-//            instagramPhotoDownloader.download(igPhotos);
-//
-//        } catch (JSONException e) {
-//            Log.d("json", "json_error");
-//        }
-//    }
+        //clear old files in directory
+        if (event.getCountLoadedFiles() > 0) {
+            stopSlidesHandlersRefresh();
+            //clearing
+            IOHelper.distinctFiles(igPhotos);
+            startSlidesHandlersRefresh();
+        }
+    }
+
 
     public void loadSlide() {
         Log.d(TAG.concat("_photo"), igPhotos.toString());
         Log.d(TAG, "change slides");
-        DirectoryHelper photoDirHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
-        photoFiles = photoDirHelper.getDirFileList(TAG);
+        photoFiles = IOHelper.getDirFileList();
 
         Log.w(TAG, "Change slides : " + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2]);
 
@@ -322,8 +249,6 @@ public class MainSliderActivity extends Activity {
         fade_5.setFillAfter(true);
         fade_5.setAnimationListener(new AnimList(2));
         photoElements.get(2).getRelativeLayout().startAnimation(fade_5);
-
-
     }
 
     final class AnimList implements Animation.AnimationListener {
@@ -451,7 +376,13 @@ public class MainSliderActivity extends Activity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 playEmbedded();
-                updateIGPhotos(igHashTag);
+
+                if (countOfLoadings < ISConsts.times.CHECK_SLIDES_INTERVAL) {
+                    countOfLoadings++;
+                } else {
+                    countOfLoadings = 0;
+                    updateIGPhotos(igHashTag);
+                }
             }
         });
 
@@ -540,16 +471,20 @@ public class MainSliderActivity extends Activity {
             mediaPlayer.seekTo(musicPosition);
             mediaPlayer.start();
         }
-        restartSlidesHandlersRefresh();
+        startSlidesHandlersRefresh();
         restartTwitterHandlersRefresh();
     }
 
     //Check logo.
     private void checkLogo() {
         Log.d("TAG1", "Check logo in onResume.");
-        logoFileHelper.createLogoInExternalStorage();
-        Bitmap logoFromFile = logoFileHelper.getLogoFromExternalStorage();
-        logoView.setImageBitmap(logoFromFile);
+        boolean haveLogo = IOHelper.createLogoInExternalStorage(this);
+        if (haveLogo) {
+            Bitmap logoFromFile = IOHelper.getLogoFromExternalStorage();
+            logoView.setImageBitmap(logoFromFile);
+        } else {
+            Toast.makeText(MainSliderActivity.this, "Can't get logo from SD. IO error.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -621,7 +556,7 @@ public class MainSliderActivity extends Activity {
         }
     }
 
-    public void restartSlidesHandlersRefresh() {
+    public void startSlidesHandlersRefresh() {
         if (changeImagesHandler != null && changeImagesRunnable != null) {
             changeImagesHandler.postDelayed(changeImagesRunnable, 1000);
         }

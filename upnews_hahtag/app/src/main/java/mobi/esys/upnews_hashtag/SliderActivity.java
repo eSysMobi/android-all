@@ -24,6 +24,8 @@ import android.widget.TextView;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 
+import net.londatiga.android.instagram.Instagram;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
@@ -34,13 +36,12 @@ import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 import mobi.esys.consts.ISConsts;
-import mobi.esys.downloaders.InstagramPhotoDownloaderWeb;
-import mobi.esys.eventbus.EventIgCheckingComplete;
+import mobi.esys.downloaders.InstagramPhotoDownloader;
+import mobi.esys.eventbus.EventGetTagsIGComplete;
 import mobi.esys.eventbus.EventIgLoadingComplete;
-import mobi.esys.eventbus.SongStopEvent;
-import mobi.esys.filesystem.directories.DirectoryHelper;
-import mobi.esys.instagram.model.InstagramPhoto;
-import mobi.esys.tasks.CheckInstaTagTaskWeb;
+import mobi.esys.filesystem.IOHelper;
+import mobi.esys.instagram.InstagramItem;
+import mobi.esys.tasks.GetTagsIGTask;
 import mobi.esys.twitter.model.TwitterHelper;
 import mobi.esys.view.PhotoElement;
 
@@ -53,7 +54,7 @@ public class SliderActivity extends Activity {
     private transient List<PhotoElement> photoElements;
     private transient int[] nextElementsState = {0, 1, 2};
 
-    private transient UNHApp mApp;
+    private transient UpnewsApp mApp;
 
     private transient SharedPreferences preferences;
 
@@ -63,9 +64,7 @@ public class SliderActivity extends Activity {
     private transient int musicIndex = 0;
     private transient int musicPosition = 0;
 
-    private static final String URL = "url";
-
-//    private transient Instagram instagram;
+    private transient Instagram instagram;
 
     private transient String igHashTag;
     private transient String twHashTag;
@@ -80,7 +79,9 @@ public class SliderActivity extends Activity {
     private transient final Handler twitterFeedHandler = new Handler();
     private transient Runnable twitterFeedRunnable;
 
-    private transient List<InstagramPhoto> igPhotos;
+    private transient boolean isLoading;
+
+    private transient List<InstagramItem> igPhotos;
 
 
     @Override
@@ -92,8 +93,7 @@ public class SliderActivity extends Activity {
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
 
-        DirectoryHelper directoryHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
-        if (directoryHelper.getDirFileList(TAG).length > 0) {
+        if (IOHelper.getDirFileList().length > 0) {
             startActivity(new Intent(SliderActivity.this, MainSliderActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
             finish();
         } else {
@@ -104,12 +104,11 @@ public class SliderActivity extends Activity {
     public void init() {
         setContentView(R.layout.activity_main_slider);
 
-        mApp = (UNHApp) getApplicationContext();
+        mApp = (UpnewsApp) getApplicationContext();
 
-//        instagram = new Instagram(SliderActivity.this,
-//                ISConsts.instagramconsts.instagram_client_id,
-//                ISConsts.instagramconsts.instagram_client_secret,
-//                ISConsts.instagramconsts.instagram_redirect_uri);
+        instagram = new Instagram(this, ISConsts.instagramconsts.INSTAGRAM_CLIENT_ID,
+                ISConsts.instagramconsts.INSTAGRAM_CLIENT_SECRET,
+                ISConsts.instagramconsts.INSTAGRAM_REDIRECT_URI);
 
         rawIds = new ArrayList<>();
         rawIds.addAll(getAllResourceIDs(R.raw.class));
@@ -166,7 +165,7 @@ public class SliderActivity extends Activity {
             @Override
             public void run() {
                 loadSlide();
-                changeImagesHandler.postDelayed(this, 14 * 1000);
+                changeImagesHandler.postDelayed(this, ISConsts.times.SLIDE_CHANGE_INTERVAL);
             }
         };
 
@@ -198,16 +197,11 @@ public class SliderActivity extends Activity {
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                                                 @Override
                                                 public void onCompletion(MediaPlayer mp) {
-
-
-                                                    DirectoryHelper photoDirHelper = new DirectoryHelper(ISConsts.globals.dir_name.concat(ISConsts.globals.photo_dir_name));
-                                                    String[] photoFileList = photoDirHelper.getDirFileList(TAG);
+                                                    String[] photoFileList = IOHelper.getDirFileList();
 
                                                     if (photoFileList.length == 0) {
                                                         playEmbedded();
-                                                        bus.post(new SongStopEvent());
-                                                        // restartPhotoDownload();
-                                                        //restartMusicDownload();
+                                                        updateIGPhotos(igHashTag);
                                                     } else {
                                                         if (photoFileList.length > 0 && !preferences.getBoolean("isDel", false)) {
                                                             //stopMusicDownload();
@@ -216,9 +210,7 @@ public class SliderActivity extends Activity {
 
                                                         } else {
                                                             playEmbedded();
-                                                            bus.post(new SongStopEvent());
-                                                            //restartPhotoDownload();
-                                                            //restartMusicDownload();
+                                                            updateIGPhotos(igHashTag);
                                                         }
                                                     }
                                                 }
@@ -379,15 +371,19 @@ public class SliderActivity extends Activity {
     }
 
     private void updateIGPhotos(final String tag) {
-        final CheckInstaTagTaskWeb checkInstaTagTaskWeb = new CheckInstaTagTaskWeb(tag, false, preferences);
-        checkInstaTagTaskWeb.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (!isLoading) {
+            isLoading = true;
+            GetTagsIGTask getTagsIGTask = new GetTagsIGTask(tag, instagram.getSession().getAccessToken());
+            getTagsIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @Subscribe
-    public void onEvent(EventIgCheckingComplete event) {
-        List<InstagramPhoto> igPhotos = event.getIgPhotos();
+    public void onEvent(EventGetTagsIGComplete event) {
+        isLoading = false;
+        List<InstagramItem> igPhotos = event.getIgPhotos();
         if (igPhotos.size() > 0) {
-            InstagramPhotoDownloaderWeb downloader = new InstagramPhotoDownloaderWeb(this, mApp.getPhotoDir(), igHashTag);
+            InstagramPhotoDownloader downloader = new InstagramPhotoDownloader(this);
             downloader.download(igPhotos);
         }
     }
@@ -397,60 +393,6 @@ public class SliderActivity extends Activity {
         Log.d(TAG, "Load IG photo is complete");
         //loadSlide();
     }
-
-//    private void updateIGPhotos(final String tag) {
-//        final GetTagPhotoIGTask getTagPhotoIGTask = new GetTagPhotoIGTask(
-//                SliderActivity.this,
-//                "default", tag, false, mApp);
-//        getTagPhotoIGTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, instagram.getSession().getAccessToken());
-//
-//        Log.d("aT", instagram.getSession().getAccessToken());
-//        try {
-//            igObject = new JSONObject(getTagPhotoIGTask.get());
-//            getIGPhotos();
-//        } catch (JSONException e) {
-//        } catch (InterruptedException e) {
-//        } catch (ExecutionException e) {
-//        }
-//    }
-//
-//    private void getIGPhotos() {
-//        igPhotos = new ArrayList<>();
-//        try {
-//            final JSONArray igData = igObject.getJSONArray("data");
-//            for (int i = 0; i < igData.length(); i++) {
-//
-//                final JSONObject currLikeObj = igData.getJSONObject(i)
-//                        .getJSONObject("likes");
-//
-//                final JSONObject currObj = igData.getJSONObject(i)
-//                        .getJSONObject("images");
-//                Log.d("images main", currObj.toString());
-//                String origURL = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type)
-//                        .getString(URL);
-//                int tmpIndex = origURL.indexOf("?");
-//                if (tmpIndex > 0) {
-//                    origURL = origURL.substring(0, tmpIndex);
-//                }
-//                Log.d("images url main", origURL);
-//
-//                final String idDown = igData.getJSONObject(i).getString("id");
-//                String thumbDown = currObj.getJSONObject(ISConsts.instagramconsts.instagram_image_type).getString(URL);
-//                tmpIndex = thumbDown.indexOf("?");
-//                if (tmpIndex > 0) {
-//                    thumbDown = thumbDown.substring(0, tmpIndex);
-//                }
-//                final int likesDown = currLikeObj.getInt("count");
-//
-//                igPhotos.add(new InstagramPhoto(idDown, thumbDown, origURL, likesDown));
-//                Log.d("ig photos main", igPhotos.get(i).toString());
-//
-//            }
-//        } catch (JSONException e) {
-//        }
-//        InstagramPhotoDownloader instagramPhotoDownloader = new InstagramPhotoDownloader(SliderActivity.this, false);
-//        instagramPhotoDownloader.download(igPhotos);
-//    }
 
     public void playEmbedded() {
         musicIndex++;
@@ -510,10 +452,5 @@ public class SliderActivity extends Activity {
         if (isTwAllow && twitterFeedHandler != null && twitterFeedRunnable != null) {
             twitterFeedHandler.postDelayed(twitterFeedRunnable, ISConsts.times.twitter_get_feed_delay);
         }
-    }
-
-    @Subscribe
-    public void onEvent(SongStopEvent songStop) {
-        updateIGPhotos(igHashTag);
     }
 }

@@ -52,7 +52,7 @@ public class TimeExpiredActivity extends Activity {
         int daysBetween = Math.abs(sinceInstall.getDays());
 
         if (daysBetween <= 34) {
-            startActivity(new Intent(TimeExpiredActivity.this, InstagramHashtagActivityWeb.class));
+            startActivity(new Intent(TimeExpiredActivity.this, InstagramLoginActivity.class));
             finish();
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(TimeExpiredActivity.this);

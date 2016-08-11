@@ -32,22 +32,22 @@ public class TweeterHashTagActivity extends Activity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-            setContentView(R.layout.activity_twitter_hashtag);
+        setContentView(R.layout.activity_twitter_hashtag);
 
-            easyTracker = EasyTracker.getInstance(TweeterHashTagActivity.this);
+        easyTracker = EasyTracker.getInstance(TweeterHashTagActivity.this);
 
-            hashTagEdit = (EditText) findViewById(R.id.twHashTagEdit);
-            enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
+        hashTagEdit = (EditText) findViewById(R.id.twHashTagEdit);
+        enterHashBtn = (Button) findViewById(R.id.enterHashTagBtn);
 
-            enterHashBtn.setOnClickListener(TweeterHashTagActivity.this);
+        enterHashBtn.setOnClickListener(TweeterHashTagActivity.this);
 
-            preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
-            String hashTag = preferences.getString(ISConsts.prefstags.twitter_hashtag, "");
-            if (!hashTag.isEmpty()) {
-                hashTagEdit.setText(hashTag);
-            }
+        preferences = getSharedPreferences(ISConsts.globals.pref_prefix, MODE_PRIVATE);
+        String hashTag = preferences.getString(ISConsts.prefstags.twitter_hashtag, "");
+        if (!hashTag.isEmpty()) {
+            hashTagEdit.setText(hashTag);
+        }
 
-        if(!getIntent().getBooleanExtra("tas",false)) {
+        if (!getIntent().getBooleanExtra("tas", false)) {
             if (hashTagEdit.getEditableText().length() > MIN_EDITABLE_LENGTH) {
                 hashTagEdit.setSelection(hashTagEdit.getEditableText().length() - 1);
             } else {
@@ -98,8 +98,7 @@ public class TweeterHashTagActivity extends Activity implements View.OnClickList
                 }
             });
 
-        }
-        else{
+        } else {
             checkTagAndGo();
         }
     }
@@ -110,7 +109,7 @@ public class TweeterHashTagActivity extends Activity implements View.OnClickList
         checkTagAndGo();
     }
 
-    public void checkTagAndGo(){
+    public void checkTagAndGo() {
         if (!hashTagEdit.getEditableText().toString().isEmpty()
                 && hashTagEdit.getEditableText().toString().length() >= MIN_EDITABLE_LENGTH) {
             startActivity(new Intent(TweeterHashTagActivity.this, SliderActivity.class));

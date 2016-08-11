@@ -68,7 +68,7 @@
         <ProgressBar
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:id="@+id/instSpinner"
+            android:id="@+id/instHashtagPb"
             android:indeterminate="false"
             android:visibility="gone" />
 
