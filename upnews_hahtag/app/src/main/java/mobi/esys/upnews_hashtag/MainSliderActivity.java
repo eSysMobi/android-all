@@ -227,11 +227,9 @@ public class MainSliderActivity extends Activity {
 
 
     public void loadSlide() {
-        Log.d(TAG.concat("_photo"), igPhotos.toString());
-        Log.d(TAG, "change slides");
         photoFiles = IOHelper.getDirFileList();
 
-        Log.w(TAG, "Change slides : " + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2]);
+        Log.w(TAG, "Change slides : " + nextElementsState[0] + "," + nextElementsState[1] + "," + nextElementsState[2] + " from " + igPhotos.size());
 
         Animation fade_1 = AnimationUtils.loadAnimation(this, R.anim.fade_in);
         fade_1.setFillAfter(true);

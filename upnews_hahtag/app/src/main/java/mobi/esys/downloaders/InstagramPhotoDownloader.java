@@ -42,7 +42,7 @@ public class InstagramPhotoDownloader {
 
         needDownload = igPhotos.size();
         for (int i = 0; i < igPhotos.size(); i++) {
-            String url = igPhotos.get(i).getIgThumbURL();
+            String url = igPhotos.get(i).getIgOriginURL();
             String currFileName = igPhotos.get(i).getIgPhotoID() + IOHelper.getExtension(url);
             File picFile = new File(IOHelper.getPhotoDir(), currFileName);
             if (!picFile.exists()) {

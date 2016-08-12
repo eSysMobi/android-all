@@ -77,14 +77,23 @@ public class GetTagsIGTask extends AsyncTask<String, Void, List<InstagramItem>> 
 
                                 //get urls
                                 JSONObject images = result.getJSONObject("images");
-                                JSONObject thumbnail = images.getJSONObject("thumbnail");
-                                String thumbnailUrl = thumbnail.getString("url");
-                                int end = thumbnailUrl.indexOf("?");
+
+//                                JSONObject thumbnail = images.getJSONObject("thumbnail");
+//                                String thumbnailUrl = thumbnail.getString("url");
+//                                int end = thumbnailUrl.indexOf("?");
+//                                if (end != -1) {
+//                                    thumbnailUrl = thumbnailUrl.substring(0, end);
+//                                }
+
+                                JSONObject standard = images.getJSONObject("standard_resolution");
+                                String standardUrl = standard.getString("url");
+                                int end = standardUrl.indexOf("?");
                                 if (end != -1) {
-                                    thumbnailUrl = thumbnailUrl.substring(0, end);
+                                    standardUrl = standardUrl.substring(0, end);
                                 }
 
-                                InstagramItem igItem = new InstagramItem(id, thumbnailUrl, null, likesCount);
+
+                                InstagramItem igItem = new InstagramItem(id, null, standardUrl, likesCount);
                                 photos.add(igItem);
                             }
                         }
