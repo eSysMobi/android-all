@@ -1,114 +1,186 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:descendantFocusability="blocksDescendants"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/background_shape_mask"
     android:layout_marginBottom="4dp"
-    android:padding="8dp">
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical">
 
 
-    <LinearLayout
-        android:orientation="horizontal"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
+        android:layout_height="wrap_content">
 
-        <RelativeLayout
+        <ImageView
+            android:id="@+id/ivFoodRV"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/recommended_food_3" />
+
+        <ImageView
+            android:id="@+id/ivFoodRVFav"
+            android:layout_width="21dp"
+            android:layout_height="18dp"
+            android:layout_alignTop="@+id/llFoodRVPriceBlock"
+            android:layout_toLeftOf="@+id/ivFoodRVPromo"
+            android:layout_toStartOf="@+id/llFoodRVPriceBlock"
+            android:background="@drawable/favorite_full" />
+
+        <ImageView
+            android:id="@+id/ivFoodRVPromo"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignTop="@+id/llFoodRVPriceBlock"
+            android:layout_toLeftOf="@+id/llFoodRVPriceBlock"
+            android:layout_toStartOf="@+id/llFoodRVPriceBlock"
+            android:background="@drawable/promo" />
+
+        <TextView
+            android:id="@+id/tvFoodNameRV"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="90dp"
-                android:id="@+id/ivFoodRV"
-                android:background="@drawable/def_food" />
-
-            <ImageView
-                android:layout_width="21dp"
-                android:layout_height="18dp"
-                android:id="@+id/ivFoodRVFav"
-                android:background="@drawable/favorite_full"
-                android:layout_margin="5dp" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:id="@+id/ivFoodRVCart"
-                android:background="@drawable/cart_icon"
-                android:layout_alignLeft="@+id/ivFoodRV"
-                android:layout_alignBottom="@+id/ivFoodRV"
-                android:layout_margin="5dp"
-                android:visibility="gone" />
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:id="@+id/ivFoodRVPromo"
-                android:background="@drawable/promo"
-                android:layout_alignRight="@+id/ivFoodRV"
-                android:layout_alignTop="@+id/ivFoodRV"
-                android:layout_margin="5dp"
-                android:visibility="gone"/>
-        </RelativeLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical">
+            android:layout_alignTop="@+id/ivFoodRV"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="22dp"
+            android:layout_toLeftOf="@+id/ivFoodRVFav"
+            android:layout_toRightOf="@+id/ivFoodRV"
+            android:layout_toStartOf="@+id/ivFoodRVFav"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Food name"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/colorAccent"
+            android:textStyle="bold" />
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/llFoodRVPriceBlock"
+            android:layout_width="99dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/tvFoodNameRV"
+            android:layout_marginRight="8dp"
+            android:gravity="right"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvFoodPriceRV"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:layout_gravity="center_vertical">
+                android:layout_marginBottom="4dp"
+                android:text="150 p."
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#dc000000" />
 
+            <Button
+                android:id="@+id/bFoodRVToCart"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="99dp"
+                android:layout_height="36dp"
+                android:background="@drawable/button_to_basket_selector"
+                android:text="В корзину"
+                android:textColor="#ffffff" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvFoodRVDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/tvFoodNameRV"
+            android:layout_alignStart="@+id/tvFoodNameRV"
+            android:layout_below="@+id/tvFoodNameRV"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Description"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_toLeftOf="@+id/llFoodRVPriceBlock"
+            android:layout_toStartOf="@+id/llFoodRVPriceBlock" />
+
+        <TextView
+            android:id="@+id/tvFoodRVPortionSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/tvFoodRVDescription"
+            android:layout_alignStart="@+id/tvFoodRVDescription"
+            android:layout_below="@+id/tvFoodRVDescription"
+            android:text="250 г. / 450 ккал."
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#dc000000"
+            android:textSize="15sp" />
+
+        <LinearLayout
+            android:id="@+id/bFoodRVAddRemoveFromCart"
+            android:layout_width="99dp"
+            android:layout_height="36dp"
+            android:orientation="horizontal"
+            android:layout_below="@+id/llFoodRVPriceBlock"
+            android:layout_alignLeft="@+id/llFoodRVPriceBlock"
+            android:layout_alignStart="@+id/llFoodRVPriceBlock"
+            android:layout_alignRight="@+id/llFoodRVPriceBlock"
+            android:layout_alignEnd="@+id/llFoodRVPriceBlock">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape_cart_remove">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Food name"
-                    android:id="@+id/tvFoodNameRV"
-                    android:textColor="#ffffff" />
+                    android:layout_gravity="center"
+                    android:singleLine="true"
+                    android:text="\u2014"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </FrameLayout>
 
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape_cart_center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tvFoodRVCount"
+                    android:layout_gravity="center"
+                    android:singleLine="true"
+                    android:text="1"
+                    android:maxLines="1"
+                    android:maxLength="2"
+                    android:textSize="20sp" />
+            </FrameLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text="@string/price"
-                        android:id="@+id/tvFoodPrRV"
-                        android:layout_marginRight="4dp"
-                        android:textColor="#ffffff" />
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape_cart_add">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:singleLine="true"
+                    android:text="+"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </FrameLayout>
+        </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        android:text=""
-                        android:textColor="#ffffff"
-                        android:id="@+id/tvFoodPriceRV" />
-                </LinearLayout>
+    </RelativeLayout>
 
-            </LinearLayout>
-
-        </FrameLayout>
-
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Notice"
-        android:id="@+id/tvFoodNoticeRV"
-        android:textColor="#ffffff"
-        android:visibility="gone"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/tvFoodNoticeRV"
+        android:layout_marginTop="4dp"
+        android:background="#78000000"
+        android:orientation="vertical" />
 
 </LinearLayout>

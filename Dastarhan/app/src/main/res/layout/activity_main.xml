@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@drawable/smooth_background_1"
     tools:openDrawer="start">
 
     <include
@@ -20,7 +19,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        android:background="#88000000"
+        android:background="#3e3e3e"
         app:itemTextColor="#ffffff"
         app:menu="@menu/activity_main_drawer" />
         <!-- android:background="#88676767" -->

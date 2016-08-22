@@ -33,6 +33,7 @@ public class CurrentRestaurantActivity extends AppCompatActivity
     private ImageView mivCurrRestImage;
     private ImageView mivCurrRestVegan;
     private FrameLayout mflCurrRestInfo;
+    TextView tvCurrRestRecomendationCount;
 
     private SQLiteDatabase db;
 
@@ -91,7 +92,7 @@ public class CurrentRestaurantActivity extends AppCompatActivity
         mivCurrRestImage = (ImageView) findViewById(R.id.ivCurrRestImage);
         mivCurrRestVegan = (ImageView) findViewById(R.id.ivCurrRestVegan);
         mflCurrRestInfo = (FrameLayout) findViewById(R.id.flCurrRestInfo);
-
+        tvCurrRestRecomendationCount = (TextView) findViewById(R.id.tvCurrRestRecomendationCount);
 
         restID = getIntent().getIntExtra("restID", -42);
         Log.d(TAG, "Start getting info from DB about restaurant with id " + restID);
@@ -146,6 +147,8 @@ public class CurrentRestaurantActivity extends AppCompatActivity
                         name = en_name;
                     }
                     mtvCurrRestName.setText(name);
+
+                    tvCurrRestRecomendationCount.setText(String.valueOf(total_votes));
 
                     setRatingInUI(total_rating);
 

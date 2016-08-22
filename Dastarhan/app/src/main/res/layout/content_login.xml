@@ -4,26 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="mobi.esys.dastarhan.LoginActivity"
-    tools:showIn="@layout/activity_login"
-    android:background="@drawable/smooth_background_1">
+    tools:showIn="@layout/activity_login">
 
     <FrameLayout
+        android:id="@+id/navFrame"
         android:layout_width="20dp"
-        android:layout_height="10dp"
-        android:layout_centerVertical="true"
+        android:layout_height="1dp"
         android:layout_centerHorizontal="true"
-        android:id="@+id/navFrame"/>
+        android:layout_centerVertical="true" />
 
     <FrameLayout
+        android:id="@+id/flEmail"
         android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:id="@+id/flEmail"
         android:layout_above="@+id/navFrame"
         android:layout_centerHorizontal="true"
         android:visibility="visible">
@@ -33,43 +33,43 @@
             android:layout_height="match_parent">
 
             <ImageView
+                android:id="@+id/ivInputBack1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/ivInputBack1"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_top" />
 
             <EditText
                 android:id="@+id/etEmail"
-                android:theme="@style/LoginEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivInputBack1"
-                android:layout_alignTop="@+id/ivInputBack1"
-                android:layout_alignRight="@+id/ivInputBack1"
                 android:layout_alignBottom="@+id/ivInputBack1"
-                android:gravity="center_vertical"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="20dp"
+                android:layout_alignLeft="@+id/ivInputBack1"
+                android:layout_alignRight="@+id/ivInputBack1"
+                android:layout_alignTop="@+id/ivInputBack1"
                 android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/login_email"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionNext"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="1dp"
+                android:elevation="4dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:gravity="center_vertical"
+                android:hint="@string/login_email"
+                android:imeOptions="actionNext"
                 android:maxLength="40"
-                android:textCursorDrawable="@null"/>
+                android:singleLine="true"
+                android:textColorHint="#c8c8c8"
+                android:textCursorDrawable="@null"
+                android:textSize="18sp"
+                android:theme="@style/LoginEditText" />
         </RelativeLayout>
     </FrameLayout>
 
     <FrameLayout
+        android:id="@+id/flPassword"
         android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:id="@+id/flPassword"
         android:layout_below="@+id/navFrame"
         android:layout_centerHorizontal="true"
         android:visibility="visible">
@@ -79,129 +79,132 @@
             android:layout_height="match_parent">
 
             <ImageView
+                android:id="@+id/ivInputBack2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/ivInputBack2"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etPass"
-                android:theme="@style/LoginEditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivInputBack2"
-                android:layout_alignTop="@+id/ivInputBack2"
-                android:layout_alignRight="@+id/ivInputBack2"
                 android:layout_alignBottom="@+id/ivInputBack2"
-                android:gravity="center_vertical"
-                android:textColor="#ffffff"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="20dp"
+                android:layout_alignLeft="@+id/ivInputBack2"
+                android:layout_alignRight="@+id/ivInputBack2"
+                android:layout_alignTop="@+id/ivInputBack2"
                 android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/login_pass"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionDone"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="1dp"
+                android:elevation="4dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
+                android:gravity="center_vertical"
+                android:hint="@string/login_pass"
+                android:imeOptions="actionDone"
                 android:maxLength="30"
-                android:textCursorDrawable="@null"/>
+                android:singleLine="true"
+                android:textColorHint="#c8c8c8"
+                android:textCursorDrawable="@null"
+                android:textSize="18sp"
+                android:theme="@style/LoginEditText" />
         </RelativeLayout>
     </FrameLayout>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/ivLoginActLogo"
-        android:background="@drawable/logo"
-        android:layout_marginBottom="95dp"
-        android:layout_above="@+id/navFrame"
-        android:layout_centerHorizontal="true" />
-
-    <Button
         android:layout_width="320dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/logo_splash" />
+
+    <Button
         android:id="@+id/bLoginButton"
-        android:background="@drawable/button_selector"
-        android:text="@string/skip"
-        android:textSize="18sp"
-        android:textColor="#ffffff"
-        android:layout_marginTop="10dp"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/flPassword"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/button_selector"
+        android:elevation="4dp"
+        android:text="@string/skip"
         android:textAllCaps="false"
-        android:visibility="visible"/>
+        android:textColor="#ffffff"
+        android:textSize="18sp"
+        android:visibility="visible" />
 
     <TextView
+        android:id="@+id/tvSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/login_sign_up"
-        android:id="@+id/tvSignUp"
-        android:textColor="#ffffff"
-        android:layout_marginTop="20dp"
-        android:layout_below="@+id/bLoginButton"
         android:layout_alignLeft="@+id/bLoginButton"
         android:layout_alignStart="@+id/bLoginButton"
-        android:visibility="visible" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_below="@+id/bLoginButton"
+        android:layout_marginTop="20dp"
+        android:text="@string/login_sign_up"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/login_remind"
-        android:id="@+id/tvRemind"
         android:textColor="#ffffff"
-        android:layout_alignTop="@+id/tvSignUp"
-        android:layout_alignRight="@+id/bLoginButton"
-        android:layout_alignEnd="@+id/bLoginButton"
         android:visibility="visible" />
 
     <TextView
+        android:id="@+id/tvRemind"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/bLoginButton"
+        android:layout_alignRight="@+id/bLoginButton"
+        android:layout_alignTop="@+id/tvSignUp"
+        android:text="@string/login_remind"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/is_need_remember"
+        android:textColor="#ffffff"
+        android:visibility="visible" />
+
+    <TextView
         android:id="@+id/tvRemember"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/navFrame"
         android:layout_centerHorizontal="true"
+        android:enabled="false"
+        android:text="@string/is_need_remember"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#ffffff"
-        android:visibility="invisible"
-        android:enabled="false" />
+        android:visibility="invisible" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button_selector"
         android:id="@+id/bLoginRememberYes"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="20dp"
-        android:layout_below="@+id/navFrame"
-        android:layout_toLeftOf="@+id/navFrame"
-        android:visibility="invisible"
-        android:text="@string/yes"
-        android:textSize="18sp"
-        android:textColor="#ffffff"
-        android:textAllCaps="false"
-        android:enabled="false"/>
-
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_selector"
-        android:id="@+id/bLoginRememberNo"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="20dp"
         android:layout_below="@+id/navFrame"
-        android:layout_toRightOf="@+id/navFrame"
-        android:visibility="invisible"
-        android:text="@string/no"
-        android:textSize="18sp"
-        android:textColor="#ffffff"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/navFrame"
+        android:background="@drawable/button_selector"
+        android:elevation="4dp"
+        android:enabled="false"
+        android:text="@string/yes"
         android:textAllCaps="false"
-        android:enabled="false"/>
+        android:textColor="#ffffff"
+        android:textSize="18sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/bLoginRememberNo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/navFrame"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_toRightOf="@+id/navFrame"
+        android:background="@drawable/button_selector"
+        android:elevation="4dp"
+        android:enabled="false"
+        android:text="@string/no"
+        android:textAllCaps="false"
+        android:textColor="#ffffff"
+        android:textSize="18sp"
+        android:visibility="invisible" />
 
 </RelativeLayout>

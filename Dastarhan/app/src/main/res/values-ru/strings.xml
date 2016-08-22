@@ -74,5 +74,6 @@
     <string name="from">с</string>
     <string name="to">до</string>
     <string name="every_day">ежедневно</string>
+    <string name="see_all">См. все</string>
 
 </resources>

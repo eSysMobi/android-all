@@ -48,15 +48,20 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
     public static class RestaurantViewHolder extends RecyclerView.ViewHolder {
         TextView tvRestaurant;
         ImageView ivRestaurant;
-        ImageView ivRatingRestaurant;
+        TextView tvRestaurantCuisines;
+        TextView tvMinOrderSum;
+        TextView tvAverageTime;
+        TextView tvWorkingHours;
         int restaraunt_id = 0;
-        int restaraunt_rating = 5;
 
         RestaurantViewHolder(View itemView) {
             super(itemView);
             tvRestaurant = (TextView) itemView.findViewById(R.id.tvRestaurant);
             ivRestaurant = (ImageView) itemView.findViewById(R.id.ivCurrFoodRest);
-            ivRatingRestaurant = (ImageView) itemView.findViewById(R.id.ivCurrFoodRatingRest);
+            tvRestaurantCuisines = (TextView) itemView.findViewById(R.id.tvRestaurantCuisines);
+            tvMinOrderSum = (TextView) itemView.findViewById(R.id.tvMinOrderSum);
+            tvAverageTime = (TextView) itemView.findViewById(R.id.tvAverageTime);
+            tvWorkingHours = (TextView) itemView.findViewById(R.id.tvWorkingHours);
         }
     }
 
@@ -77,42 +82,15 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
             viewHolder.tvRestaurant.setText(cursor.getString(cursor.getColumnIndex("en_name")));
         }
 
-        viewHolder.restaraunt_rating = cursor.getInt(cursor.getColumnIndex("total_rating"));
-        switch (viewHolder.restaraunt_rating) {
-            case 0:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_0));
-                break;
-            case 1:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_1));
-                break;
-            case 2:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_2));
-                break;
-            case 3:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_3));
-                break;
-            case 4:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_4));
-                break;
-            case 5:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_5));
-                break;
-            case 6:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_6));
-                break;
-            case 7:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_7));
-                break;
-            case 8:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_8));
-                break;
-            case 9:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_9));
-                break;
-            case 10:
-                viewHolder.ivRatingRestaurant.setImageDrawable(mContext.getResources().getDrawable(R.drawable.rating_10));
-                break;
-        }
+        viewHolder.tvRestaurantCuisines.setText(cursor.getString(cursor.getColumnIndex("cuisines")));
+
+        //viewHolder.tvMinOrderSum.setText(cursor.getInt(cursor.getColumnIndex("min_order")));
+        //TODO tvAverageTime
+        String time1 = cursor.getString(cursor.getColumnIndex("time1"));
+        String time2 = cursor.getString(cursor.getColumnIndex("time2"));
+        String time = time1.substring(0,5) + "-" + time2.substring(0,5);
+        viewHolder.tvWorkingHours.setText(time);
+
         //viewHolder.ivCuisine.setImageBitmap(...);
 
         CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.restaraunt_id);
@@ -140,7 +118,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
             Intent intent = new Intent(mContext, FoodActivity.class);
-            intent.putExtra("restID",id);
+            intent.putExtra("restID", id);
             intent.putExtra("cuisineID", -50);
             mContext.startActivity(intent);
         }
@@ -160,7 +138,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
             Log.d("dtagRecyclerView", "Long click RESTARAUNT in RecyclerView with id = " + id);
 
             Intent intent = new Intent(mContext, CurrentRestaurantActivity.class);
-            intent.putExtra("restID",id);
+            intent.putExtra("restID", id);
             mContext.startActivity(intent);
             return true;
         }

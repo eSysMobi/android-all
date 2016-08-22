@@ -8,19 +8,21 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:id="@+id/ivCuisine"
-                android:layout_centerVertical="true"
-                android:background="@drawable/def_restaurant"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
+                android:background="@drawable/recommended_food_3"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="15dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true" />
 
@@ -28,19 +30,33 @@
                 android:id="@+id/tvCuisine"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivCuisine"
-                android:layout_alignTop="@+id/ivCuisine"
-                android:layout_alignRight="@+id/ivCuisine"
-                android:layout_alignBottom="@+id/ivCuisine"
                 android:gravity="center_vertical"
                 android:text="@string/all_cuisines"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="20dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="1dp"
-                android:layout_marginBottom="1dp"
                 android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/ivCuisine"
+                android:layout_toEndOf="@+id/ivCuisine"
+                android:layout_marginStart="20dp" />
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:id="@+id/imageView7"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/arrow_right" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#78000000"
+                android:id="@+id/frDiv2"
+                android:layout_below="@+id/ivCuisine" />
+
         </RelativeLayout>
     </FrameLayout>
+
 </LinearLayout>

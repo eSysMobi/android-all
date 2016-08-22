@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivAddrCity"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etAddAddressCity"
@@ -38,7 +38,6 @@
                 android:layout_alignRight="@+id/ivAddrCity"
                 android:layout_alignBottom="@+id/ivAddrCity"
                 android:gravity="center_vertical"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginRight="10dp"
@@ -74,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivAddrDistr"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etAddAddressDistrict"
@@ -86,7 +85,6 @@
                 android:layout_alignRight="@+id/ivAddrDistr"
                 android:layout_alignBottom="@+id/ivAddrDistr"
                 android:gravity="center_vertical"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginRight="10dp"
@@ -129,7 +127,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivAddrHouse"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etAddAddressHouse"
@@ -141,7 +139,6 @@
                 android:layout_alignRight="@+id/ivAddrHouse"
                 android:layout_alignBottom="@+id/ivAddrHouse"
                 android:gravity="center_vertical"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginRight="10dp"
@@ -175,7 +172,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivAddrApartment"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etAddAddressApartment"
@@ -187,7 +184,6 @@
                 android:layout_alignRight="@+id/ivAddrApartment"
                 android:layout_alignBottom="@+id/ivAddrApartment"
                 android:gravity="center_vertical"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginRight="10dp"
@@ -221,7 +217,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ivAddrNotice"
                 android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input" />
+                android:background="@drawable/background_shape_input_bottom" />
 
             <EditText
                 android:id="@+id/etAddAddressNotice"
@@ -233,7 +229,6 @@
                 android:layout_alignRight="@+id/ivAddrNotice"
                 android:layout_alignBottom="@+id/ivAddrNotice"
                 android:gravity="center_vertical"
-                android:textColor="#ffffff"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="1dp"
                 android:layout_marginRight="10dp"
