@@ -63,8 +63,7 @@ public class MainActivity extends AppCompatActivity
 
     private void updateCuisines() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVCuisinesAdapter adapter = new RVCuisinesAdapter(dbHelper, this, locale);
+        RVCuisinesAdapter adapter = new RVCuisinesAdapter(this, (DastarhanApp) getApplication(), locale);
         if (mrvCuisines.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvCuisines");
             mrvCuisines.setAdapter(adapter);

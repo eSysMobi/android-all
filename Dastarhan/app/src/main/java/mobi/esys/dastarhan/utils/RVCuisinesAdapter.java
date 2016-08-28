@@ -2,8 +2,6 @@ package mobi.esys.dastarhan.utils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,26 +10,28 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import mobi.esys.dastarhan.Constants;
+import java.util.ArrayList;
+import java.util.List;
+
+import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.FoodActivity;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.Restaurants;
+import mobi.esys.dastarhan.database.Cuisine;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.CuisinesViewHolder> {
-    private Cursor cursor;
     private Context mContext;
-    private SQLiteDatabase db;
     private String locale;
+    private List<Cuisine> cuisines;
 
     //constructor
-    public RVCuisinesAdapter(DatabaseHelper dbHelper, Context mContext, String locale) {
+    public RVCuisinesAdapter(Context mContext, DastarhanApp dastarhanApp, String locale) {
         this.mContext = mContext;
         this.locale = locale;
-        db = dbHelper.getReadableDatabase();
-        cursor = db.query(Constants.DB_TABLE_CUISINES, null, null, null, null, null, null);
+        cuisines = dastarhanApp.realmComponent().cuisineRepository().getAll();
     }
 
     //preparing ViewHolder
@@ -80,12 +80,12 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
             });
 
         } else {
-            cursor.moveToPosition(i - 1);
-            viewHolder.cuisine_id = cursor.getInt(cursor.getColumnIndex("server_id"));
+            Cuisine cuisine = cuisines.get(i-1);
+            viewHolder.cuisine_id = cuisine.getServer_id();
             if (locale.equals("ru")) {
-                viewHolder.tvCuisine.setText(cursor.getString(cursor.getColumnIndex("ru_name")));
+                viewHolder.tvCuisine.setText(cuisine.getRu_name());
             } else {
-                viewHolder.tvCuisine.setText(cursor.getString(cursor.getColumnIndex("en_name")));
+                viewHolder.tvCuisine.setText(cuisine.getEn_name());
             }
             //viewHolder.ivCuisine.setImageBitmap(...);
 
@@ -95,18 +95,13 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
             CustomLongClickListener customLongClickListener = new CustomLongClickListener(mContext, viewHolder.cuisine_id);
             viewHolder.itemView.setOnLongClickListener(customLongClickListener);
         }
-
-        if (i == getItemCount() - 1) {
-            //cursor.close();
-            db.close();
-        }
     }
 
     private static class CustomClickListener implements View.OnClickListener {
         private int id;
         private Context mContext;
 
-        public CustomClickListener(Context mContext, int id){
+        public CustomClickListener(Context mContext, int id) {
             this.mContext = mContext;
             this.id = id;
         }
@@ -115,7 +110,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
         public void onClick(View v) {
             Log.d("dTagRecyclerView", "Choose CUISINE in RecyclerView with id = " + id + " Go to food");
             Intent intent = new Intent(mContext, FoodActivity.class);
-            intent.putExtra("cuisineID",id);
+            intent.putExtra("cuisineID", id);
             intent.putExtra("restID", -50);
             mContext.startActivity(intent);
         }
@@ -125,7 +120,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
         private int id;
         private Context mContext;
 
-        public CustomLongClickListener(Context mContext, int id){
+        public CustomLongClickListener(Context mContext, int id) {
             this.mContext = mContext;
             this.id = id;
         }
@@ -134,7 +129,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
         public boolean onLongClick(View v) {
             Log.d("dTagRecyclerView", "Choose CUISINE in RecyclerView with id = " + id);
             Intent intent = new Intent(mContext, Restaurants.class);
-            intent.putExtra("cuisineID",id);
+            intent.putExtra("cuisineID", id);
             mContext.startActivity(intent);
             return true;
         }
@@ -142,7 +137,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
 
     @Override
     public int getItemCount() {
-        return cursor.getCount() + 1;
+        return cuisines.size() + 1;
     }
 
     @Override

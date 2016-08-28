@@ -6,6 +6,6 @@ public interface OrderRepository {
 
     void add(Order order);
 
-    List<Order> getById(long id_order);
+    List<Order> getById(int id_order);
 
 }

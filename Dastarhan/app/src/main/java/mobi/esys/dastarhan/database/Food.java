@@ -6,9 +6,9 @@ import io.realm.annotations.PrimaryKey;
 public class Food extends RealmObject {
 
     @PrimaryKey
-    private long server_id;
-    private long res_id;
-    private long cat_id;
+    private int server_id;
+    private int res_id;
+    private int cat_id;
     private String ru_name;
     private String en_name;
     private String picture;
@@ -30,7 +30,7 @@ public class Food extends RealmObject {
         //For Realm usage only
     }
 
-    public Food(long server_id,
+    public Food(int server_id,
                 int res_id,
                 int cat_id,
                 String ru_name,
@@ -68,15 +68,15 @@ public class Food extends RealmObject {
         this.ordered = ordered;
     }
 
-    public long getServer_id() {
+    public int getServer_id() {
         return server_id;
     }
 
-    public long getRes_id() {
+    public int getRes_id() {
         return res_id;
     }
 
-    public long getCat_id() {
+    public int getCat_id() {
         return cat_id;
     }
 
@@ -163,9 +163,9 @@ public class Food extends RealmObject {
 
     @Override
     public int hashCode() {
-        int result = (int) (server_id ^ (server_id >>> 32));
-        result = 31 * result + (int) (res_id ^ (res_id >>> 32));
-        result = 31 * result + (int) (cat_id ^ (cat_id >>> 32));
+        int result = server_id;
+        result = 31 * result + res_id;
+        result = 31 * result + cat_id;
         result = 31 * result + (ru_name != null ? ru_name.hashCode() : 0);
         result = 31 * result + (en_name != null ? en_name.hashCode() : 0);
         result = 31 * result + (picture != null ? picture.hashCode() : 0);

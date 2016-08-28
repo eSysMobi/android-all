@@ -1,9 +1,5 @@
 package mobi.esys.dastarhan.tasks;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -20,7 +16,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import mobi.esys.dastarhan.Constants;
-import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.DastarhanApp;
+import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.database.Restaurant;
+import mobi.esys.dastarhan.database.RestaurantRepository;
+import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
  * Created by ZeyUzh on 18.05.2016.
@@ -29,11 +29,11 @@ public class GetRestaurants extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetRestaurants";
     private Handler handler;
     boolean result = false;
-    private Context context;
+    private RealmComponent component;
 
-    public GetRestaurants(Context incContext, Handler incHandler) {
+    public GetRestaurants(DastarhanApp dastarhanApp, Handler incHandler) {
         handler = incHandler;
-        context = incContext;
+        component = dastarhanApp.realmComponent();
     }
 
     @Override
@@ -71,19 +71,22 @@ public class GetRestaurants extends AsyncTask<Void, Void, Void> {
             // Getting JSON Array node
             JSONArray restaurantElements = jsonObject.getJSONArray("0");
             if (restaurantElements.length() > 0) {
+                UnitOfWork uow = component.getUow();
+                uow.startUOW();
 
-                // looping through All Cuisines
-                DatabaseHelper dbHelper = new DatabaseHelper(context);
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+                int addedElementsToDB = 0;
                 try {
+                    RestaurantRepository repo = component.restaurantRepository();
                     for (int i = 0; i < restaurantElements.length(); i++) {
                         JSONObject c = restaurantElements.getJSONObject(i);
 
-                        int approved = c.getInt("approved");
+                        int server_id = c.getInt("id");
 
-                        if (approved == 1) {
-                            int restaurant_id = c.getInt("id");
+                        Restaurant restaurant = repo.getById(server_id);
+
+                        //check in db, if not exists - add
+                        if (restaurant == null) {
+                            int approved = c.getInt("approved");
                             String ru_name = c.getString("ru_name");
                             String en_name = c.getString("en_name");
                             int city_id = c.getInt("city_id");
@@ -112,107 +115,45 @@ public class GetRestaurants extends AsyncTask<Void, Void, Void> {
                             int featured = c.getInt("featured");
                             String cuisines = c.getString("cuisines");
 
-                            Cursor cursor = db.query(Constants.DB_TABLE_RESTAURANTS, null, null, null, null, null, null);
+                            restaurant = new Restaurant(server_id,
+                                    ru_name,
+                                    en_name,
+                                    additional_ru,
+                                    additional_en,
+                                    picture,
+                                    vegetarian,
+                                    featured,
+                                    approved,
+                                    cuisines,
+                                    city_id,
+                                    district_id,
+                                    schedule,
+                                    time1,
+                                    time2, contact_name_ru,
+                                    contact_name_en,
+                                    phone,
+                                    mobile,
+                                    email1,
+                                    email2,
+                                    contact_email,
+                                    order_phone,
+                                    min_order,
+                                    payment_methods,
+                                    total_rating,
+                                    total_votes);
 
-                            //check rows in db
-                            if (cursor.moveToFirst()) {
-                                int idColIndex = cursor.getColumnIndex("server_id");
-                                boolean needInsert = true;
-
-                                //check db for this id
-                                do {
-                                    int idInDB = cursor.getInt(idColIndex);
-                                    if (idInDB == restaurant_id) {
-                                        needInsert = false;
-                                        break;
-                                    }
-                                } while (cursor.moveToNext());
-
-                                if (needInsert) {
-                                    Log.d(TAG, "This restaurant id not found, insert data");
-                                    ContentValues cv = new ContentValues();
-                                    cv.put("server_id", restaurant_id);
-                                    cv.put("ru_name", ru_name);
-                                    cv.put("en_name", en_name);
-                                    cv.put("city_id", city_id);
-                                    cv.put("district_id", district_id);
-                                    cv.put("min_order", min_order);
-                                    cv.put("del_cost", del_cost);
-                                    cv.put("schedule", schedule);
-                                    cv.put("time1", time1);
-                                    cv.put("time2", time2);
-                                    cv.put("del_time", del_time);
-                                    cv.put("payment_methods", payment_methods);
-                                    cv.put("contact_name_ru", contact_name_ru);
-                                    cv.put("contact_name_en", contact_name_en);
-                                    cv.put("phone", phone);
-                                    cv.put("mobile", mobile);
-                                    cv.put("email1", email1);
-                                    cv.put("email2", email2);
-                                    cv.put("total_rating", total_rating);
-                                    cv.put("total_votes", total_votes);
-                                    cv.put("contact_email", contact_email);
-                                    cv.put("order_phone", order_phone);
-                                    cv.put("additional_ru", additional_ru);
-                                    cv.put("additional_en", additional_en);
-                                    cv.put("picture", picture);
-                                    cv.put("vegetarian", vegetarian);
-                                    cv.put("featured", featured);
-                                    cv.put("approved", approved);
-                                    cv.put("cuisines", cuisines);
-                                    // insert row
-                                    long rowID = db.insert(Constants.DB_TABLE_RESTAURANTS, null, cv);
-                                    Log.d(TAG, "row inserted, ID = " + rowID);
-                                }
-
-                            } else {
-                                Log.d(TAG, "0 rows, insert data");
-                                ContentValues cv = new ContentValues();
-                                cv.put("server_id", restaurant_id);
-                                cv.put("ru_name", ru_name);
-                                cv.put("en_name", en_name);
-                                cv.put("city_id", city_id);
-                                cv.put("district_id", district_id);
-                                cv.put("min_order", min_order);
-                                cv.put("del_cost", del_cost);
-                                cv.put("schedule", schedule);
-                                cv.put("time1", time1);
-                                cv.put("time2", time2);
-                                cv.put("del_time", del_time);
-                                cv.put("payment_methods", payment_methods);
-                                cv.put("contact_name_ru", contact_name_ru);
-                                cv.put("contact_name_en", contact_name_en);
-                                cv.put("phone", phone);
-                                cv.put("mobile", mobile);
-                                cv.put("email1", email1);
-                                cv.put("email2", email2);
-                                cv.put("total_rating", total_rating);
-                                cv.put("total_votes", total_votes);
-                                cv.put("contact_email", contact_email);
-                                cv.put("order_phone", order_phone);
-                                cv.put("additional_ru", additional_ru);
-                                cv.put("additional_en", additional_en);
-                                cv.put("picture", picture);
-                                cv.put("vegetarian", vegetarian);
-                                cv.put("featured", featured);
-                                cv.put("approved", approved);
-                                cv.put("cuisines", cuisines);
-
-                                // insert row
-                                long rowID = db.insert(Constants.DB_TABLE_RESTAURANTS, null, cv);
-                                Log.d(TAG, "row inserted, ID = " + rowID);
-                            }
-                            cursor.close();
+                            repo.addOrUpdate(restaurant);
+                            Log.d(TAG, "Prepare to adding restaurant id " + server_id);
+                            addedElementsToDB++;
                         }
                     }
-                } finally {
-                    //close bd
-                    Log.d(TAG, "Close DB (restaurant)");
-                    db.close();
+                    uow.commit();
+                    Log.d(TAG, "Restaurants added: " + addedElementsToDB);
+                } catch (Exception e) {
+                    uow.cancel();
                 }
             }
             result = true;
-
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "Error IOException " + e.toString());
@@ -228,7 +169,6 @@ public class GetRestaurants extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        //super.onPostExecute(aVoid);
         if (result) {
             handler.sendEmptyMessage(Constants.CALLBACK_GET_RESTAURANTS_SUCCESS);
         } else {

@@ -29,7 +29,7 @@ class CuisineRealmRepository implements CuisineRepository {
     }
 
     @Override
-    public Cuisine getById(final long id) {
+    public Cuisine getById(final int id) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<Cuisine>() {
             @Override
             public Cuisine execute(Realm realm) {

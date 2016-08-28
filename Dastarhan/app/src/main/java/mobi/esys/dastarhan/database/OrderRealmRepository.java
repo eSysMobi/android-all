@@ -29,7 +29,7 @@ class OrderRealmRepository implements OrderRepository {
     }
 
     @Override
-    public List<Order> getById(final long id_order) {
+    public List<Order> getById(final int id_order) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<List<Order>>() {
             @Override
             public List<Order> execute(Realm realm) {

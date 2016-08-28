@@ -29,7 +29,7 @@ class PromoRealmRepository implements PromoRepository {
     }
 
     @Override
-    public Promo getById(final long id) {
+    public Promo getById(final int id) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<Promo>() {
             @Override
             public Promo execute(Realm realm) {

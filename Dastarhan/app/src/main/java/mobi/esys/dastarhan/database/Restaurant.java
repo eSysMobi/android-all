@@ -6,7 +6,7 @@ import io.realm.annotations.PrimaryKey;
 public class Restaurant extends RealmObject {
 
     @PrimaryKey
-    private long server_id;
+    private int server_id;
     private String ru_name;
     private String en_name;
     private String additional_ru;
@@ -45,7 +45,7 @@ public class Restaurant extends RealmObject {
         //For Realm usage only
     }
 
-    public Restaurant(long server_id,
+    public Restaurant(int server_id,
                       String ru_name,
                       String en_name,
                       String additional_ru,
@@ -101,7 +101,7 @@ public class Restaurant extends RealmObject {
         this.total_votes = total_votes;
     }
 
-    public long getServer_id() {
+    public int getServer_id() {
         return server_id;
     }
 
@@ -263,7 +263,7 @@ public class Restaurant extends RealmObject {
 
     @Override
     public int hashCode() {
-        int result = (int) (server_id ^ (server_id >>> 32));
+        int result = server_id;
         result = 31 * result + (ru_name != null ? ru_name.hashCode() : 0);
         result = 31 * result + (en_name != null ? en_name.hashCode() : 0);
         result = 31 * result + (additional_ru != null ? additional_ru.hashCode() : 0);

@@ -9,7 +9,7 @@ import io.realm.annotations.PrimaryKey;
 public class Promo extends RealmObject {
 
     @PrimaryKey
-    private long server_id;
+    private int server_id;
     private Integer condition;      //условие акции(1- Сумма заказа больше..., 2 - Покупка определенной группы блюд, 3 - Покупка одного блюда, 4 - покупка блюда из категории, 5 - промо-код, 6 - самовывоз)
     private String condition_par;   //параметр для условия акции. Его форма зависит от значения condition:
                                     //1 - сумма заказа, при покупки на которую работает акция
@@ -41,7 +41,7 @@ public class Promo extends RealmObject {
         //For Realm usage only
     }
 
-    public Promo(long server_id,
+    public Promo(int server_id,
                  Integer condition,
                  String condition_par,
                  boolean limitedTime,
@@ -69,7 +69,7 @@ public class Promo extends RealmObject {
         this.gift_condition = gift_condition;
     }
 
-    public long getServer_id() {
+    public int getServer_id() {
         return server_id;
     }
 
@@ -149,7 +149,7 @@ public class Promo extends RealmObject {
 
     @Override
     public int hashCode() {
-        int result = (int) (server_id ^ (server_id >>> 32));
+        int result = server_id;
         result = 31 * result + (condition != null ? condition.hashCode() : 0);
         result = 31 * result + (condition_par != null ? condition_par.hashCode() : 0);
         result = 31 * result + (limitedTime ? 1 : 0);

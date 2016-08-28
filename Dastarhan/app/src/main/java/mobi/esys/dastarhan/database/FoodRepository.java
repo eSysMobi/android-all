@@ -6,15 +6,15 @@ public interface FoodRepository {
 
     void addOrUpdate(Food food);
 
-    Food getById(long id);
+    Food getById(int id);
 
-    List<Food> getByRestaurantID(long restID);
+    List<Food> getByRestaurantID(int restID);
 
-    List<Food> getByCategoryID(long catID);
+    List<Food> getByCategoryID(int catID);
 
     List<Food> getByFavorite();
 
-    void updateFavorites(long id, boolean fav);
+    void updateFavorites(int id, boolean fav);
 
-    void updateOrdered(long id, boolean isOrdered);
+    void updateOrdered(int id, boolean isOrdered);
 }

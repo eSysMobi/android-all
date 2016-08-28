@@ -6,7 +6,7 @@ import io.realm.annotations.PrimaryKey;
 
 public class Order extends RealmObject {
 
-    private long id_order;
+    private int id_order;
     private long id_food;
     private int count;
     private double price;
@@ -18,14 +18,14 @@ public class Order extends RealmObject {
         //For Realm usage only
     }
 
-    public Order(long id_order, long id_food, int count, double price) {
+    public Order(int id_order, long id_food, int count, double price) {
         this.id_order = id_order;
         this.id_food = id_food;
         this.count = count;
         this.price = price;
     }
 
-    public long getId_order() {
+    public int getId_order() {
         return id_order;
     }
 
@@ -59,7 +59,7 @@ public class Order extends RealmObject {
     public int hashCode() {
         int result;
         long temp;
-        result = (int) (id_order ^ (id_order >>> 32));
+        result = id_order;
         result = 31 * result + (int) (id_food ^ (id_food >>> 32));
         result = 31 * result + count;
         temp = Double.doubleToLongBits(price);

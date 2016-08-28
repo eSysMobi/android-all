@@ -6,7 +6,7 @@ public interface CuisineRepository {
 
     void addOrUpdate(Cuisine cuisine);
 
-    Cuisine getById(long id);
+    Cuisine getById(int id);
 
     List<Cuisine> getAll();
 }

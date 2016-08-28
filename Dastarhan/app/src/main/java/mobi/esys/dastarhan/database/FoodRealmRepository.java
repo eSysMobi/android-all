@@ -30,7 +30,7 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public void updateFavorites(final long id, final boolean fav) {
+    public void updateFavorites(final int id, final boolean fav) {
         realmTemplate.executeInRealm(new RealmTransactionCallback<Object>() {
             @Override
             public Object execute(Realm realm) {
@@ -46,7 +46,7 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public void updateOrdered(final long id, final boolean isOrdered) {
+    public void updateOrdered(final int id, final boolean isOrdered) {
         realmTemplate.executeInRealm(new RealmTransactionCallback<Object>() {
             @Override
             public Object execute(Realm realm) {
@@ -62,7 +62,7 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public Food getById(final long id) {
+    public Food getById(final int id) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<Food>() {
             @Override
             public Food execute(Realm realm) {
@@ -77,7 +77,7 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public List<Food> getByRestaurantID(final long restID) {
+    public List<Food> getByRestaurantID(final int restID) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<List<Food>>() {
             @Override
             public List<Food> execute(Realm realm) {
@@ -92,7 +92,7 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public List<Food> getByCategoryID(final long catID) {
+    public List<Food> getByCategoryID(final int catID) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<List<Food>>() {
             @Override
             public List<Food> execute(Realm realm) {

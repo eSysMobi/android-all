@@ -2,8 +2,6 @@ package mobi.esys.dastarhan.utils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,36 +10,43 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import mobi.esys.dastarhan.Constants;
+import java.util.ArrayList;
+import java.util.List;
+
 import mobi.esys.dastarhan.CurrentRestaurantActivity;
+import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.FoodActivity;
 import mobi.esys.dastarhan.R;
+import mobi.esys.dastarhan.database.Cuisine;
+import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.database.Restaurant;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdapter.RestaurantViewHolder> {
-    private Cursor cursor;
+    private final String TAG = "dtagRVRestAdapter";
+
     private Context mContext;
-    private SQLiteDatabase db;
     private String locale;
+    private List<Restaurant> restaurants;
+    private RealmComponent component;
 
     //constructor
-    public RVRestaurantsAdapter(DatabaseHelper dbHelper, Context mContext, String locale, int cuisineID) {
+    public RVRestaurantsAdapter(Context mContext, DastarhanApp dastarhanApp, String locale, int cuisineID) {
         this.mContext = mContext;
         this.locale = locale;
-        db = dbHelper.getReadableDatabase();
+        component = dastarhanApp.realmComponent();
 
         Log.d("dtagRecyclerView", "cuisineID = " + String.valueOf(cuisineID));
 
         String selectQuery;
         if (cuisineID == -42) {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS;
+            restaurants = component.restaurantRepository().getAll();
         } else {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS + " WHERE cuisines LIKE \"%" + String.valueOf(cuisineID) + "%\"";
+            restaurants = new ArrayList<>();
+            restaurants.add(component.restaurantRepository().getByCuisine(cuisineID));
         }
-
-        cursor = db.rawQuery(selectQuery, null);
     }
 
     //preparing ViewHolder
@@ -74,21 +79,48 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
     @Override
     public void onBindViewHolder(RVRestaurantsAdapter.RestaurantViewHolder viewHolder, int i) {
-        cursor.moveToPosition(i);
-        viewHolder.restaraunt_id = cursor.getInt(cursor.getColumnIndex("server_id"));
+        Restaurant restaurant = restaurants.get(i);
+
+
+        viewHolder.restaraunt_id = restaurant.getServer_id();
         if (locale.equals("ru")) {
-            viewHolder.tvRestaurant.setText(cursor.getString(cursor.getColumnIndex("ru_name")));
+            viewHolder.tvRestaurant.setText(restaurant.getRu_name());
         } else {
-            viewHolder.tvRestaurant.setText(cursor.getString(cursor.getColumnIndex("en_name")));
+            viewHolder.tvRestaurant.setText(restaurant.getEn_name());
         }
 
-        viewHolder.tvRestaurantCuisines.setText(cursor.getString(cursor.getColumnIndex("cuisines")));
+        String cuisinesNames = "";
+        String rawCuisines = restaurant.getCuisines();
+        String[] cuisinesIDs = rawCuisines.split(",");
+        for (String cuisineID : cuisinesIDs) {
+            try {
+                int id = Integer.parseInt(cuisineID.trim());
+                Cuisine cuisine = component.cuisineRepository().getById(id);
+                if(cuisine!= null) {
+                    String name = "";
+                    if (locale.equals("ru")) {
+                        name = cuisine.getRu_name();
+                    } else {
+                        name = cuisine.getEn_name();
+                    }
+                    //add cuisine name to cuisines list
+                    if(!cuisinesNames.isEmpty()){
+                        cuisinesNames = cuisinesNames.concat(" / ");
+                    }
+                    cuisinesNames = cuisinesNames.concat(name);
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Can't set cuisine name to RV in restaurant list");
+            }
+        }
+        //set result cuisines list
+        viewHolder.tvRestaurantCuisines.setText(cuisinesNames);
 
         //viewHolder.tvMinOrderSum.setText(cursor.getInt(cursor.getColumnIndex("min_order")));
         //TODO tvAverageTime
-        String time1 = cursor.getString(cursor.getColumnIndex("time1"));
-        String time2 = cursor.getString(cursor.getColumnIndex("time2"));
-        String time = time1.substring(0,5) + "-" + time2.substring(0,5);
+        String time1 = restaurant.getTime1();
+        String time2 = restaurant.getTime2();
+        String time = time1.substring(0, 5) + "-" + time2.substring(0, 5);
         viewHolder.tvWorkingHours.setText(time);
 
         //viewHolder.ivCuisine.setImageBitmap(...);
@@ -98,11 +130,6 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
         CustomLongClickListener customLongClickListener = new CustomLongClickListener(mContext, viewHolder.restaraunt_id);
         viewHolder.itemView.setOnLongClickListener(customLongClickListener);
-
-        if (i == getItemCount() - 1) {
-            //cursor.close();
-            db.close();
-        }
     }
 
     private static class CustomClickListener implements View.OnClickListener {
@@ -146,7 +173,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
     @Override
     public int getItemCount() {
-        return cursor.getCount();
+        return restaurants.size();
     }
 
     @Override

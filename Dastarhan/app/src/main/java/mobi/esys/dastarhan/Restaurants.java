@@ -1,10 +1,7 @@
 package mobi.esys.dastarhan;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -21,8 +18,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.tasks.GetCuisines;
-import mobi.esys.dastarhan.tasks.GetRestaurants;
 import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.RVRestaurantsAdapter;
 
@@ -31,7 +26,6 @@ public class Restaurants extends AppCompatActivity
 
     private RecyclerView mrvRestaurants;
     private ProgressBar mpbRestaurants;
-    private Handler handlerRestaurants;
     private final String TAG = "dtagRestaurants";
 
     private int cuisineID;
@@ -65,36 +59,13 @@ public class Restaurants extends AppCompatActivity
         cuisineID = getIntent().getIntExtra("cuisineID", -42);
         Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
 
-//        handlerRestaurants = new HandleRestaurants();
-//        GetRestaurants gr = new GetRestaurants(this, handlerRestaurants);
-//        gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         updateRestaurants();
-    }
-
-    private class HandleRestaurants extends Handler {
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == Constants.CALLBACK_GET_RESTAURANTS_SUCCESS) {  //all ok
-                Log.d(TAG, "Restaurants data received");
-                updateRestaurants();
-            }
-            if (msg.what == Constants.CALLBACK_GET_RESTAURANTS_FAIL) {  //not ok
-                Log.d(TAG, "Restaurants data NOT receive");
-                updateRestaurants();
-            }
-            if (msg.what == Constants.CALLBACK_GET_RESTAURANTS_SHOW_PROGRESS_BAR) {  //show progress bar
-                mrvRestaurants.setVisibility(View.GONE);
-                mpbRestaurants.setVisibility(View.VISIBLE);
-            }
-            super.handleMessage(msg);
-        }
     }
 
     private void updateRestaurants() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVRestaurantsAdapter adapter = new RVRestaurantsAdapter(dbHelper, this, locale, cuisineID);
+        RVRestaurantsAdapter adapter = new RVRestaurantsAdapter(this, (DastarhanApp) getApplication(), locale, cuisineID);
         if (mrvRestaurants.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvRestaurants");
             mrvRestaurants.setAdapter(adapter);
@@ -124,18 +95,18 @@ public class Restaurants extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_action_menu) {
-            Intent intent = new Intent(Restaurants.this,MainActivity.class);
+            Intent intent = new Intent(Restaurants.this, MainActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_favorites) {
-            Intent intent = new Intent(Restaurants.this,FavoriteActivity.class);
+            Intent intent = new Intent(Restaurants.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(Restaurants.this,BasketActivity.class);
+            Intent intent = new Intent(Restaurants.this, BasketActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(Restaurants.this,PromoActivity.class);
+            Intent intent = new Intent(Restaurants.this, PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
             Intent intent = new Intent(Restaurants.this, SettingActivity.class);

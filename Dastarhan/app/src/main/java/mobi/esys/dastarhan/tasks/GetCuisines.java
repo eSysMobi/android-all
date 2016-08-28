@@ -1,9 +1,5 @@
 package mobi.esys.dastarhan.tasks;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -20,7 +16,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import mobi.esys.dastarhan.Constants;
-import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.DastarhanApp;
+import mobi.esys.dastarhan.database.Cuisine;
+import mobi.esys.dastarhan.database.CuisineRepository;
+import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
  * Created by ZeyUzh on 18.05.2016.
@@ -28,11 +28,12 @@ import mobi.esys.dastarhan.utils.DatabaseHelper;
 public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = "dtagGetCuisines";
     private Handler handler;
-    private Context context;
+    private RealmComponent component;
 
-    public GetCuisines(Context incContext, Handler incHandler) {
+
+    public GetCuisines(DastarhanApp dastarhanApp, Handler incHandler) {
         handler = incHandler;
-        context = incContext;
+        component = dastarhanApp.realmComponent();
     }
 
     @Override
@@ -70,68 +71,42 @@ public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
             // Getting JSON Array node
             JSONArray cuisunesElements = jsonObject.getJSONArray("0");
             if (cuisunesElements.length() > 0) {
+                UnitOfWork uow = component.getUow();
+                uow.startUOW();
 
-                // looping through All Cuisines
-                DatabaseHelper dbHelper = new DatabaseHelper(context);
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+                int addedElementsToDB = 0;
                 try {
+                    CuisineRepository repo = component.cuisineRepository();
                     for (int i = 0; i < cuisunesElements.length(); i++) {
                         JSONObject c = cuisunesElements.getJSONObject(i);
 
-                        int approved = c.getInt("approved");
+                        int server_id = c.getInt("id");
 
-                        if (approved == 1) {
-                            int cuisine_id = c.getInt("id");
+                        Cuisine cuisine = repo.getById(server_id);
+
+                        //check in db, if not exists - add
+                        if (cuisine == null) {
+                            int approved = c.getInt("approved");
+                            boolean appr = (approved == 1);
                             String ru_name = c.getString("ru_name");
                             String en_name = c.getString("en_name");
 
-                            Cursor cursor = db.query(Constants.DB_TABLE_CUISINES, null, null, null, null, null, null);
+                            cuisine = new Cuisine(
+                                    server_id,
+                                    ru_name,
+                                    en_name,
+                                    appr
+                            );
 
-                            //check rows in db
-                            if (cursor.moveToFirst()) {
-                                int idColIndex = cursor.getColumnIndex("server_id");
-                                boolean needInsert = true;
-
-                                //check db for this id
-                                do {
-                                    int idInDB = cursor.getInt(idColIndex);
-                                    if (idInDB == cuisine_id) {
-                                        needInsert = false;
-                                        break;
-                                    }
-                                } while (cursor.moveToNext());
-
-                                if (needInsert) {
-                                    Log.d(TAG, "This cuisine id not found, insert data");
-                                    ContentValues cv = new ContentValues();
-                                    cv.put("server_id", cuisine_id);
-                                    cv.put("ru_name", ru_name);
-                                    cv.put("en_name", en_name);
-                                    cv.put("approved", approved);
-                                    // insert row
-                                    long rowID = db.insert(Constants.DB_TABLE_CUISINES, null, cv);
-                                    Log.d(TAG, "row inserted, ID = " + rowID);
-                                }
-
-                            } else {
-                                Log.d(TAG, "0 rows, insert data");
-                                ContentValues cv = new ContentValues();
-                                cv.put("server_id", cuisine_id);
-                                cv.put("ru_name", ru_name);
-                                cv.put("en_name", en_name);
-                                cv.put("approved", approved);
-                                // insert row
-                                long rowID = db.insert(Constants.DB_TABLE_CUISINES, null, cv);
-                                Log.d(TAG, "row inserted, ID = " + rowID);
-                            }
-                            cursor.close();
+                            repo.addOrUpdate(cuisine);
+                            Log.d(TAG, "Prepare to adding cuisine id " + server_id);
+                            addedElementsToDB++;
                         }
                     }
-                } finally {
-                    //close bd
-                    Log.d(TAG, "Close DB (cuisines)");
-                    db.close();
+                    uow.commit();
+                    Log.d(TAG, "Cuisines added: " + addedElementsToDB);
+                } catch (Exception e) {
+                    uow.cancel();
                 }
                 //if we have cuisunes elements
                 result = true;
