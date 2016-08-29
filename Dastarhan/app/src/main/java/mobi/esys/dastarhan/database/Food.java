@@ -14,7 +14,7 @@ public class Food extends RealmObject {
     private String picture;
     private String ru_descr;
     private String en_descr;
-    private long price;
+    private double price;
     private Integer min_amount;
     private String units;
     private Integer offer;
@@ -22,6 +22,7 @@ public class Food extends RealmObject {
     private boolean favorite;
     private boolean featured;
     private boolean ordered;
+    private boolean removed;
 
     /**
      * For Realm usage only
@@ -38,12 +39,13 @@ public class Food extends RealmObject {
                 String picture,
                 String ru_descr,
                 String en_descr,
-                long price,
+                double price,
                 Integer min_amount,
                 String units,
                 Integer offer,
                 boolean vegetarian,
-                boolean featured) {
+                boolean featured,
+                boolean removed) {
         this.server_id = server_id;
         this.res_id = res_id;
         this.cat_id = cat_id;
@@ -58,7 +60,10 @@ public class Food extends RealmObject {
         this.offer = offer;
         this.vegetarian = vegetarian;
         this.featured = featured;
+        this.removed = removed;
     }
+
+    //setters
 
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
@@ -67,6 +72,8 @@ public class Food extends RealmObject {
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
     }
+
+    //getters
 
     public int getServer_id() {
         return server_id;
@@ -100,7 +107,7 @@ public class Food extends RealmObject {
         return en_descr;
     }
 
-    public long getPrice() {
+    public double getPrice() {
         return price;
     }
 
@@ -132,6 +139,10 @@ public class Food extends RealmObject {
         return ordered;
     }
 
+    public boolean isRemoved() {
+        return removed;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -142,11 +153,12 @@ public class Food extends RealmObject {
         if (server_id != food.server_id) return false;
         if (res_id != food.res_id) return false;
         if (cat_id != food.cat_id) return false;
-        if (price != food.price) return false;
+        if (Double.compare(food.price, price) != 0) return false;
         if (vegetarian != food.vegetarian) return false;
         if (favorite != food.favorite) return false;
         if (featured != food.featured) return false;
         if (ordered != food.ordered) return false;
+        if (removed != food.removed) return false;
         if (ru_name != null ? !ru_name.equals(food.ru_name) : food.ru_name != null) return false;
         if (en_name != null ? !en_name.equals(food.en_name) : food.en_name != null) return false;
         if (picture != null ? !picture.equals(food.picture) : food.picture != null) return false;
@@ -163,7 +175,9 @@ public class Food extends RealmObject {
 
     @Override
     public int hashCode() {
-        int result = server_id;
+        int result;
+        long temp;
+        result = server_id;
         result = 31 * result + res_id;
         result = 31 * result + cat_id;
         result = 31 * result + (ru_name != null ? ru_name.hashCode() : 0);
@@ -171,7 +185,8 @@ public class Food extends RealmObject {
         result = 31 * result + (picture != null ? picture.hashCode() : 0);
         result = 31 * result + (ru_descr != null ? ru_descr.hashCode() : 0);
         result = 31 * result + (en_descr != null ? en_descr.hashCode() : 0);
-        result = 31 * result + (int) (price ^ (price >>> 32));
+        temp = Double.doubleToLongBits(price);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (min_amount != null ? min_amount.hashCode() : 0);
         result = 31 * result + (units != null ? units.hashCode() : 0);
         result = 31 * result + (offer != null ? offer.hashCode() : 0);
@@ -179,6 +194,7 @@ public class Food extends RealmObject {
         result = 31 * result + (favorite ? 1 : 0);
         result = 31 * result + (featured ? 1 : 0);
         result = 31 * result + (ordered ? 1 : 0);
+        result = 31 * result + (removed ? 1 : 0);
         return result;
     }
 }

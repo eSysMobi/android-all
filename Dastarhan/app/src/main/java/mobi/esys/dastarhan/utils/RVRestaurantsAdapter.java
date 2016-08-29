@@ -44,8 +44,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         if (cuisineID == -42) {
             restaurants = component.restaurantRepository().getAll();
         } else {
-            restaurants = new ArrayList<>();
-            restaurants.add(component.restaurantRepository().getByCuisine(cuisineID));
+            restaurants = component.restaurantRepository().getByCuisine(cuisineID);
         }
     }
 
@@ -80,7 +79,6 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
     @Override
     public void onBindViewHolder(RVRestaurantsAdapter.RestaurantViewHolder viewHolder, int i) {
         Restaurant restaurant = restaurants.get(i);
-
 
         viewHolder.restaraunt_id = restaurant.getServer_id();
         if (locale.equals("ru")) {

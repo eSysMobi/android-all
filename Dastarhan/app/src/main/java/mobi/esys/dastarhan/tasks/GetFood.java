@@ -1,9 +1,5 @@
 package mobi.esys.dastarhan.tasks;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -20,7 +16,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import mobi.esys.dastarhan.Constants;
-import mobi.esys.dastarhan.utils.DatabaseHelper;
+import mobi.esys.dastarhan.DastarhanApp;
+import mobi.esys.dastarhan.database.Food;
+import mobi.esys.dastarhan.database.FoodRepository;
+import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
  * Created by ZeyUzh on 18.05.2016.
@@ -29,12 +29,13 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetFood";
     private Handler handler;
     boolean result = false;
-    private Context context;
+    private RealmComponent component;
     private Integer[] restID;
 
-    public GetFood(Context incContext, Handler incHandler, Integer[] incRestID) {
+    public GetFood(DastarhanApp dastarhanApp, Handler incHandler, Integer[] incRestID) {
+        //TODO
         handler = incHandler;
-        context = incContext;
+        component = dastarhanApp.realmComponent();
         restID = incRestID;
     }
 
@@ -79,105 +80,64 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                 // Getting JSON Array node
                 JSONArray foodElements = jsonObject.getJSONArray("0");
                 if (foodElements.length() > 0) {
+                    UnitOfWork uow = component.getUow();
+                    uow.startUOW();
 
-                    // looping through All Cuisines
-                    DatabaseHelper dbHelper = new DatabaseHelper(context);
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+                    int addedElementsToDB = 0;
                     try {
+                        FoodRepository repo = component.foodRepository();
                         for (int j = 0; j < foodElements.length(); j++) {
                             JSONObject c = foodElements.getJSONObject(j);
 
-                            //TODO add "removed"
-                            //int approved = c.getString("removed");
+                            int server_id = c.getInt("id");
 
-                            int food_id = c.getInt("id");
-                            int res_id = c.getInt("res_id");
-                            int cat_id = c.getInt("cat_id");
-                            String ru_name = c.getString("ru_name");
-                            String en_name = c.getString("en_name");
-                            String picture = c.getString("picture");
-                            String ru_descr = c.getString("ru_descr");
-                            String en_descr = c.getString("en_descr");
-                            double price = c.getDouble("price");
-                            int min_amount = c.getInt("min_amount");
-                            String units = c.getString("units");
-                            int ordered = c.getInt("ordered");
-                            int offer = c.getInt("offer");
-                            int vegetarian = c.getInt("vegetarian");
-                            int featured = c.getInt("featured");
+                            Food food = repo.getById(server_id);
 
-                            Cursor cursor = db.query(Constants.DB_TABLE_FOOD, null, null, null, null, null, null);
+                            //check in db, if not exists - add
+                            if (food == null) {
+                                int res_id = c.getInt("res_id");
+                                int cat_id = c.getInt("cat_id");
+                                String ru_name = c.getString("ru_name");
+                                String en_name = c.getString("en_name");
+                                String picture = c.getString("picture");
+                                String ru_descr = c.getString("ru_descr");
+                                String en_descr = c.getString("en_descr");
+                                double price = c.getDouble("price");
+                                int min_amount = c.getInt("min_amount");
+                                String units = c.getString("units");
+                                //int ordered = c.getInt("ordered");
+                                int offer = c.getInt("offer");
+                                boolean vegetarian = (c.getInt("vegetarian") == 1);
+                                boolean featured = (c.getInt("featured") == 1);
+                                boolean removed = (c.getString("removed") == null);
 
-                            //check rows in db
-                            if (cursor.moveToFirst()) {
-                                int idColIndex = cursor.getColumnIndex("server_id");
-                                boolean needInsert = true;
+                                food = new Food(server_id,
+                                        res_id,
+                                        cat_id,
+                                        ru_name,
+                                        en_name,
+                                        picture,
+                                        ru_descr,
+                                        en_descr,
+                                        price,
+                                        min_amount,
+                                        units,
+                                        offer,
+                                        vegetarian,
+                                        featured,
+                                        removed
+                                );
 
-                                //check db for this id
-                                do {
-                                    int idInDB = cursor.getInt(idColIndex);
-                                    if (idInDB == food_id) {
-                                        needInsert = false;
-                                        break;
-                                    }
-                                } while (cursor.moveToNext());
-
-                                if (needInsert) {
-                                    Log.d(TAG, "This food id not found, insert data");
-                                    ContentValues cv = new ContentValues();
-                                    cv.put("server_id", food_id);
-                                    cv.put("res_id", res_id);
-                                    cv.put("cat_id", cat_id);
-                                    cv.put("ru_name", ru_name);
-                                    cv.put("en_name", en_name);
-                                    cv.put("picture", picture);
-                                    cv.put("ru_descr", ru_descr);
-                                    cv.put("en_descr", en_descr);
-                                    cv.put("price", price);
-                                    cv.put("min_amount", min_amount);
-                                    cv.put("units", units);
-                                    cv.put("ordered", ordered);
-                                    cv.put("offer", offer);
-                                    cv.put("vegetarian", vegetarian);
-                                    cv.put("favorite", 0);
-                                    cv.put("featured", featured);
-                                    cv.put("in_order", 0);
-                                    // insert row
-                                    long rowID = db.insert(Constants.DB_TABLE_FOOD, null, cv);
-                                    Log.d(TAG, "row inserted, ID = " + rowID);
-                                }
-
-                            } else {
-                                Log.d(TAG, "0 rows, insert data");
-                                ContentValues cv = new ContentValues();
-                                cv.put("server_id", food_id);
-                                cv.put("res_id", res_id);
-                                cv.put("cat_id", cat_id);
-                                cv.put("ru_name", ru_name);
-                                cv.put("en_name", en_name);
-                                cv.put("picture", picture);
-                                cv.put("ru_descr", ru_descr);
-                                cv.put("en_descr", en_descr);
-                                cv.put("price", price);
-                                cv.put("min_amount", min_amount);
-                                cv.put("units", units);
-                                cv.put("ordered", ordered);
-                                cv.put("offer", offer);
-                                cv.put("vegetarian", vegetarian);
-                                cv.put("favorite", 0);
-                                cv.put("featured", featured);
-                                // insert row
-                                long rowID = db.insert(Constants.DB_TABLE_FOOD, null, cv);
-                                Log.d(TAG, "row inserted, ID = " + rowID);
+                                repo.addOrUpdate(food);
+                                Log.d(TAG, "Prepare to adding cuisine id " + server_id);
+                                addedElementsToDB++;
                             }
-                            cursor.close();
-
                         }
-                    } finally {
-                        //close bd
-                        Log.d(TAG, "Close DB (food)");
-                        db.close();
+
+                        uow.commit();
+                        Log.d(TAG, "Food added: " + addedElementsToDB);
+                    } catch (Exception e) {
+                        uow.cancel();
                     }
                 }
                 result = true;
@@ -187,12 +147,13 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                 Log.e(TAG, "Error IOException " + e.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.e(TAG, "Error JSONException " + e.toString());
             } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
             }
-            Log.d(TAG, "Sucessully getting info about food from restaurant with id " + aRestID);
+            Log.d(TAG, "Successfully getting info about food from restaurant with id " + aRestID);
         }
         return null;
     }

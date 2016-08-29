@@ -44,16 +44,16 @@ class RestaurantRealmRepository implements RestaurantRepository {
     }
 
     @Override
-    public Restaurant getByCuisine(final int cuisineID) {
-        return realmTemplate.findInRealm(new RealmTransactionCallback<Restaurant>() {
+    public List<Restaurant> getByCuisine(final int cuisineID) {
+        return realmTemplate.findInRealm(new RealmTransactionCallback<List<Restaurant>>() {
             @Override
-            public Restaurant execute(Realm realm) {
-                Restaurant searched = realm.where(Restaurant.class).contains("cuisines", String.valueOf(cuisineID)).findFirst();
-                if (searched == null) {
-                    return null;
-                } else {
-                    return realm.copyFromRealm(searched);
+            public List<Restaurant> execute(Realm realm) {
+                List<Restaurant> searched = realm.where(Restaurant.class).contains("cuisines", String.valueOf(cuisineID)).findAll();
+                List<Restaurant> restaurants = new ArrayList<>();
+                for (Restaurant restaurant : searched) {
+                    restaurants.add(realm.copyFromRealm(restaurant));
                 }
+                return restaurants;
             }
         });
     }

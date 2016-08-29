@@ -1,42 +1,40 @@
 package mobi.esys.dastarhan;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.MenuInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import mobi.esys.dastarhan.database.CuisineRepository;
+import mobi.esys.dastarhan.database.Restaurant;
+import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.tasks.GetFood;
-import mobi.esys.dastarhan.tasks.GetRestaurants;
-import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.FoodCheckElement;
 import mobi.esys.dastarhan.utils.RVFoodAdapter;
 
 public class FoodActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private final String TAG = "dtagFood";
+    private final String TAG = "dtagFoodActivity";
     private DastarhanApp dastarhanApp;
 
     private RecyclerView mrvFood;
@@ -73,6 +71,7 @@ public class FoodActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvFood.setLayoutManager(llm);
 
+        //TODO
         handlerFood = new HandleFood();
 
         cuisineID = getIntent().getIntExtra("cuisineID", -42);
@@ -109,7 +108,7 @@ public class FoodActivity extends AppCompatActivity
 
                 if (needDownFoodFormServer) {
                     //get food from restaurant
-                    GetFood gf = new GetFood(this, handlerFood, restaurantsID);
+                    GetFood gf = new GetFood(dastarhanApp, handlerFood, restaurantsID);
                     gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
                 } else {
                     Log.d(TAG, "Not need download food, time is not expired");
@@ -168,28 +167,21 @@ public class FoodActivity extends AppCompatActivity
 
     private void getFoodFromRestaurants() {
         //get restaurants ID from cuisines
-        String selectQuery;
+        CuisineRepository cuisineRepo = dastarhanApp.component.cuisineRepository();
+        RestaurantRepository restaurantRepo = dastarhanApp.component.restaurantRepository();
+        List<Restaurant> restaurants;
         if (cuisineID == -42) {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS;
+            restaurants = restaurantRepo.getAll();
         } else {
-            selectQuery = "SELECT * FROM " + Constants.DB_TABLE_RESTAURANTS + " WHERE cuisines LIKE \"%" + String.valueOf(cuisineID) + "%\"";
+            restaurants = restaurantRepo.getByCuisine(cuisineID);
         }
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-
+        if (restaurants.size() > 0) {
             List<Integer> restIDs = new ArrayList<>();
-            do {
-                int res_id = cursor.getInt(cursor.getColumnIndexOrThrow("server_id"));
-                restIDs.add(res_id);
-            } while (cursor.moveToNext());
+            for (Restaurant restaurant : restaurants) {
+                restIDs.add(restaurant.getServer_id());
+            }
             restaurantsID = restIDs.toArray(new Integer[restIDs.size()]);
         }
-        cursor.close();
-        db.close();
 
         //check last downloaded time
         boolean needDownFoodFromServer = false;
@@ -211,7 +203,7 @@ public class FoodActivity extends AppCompatActivity
         if (needDownFoodFromServer) {
             if (restaurantsID.length > 0) {
                 //get food from restaurant
-                GetFood gf = new GetFood(this, handlerFood, restaurantsID);
+                GetFood gf = new GetFood(dastarhanApp, handlerFood, restaurantsID);
                 gf.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
             } else {
                 Log.d(TAG, "We have no restaurants with this cuisines");
@@ -227,8 +219,7 @@ public class FoodActivity extends AppCompatActivity
 
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID, null);
+        RVFoodAdapter adapter = new RVFoodAdapter(this, dastarhanApp, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID, null);
         if (mrvFood.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);

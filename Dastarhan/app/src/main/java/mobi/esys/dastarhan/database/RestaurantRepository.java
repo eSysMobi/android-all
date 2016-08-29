@@ -8,7 +8,7 @@ public interface RestaurantRepository {
 
     Restaurant getById(int id);
 
-    Restaurant getByCuisine(int cuisineID);
+    List<Restaurant> getByCuisine(int cuisineID);
 
     List<Restaurant> getAll();
 }

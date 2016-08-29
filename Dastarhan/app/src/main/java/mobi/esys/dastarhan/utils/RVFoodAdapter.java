@@ -26,17 +26,19 @@ import java.util.Set;
 
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentFoodActivity;
+import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
+import mobi.esys.dastarhan.database.Food;
+import mobi.esys.dastarhan.database.FoodRepository;
+import mobi.esys.dastarhan.database.RealmComponent;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHolder> {
-    private Cursor cursor;
     private Context mContext;
-    private SQLiteDatabase db;
+    private RealmComponent component;
     private String locale;
-    private DatabaseHelper dbHelper;
     private byte action;
     private SharedPreferences prefs;
     private Handler handler;
@@ -44,37 +46,34 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
     private Set<Integer> changeElement;
     private List<Boolean> needPromo;
 
+    private List<Food> foods;
+
 
     //constructor
-    public RVFoodAdapter(DatabaseHelper dbHelper, Context mContext, String locale, byte action, Integer[] restID, Handler handler) {
+    public RVFoodAdapter(Context mContext, DastarhanApp dastarhanApp, String locale, byte action, Integer[] restIDs, Handler handler) {
         this.mContext = mContext;
+        component = dastarhanApp.realmComponent();
         this.locale = locale;
-        this.dbHelper = dbHelper;
         this.action = action;
         this.handler = handler;
         changeElement = new HashSet<>();
         needPromo = new ArrayList<>();
-        db = dbHelper.getReadableDatabase();
         prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
-        String selectQuery;
+        FoodRepository foodRepo = component.foodRepository();
         switch (action) {
             case Constants.ACTION_GET_FOOD_FAVORITE:
                 Log.d("dtagRecyclerView", "Retrieve favorite food");
-                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE favorite = " + 1;
+                foods = foodRepo.getByFavorite();
                 break;
             case Constants.ACTION_GET_FOOD_FROM_RESTAURANTS:
 
-                if (restID[0] == -42) {
+                if (restIDs[0] == -42) {
                     Log.d("dtagRecyclerView", "Retrieve food from all restaurants");
-                    selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD;
+                    foods = foodRepo.getAll();
                 } else {
-                    Log.d("dtagRecyclerView", "Retrieve food from restaurants with IDs = " + restID.toString());
-                    //selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID;
-                    selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE res_id = " + restID[0];
-                    for (int i = 1; i < restID.length; i++) {
-                        selectQuery = selectQuery + " or res_id = " + restID[i];
-                    }
+                    Log.d("dtagRecyclerView", "Retrieve food from restaurants with IDs");
+                    foods = foodRepo.getByRestaurantIDs(restIDs);
                 }
                 break;
             case Constants.ACTION_GET_FOOD_CURR_ORDERED:
