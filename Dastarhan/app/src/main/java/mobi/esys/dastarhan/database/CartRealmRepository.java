@@ -53,7 +53,7 @@ class CartRealmRepository implements CartRepository {
                 if (cart == null) {
                     return null;
                 } else {
-                    RealmResults<Order> searched = realm.where(Order.class).equalTo("id_order",cart.getCurrentOrderID()).findAll();
+                    RealmResults<Order> searched = realm.where(Order.class).equalTo("id_order", cart.getCurrentOrderID()).findAll();
                     for (Order order : searched) {
                         orders.add(realm.copyFromRealm(order));
                     }

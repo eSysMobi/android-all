@@ -7,7 +7,7 @@ import io.realm.annotations.PrimaryKey;
 public class Order extends RealmObject {
 
     private int id_order;
-    private long id_food;
+    private int id_food;
     private int count;
     private double price;
 
@@ -18,7 +18,7 @@ public class Order extends RealmObject {
         //For Realm usage only
     }
 
-    public Order(int id_order, long id_food, int count, double price) {
+    public Order(int id_order, int id_food, int count, double price) {
         this.id_order = id_order;
         this.id_food = id_food;
         this.count = count;
@@ -29,7 +29,7 @@ public class Order extends RealmObject {
         return id_order;
     }
 
-    public long getId_food() {
+    public int getId_food() {
         return id_food;
     }
 

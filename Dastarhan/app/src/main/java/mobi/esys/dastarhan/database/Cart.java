@@ -9,7 +9,7 @@ public class Cart extends RealmObject {
     @PrimaryKey
     private int inner_id = 42;
     private boolean opened;
-    private long current_order_id;
+    private int current_order_id;
     private String notice;
 
     /**
@@ -19,7 +19,7 @@ public class Cart extends RealmObject {
         //For Realm usage only
     }
 
-    public Cart(boolean opened, long current_order_id, String notice) {
+    public Cart(boolean opened, int current_order_id, String notice) {
         this.opened = opened;
         this.current_order_id = current_order_id;
         this.notice = notice;
@@ -29,7 +29,7 @@ public class Cart extends RealmObject {
         return opened;
     }
 
-    public long getCurrentOrderID() {
+    public int getCurrentOrderID() {
         return current_order_id;
     }
 
@@ -41,7 +41,7 @@ public class Cart extends RealmObject {
         this.opened = opened;
     }
 
-    public void setCurrentOrderID(long currentOrderID) {
+    public void setCurrentOrderID(int currentOrderID) {
         this.current_order_id = currentOrderID;
     }
 

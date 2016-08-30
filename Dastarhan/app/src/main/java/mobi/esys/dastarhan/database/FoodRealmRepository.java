@@ -78,6 +78,29 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
+    public List<Food> getByIds(final Integer[] IDs) {
+        return realmTemplate.findInRealm(new RealmTransactionCallback<List<Food>>() {
+            @Override
+            public List<Food> execute(Realm realm) {
+                RealmQuery<Food> query = realm.where(Food.class);
+                for (int i = 0; i < IDs.length; i++) {
+                    if (i == 0) {
+                        query.equalTo("server_id", IDs[i]);
+                    } else {
+                        query.or().equalTo("server_id", IDs[i]);
+                    }
+                }
+                RealmResults<Food> searched = query.findAll();
+                List<Food> foods = new ArrayList<>();
+                for (Food food : searched) {
+                    foods.add(realm.copyFromRealm(food));
+                }
+                return foods;
+            }
+        });
+    }
+
+    @Override
     public List<Food> getByRestaurantID(final int restID) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<List<Food>>() {
             @Override

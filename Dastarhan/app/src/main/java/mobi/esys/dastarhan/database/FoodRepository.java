@@ -8,6 +8,8 @@ public interface FoodRepository {
 
     Food getById(int id);
 
+    List<Food> getByIds(Integer[] IDs);
+
     List<Food> getByRestaurantID(int restID);
 
     List<Food> getByRestaurantIDs(Integer[] restIDs);
