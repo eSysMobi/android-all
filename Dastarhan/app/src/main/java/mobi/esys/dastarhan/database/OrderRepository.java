@@ -4,7 +4,9 @@ import java.util.List;
 
 public interface OrderRepository {
 
-    void addOrUpdate(Order order);
+    void add(Order order);
+
+    void update(Order order);
 
     List<Order> getById(int id_order);
 

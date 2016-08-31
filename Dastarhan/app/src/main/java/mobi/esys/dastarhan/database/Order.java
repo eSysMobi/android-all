@@ -6,7 +6,6 @@ import io.realm.annotations.PrimaryKey;
 
 public class Order extends RealmObject {
 
-    @PrimaryKey
     private int id_order;
     private int id_food;
     private int count;

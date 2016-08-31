@@ -161,7 +161,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
         } else {
             viewHolder.bFoodRVToCart.setVisibility(View.GONE);
             viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.VISIBLE);
-            viewHolder.tvFoodRVCount.setText(orderThisFood.getCount());
+            viewHolder.tvFoodRVCount.setText(String.valueOf(orderThisFood.getCount()));
         }
 
         //set listeners
@@ -232,7 +232,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             Log.d("dtagRecyclerView", "Add to cart = " + viewHolder.food.getServer_id());
             //save 1 food to order
             Order order = new Order(cart.getCurrentOrderID(), viewHolder.food.getServer_id(), 1, viewHolder.food.getPrice());
-            component.orderRepository().addOrUpdate(order);
+            component.orderRepository().add(order);
             //show order control buttons
             viewHolder.bFoodRVToCart.setVisibility(View.GONE);
             viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.VISIBLE);
@@ -260,7 +260,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
                     //update local
                     currOrders.get(i).setCount(currOrders.get(i).getCount() - 1);
                     //update in db
-                    component.orderRepository().addOrUpdate(currOrders.get(i));
+                    component.orderRepository().update(currOrders.get(i));
                     targetPosition = i;
                     break;
                 }
@@ -294,7 +294,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             for (int i = 0; i < currOrders.size(); i++) {
                 if (currOrders.get(i).getId_food() == viewHolder.food.getServer_id()) {
                     currOrders.get(i).setCount(currOrders.get(i).getCount() + 1);
-                    component.orderRepository().addOrUpdate(currOrders.get(i));
+                    component.orderRepository().update(currOrders.get(i));
                     targetPosition = i;
                     break;
                 }
