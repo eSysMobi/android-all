@@ -35,7 +35,9 @@ class CartRealmRepository implements CartRepository {
             public Cart execute(Realm realm) {
                 Cart searched = realm.where(Cart.class).findFirst();
                 if (searched == null) {
-                    return null;
+                    Cart newCart = new Cart(true, 0, "");
+                    createOrUpdate(newCart);
+                    return newCart;
                 } else {
                     return realm.copyFromRealm(searched);
                 }

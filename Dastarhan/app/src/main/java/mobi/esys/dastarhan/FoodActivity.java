@@ -29,7 +29,7 @@ import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.tasks.GetFood;
 import mobi.esys.dastarhan.utils.FoodCheckElement;
-import mobi.esys.dastarhan.utils.RVFoodAdapter;
+import mobi.esys.dastarhan.utils.RVFoodAdapterMain;
 
 public class FoodActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -219,7 +219,7 @@ public class FoodActivity extends AppCompatActivity
 
     private void updateFood() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        RVFoodAdapter adapter = new RVFoodAdapter(this, dastarhanApp, locale, Constants.ACTION_GET_FOOD_FROM_RESTAURANTS, restaurantsID, null);
+        RVFoodAdapterMain adapter = new RVFoodAdapterMain(this, dastarhanApp, locale, restaurantsID);
         if (mrvFood.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);

@@ -31,11 +31,11 @@ class FoodRealmRepository implements FoodRepository {
     }
 
     @Override
-    public void updateFavorites(final int id, final boolean fav) {
+    public void updateFavorites(final int serverFoodID, final boolean fav) {
         realmTemplate.executeInRealm(new RealmTransactionCallback<Object>() {
             @Override
             public Object execute(Realm realm) {
-                Food searched = realm.where(Food.class).equalTo("server_id", id).findFirst();
+                Food searched = realm.where(Food.class).equalTo("server_id", serverFoodID).findFirst();
                 if (searched == null) {
                     return null;
                 } else {

@@ -20,7 +20,7 @@ public interface FoodRepository {
 
     List<Food> getAll();
 
-    void updateFavorites(int id, boolean fav);
+    void updateFavorites(int serverFoodID, boolean fav);
 
     void updateOrdered(int id, boolean isOrdered);
 }

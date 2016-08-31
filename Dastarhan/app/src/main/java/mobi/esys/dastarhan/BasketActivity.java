@@ -8,28 +8,25 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.MenuInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.DatabaseHelper;
-import mobi.esys.dastarhan.utils.RVFoodAdapter;
+import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 
 public class BasketActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -71,6 +68,8 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         mrvOrders.setLayoutManager(llm);
+
+        //TODO set notice
 
         mbBasketAddAddress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,8 +124,7 @@ public class BasketActivity extends AppCompatActivity implements NavigationView.
     protected void updateList() {
         Log.d(TAG, "Refresh RecyclerView");
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_CURR_ORDERED, null, handler);
+        RVFoodAdapterCart adapter = new RVFoodAdapterCart(this, (DastarhanApp) getApplication(), locale, handler);
         if (mrvOrders.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvOrders");
             mrvOrders.setAdapter(adapter);

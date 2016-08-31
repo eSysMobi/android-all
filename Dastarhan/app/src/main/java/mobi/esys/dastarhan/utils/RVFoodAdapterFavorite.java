@@ -1,13 +1,7 @@
 package mobi.esys.dastarhan.utils;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,11 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentFoodActivity;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
@@ -37,15 +28,10 @@ import mobi.esys.dastarhan.database.RealmComponent;
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
-public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHolder> {
+public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFavorite.FoodViewHolder> {
     private Context mContext;
     private RealmComponent component;
     private String locale;
-    private byte action;
-    private SharedPreferences prefs;
-    private Handler handler;
-    private double totalCost = 0;
-    private Set<Integer> changeElement;
 
     private List<Food> foods;
     private List<Order> currOrders;
@@ -53,47 +39,20 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
 
 
     //constructor
-    public RVFoodAdapter(Context mContext, DastarhanApp dastarhanApp, String locale, byte action, Integer[] restIDs, Handler handler) {
+    public RVFoodAdapterFavorite(Context mContext, DastarhanApp dastarhanApp, String locale) {
         this.mContext = mContext;
         component = dastarhanApp.realmComponent();
         this.locale = locale;
-        this.action = action;
-        this.handler = handler;
-        changeElement = new HashSet<>();
         foods = new ArrayList<>();
-        prefs = mContext.getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
         cart = component.cartRepository().get();
         currOrders = component.cartRepository().getCurrentCartOrders();
-        FoodRepository foodRepo = component.foodRepository();
-        switch (action) {
-            case Constants.ACTION_GET_FOOD_FAVORITE:
-                Log.d("dtagRecyclerView", "Retrieve favorite food");
-                foods = foodRepo.getByFavorite();
-                break;
-            case Constants.ACTION_GET_FOOD_FROM_RESTAURANTS:
-                if (restIDs[0] == -42) {
-                    Log.d("dtagRecyclerView", "Retrieve food from all restaurants");
-                    foods = foodRepo.getAll();
-                } else {
-                    Log.d("dtagRecyclerView", "Retrieve food from restaurants with IDs");
-                    foods = foodRepo.getByRestaurantIDs(restIDs);
-                }
-                break;
-            case Constants.ACTION_GET_FOOD_CURR_ORDERED:
-                Log.d("dtagRecyclerView", "Retrieve food from restaurants with IDs");
-                if (currOrders.size() > 0) {
-                    Integer[] orderIDs = new Integer[currOrders.size()];
-                    for (int i = 0; i < currOrders.size(); i++)
-                        orderIDs[i] = currOrders.get(i).getId_food();
-                    foods = foodRepo.getByIds(orderIDs);
-                }
-                break;
-            default:
-                Log.d("dtagRecyclerView", "(DEFAULT) Retrieve favorite food");
-                foods = foodRepo.getByFavorite();
-                break;
+        if (currOrders == null) {
+            currOrders = new ArrayList<>();
         }
+        FoodRepository foodRepo = component.foodRepository();
+        Log.d("dtagRecyclerView", "Retrieve favorite food");
+        foods = foodRepo.getByFavorite();
     }
 
     //preparing ViewHolder
@@ -195,37 +154,20 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         }
 
         //set listeners
-        //ListenerToCart
-        ListenerToCart listenerToCart = new ListenerToCart(cart, viewHolder, component);
+        //Button ToCart
+        ListenerToCart listenerToCart = new ListenerToCart(viewHolder);
         viewHolder.bFoodRVToCart.setOnClickListener(listenerToCart);
-        //ListenerRemoveFromCart
-        //TODO
-        //ListenerAddToCart
-        //TODO
+        //Button RemoveOneFromCart
+        ListenerRemoveOneFromCart listenerRemoveOneFromCart = new ListenerRemoveOneFromCart(viewHolder);
+        viewHolder.bCartRemoveOne.setOnClickListener(listenerRemoveOneFromCart);
+        //Button AddOneToCart
+        ListenerAddOneToCart listenerAddOneFromCart = new ListenerAddOneToCart(viewHolder);
+        viewHolder.bCartAddOne.setOnClickListener(listenerAddOneFromCart);
 
         //specific
-
-        //ACTION_GET_FOOD_CURR_ORDERED
-        //TODO set notice
-        //TODO set total cost
-        if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
-            totalCost = totalCost + viewHolder.price * viewHolder.count;
-            if (i == getItemCount() - 1) {
-                Message message = Message.obtain();
-                message.setTarget(handler);
-                message.what = 43;
-                Bundle bundle = new Bundle();
-                bundle.putDouble("totalCost", totalCost);
-                message.setData(bundle);
-                message.sendToTarget();
-            }
-        }
-
         //ACTION_GET_FOOD_FAVORITE
-        if (action == Constants.ACTION_GET_FOOD_FAVORITE) {
-            AddRemoveFav addRemoveFav = new AddRemoveFav(viewHolder, i, action, handler, changeElement);
-            viewHolder.itemView.setOnLongClickListener(addRemoveFav);
-        }
+        AddRemoveFav addRemoveFav = new AddRemoveFav(viewHolder, i);
+        viewHolder.itemView.setOnLongClickListener(addRemoveFav);
     }
 
     private static class GoToFullFood implements View.OnClickListener {
@@ -246,15 +188,11 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         }
     }
 
-    private static class ListenerToCart implements View.OnClickListener {
-        private Cart cart;
+    private class ListenerToCart implements View.OnClickListener {
         private FoodViewHolder viewHolder;
-        private RealmComponent component;
 
-        public ListenerToCart(Cart cart, FoodViewHolder viewHolder, RealmComponent component) {
-            this.cart = cart;
+        public ListenerToCart(FoodViewHolder viewHolder) {
             this.viewHolder = viewHolder;
-            this.component = component;
         }
 
         @Override
@@ -262,7 +200,7 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
             Log.d("dtagRecyclerView", "Add to cart = " + viewHolder.food.getServer_id());
             //save 1 food to order
             Order order = new Order(cart.getCurrentOrderID(), viewHolder.food.getServer_id(), 1, viewHolder.food.getPrice());
-            component.orderRepository().add(order);
+            component.orderRepository().addOrUpdate(order);
             //show order control buttons
             viewHolder.bFoodRVToCart.setVisibility(View.GONE);
             viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.VISIBLE);
@@ -270,93 +208,95 @@ public class RVFoodAdapter extends RecyclerView.Adapter<RVFoodAdapter.FoodViewHo
         }
     }
 
-
-    private static class ListenerRemoveFromCart implements View.OnClickListener {
-        private Cart cart;
+    private class ListenerRemoveOneFromCart implements View.OnClickListener {
         private FoodViewHolder viewHolder;
-        private RealmComponent component;
 
-        public ListenerRemoveFromCart(Cart cart, FoodViewHolder viewHolder, RealmComponent component) {
-            this.cart = cart;
+        public ListenerRemoveOneFromCart(FoodViewHolder viewHolder) {
             this.viewHolder = viewHolder;
-            this.component = component;
         }
 
         @Override
         public void onClick(View v) {
             //remove 1 food from order
-            //TODO
-            //check is order has 0 food, if has< then remove order
-            //TODO
-            //check if order removes, then change control button
-            //TODO
+            //check is order has 0 food, if has < then remove order
+            int targetPosition = -42;
+            for (int i = 0; i < currOrders.size(); i++) {
+                if (currOrders.get(i).getId_food() == viewHolder.food.getServer_id()) {
+                    //update local
+                    currOrders.get(i).setCount(currOrders.get(i).getCount() - 1);
+                    //update in db
+                    component.orderRepository().addOrUpdate(currOrders.get(i));
+                    targetPosition = i;
+                    break;
+                }
+            }
 
-            //update list
-            //handler.sendEmptyMessage(42);
+            //check if order removes, then change control button
+            if (targetPosition != -42) {
+                if (currOrders.get(targetPosition).getCount() > 0) {
+                    viewHolder.tvFoodRVCount.setText(String.valueOf(currOrders.get(targetPosition).getCount()));
+                } else {
+                    viewHolder.bFoodRVToCart.setVisibility(View.VISIBLE);
+                    viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.GONE);
+                    currOrders.remove(currOrders.get(targetPosition));
+                }
+            }
+        }
+    }
+
+    private class ListenerAddOneToCart implements View.OnClickListener {
+        private FoodViewHolder viewHolder;
+
+        public ListenerAddOneToCart(FoodViewHolder viewHolder) {
+            this.viewHolder = viewHolder;
+        }
+
+        @Override
+        public void onClick(View v) {
+            //add 1 food to order
+            int targetPosition = -42;
+            for (int i = 0; i < currOrders.size(); i++) {
+                if (currOrders.get(i).getId_food() == viewHolder.food.getServer_id()) {
+                    currOrders.get(i).setCount(currOrders.get(i).getCount() + 1);
+                    component.orderRepository().addOrUpdate(currOrders.get(i));
+                    targetPosition = i;
+                    break;
+                }
+            }
+
+            if (targetPosition != -42) {
+                viewHolder.tvFoodRVCount.setText(String.valueOf(currOrders.get(targetPosition).getCount()));
+            }
         }
     }
 
 
-    private static class AddRemoveFav implements View.OnLongClickListener {
-        DatabaseHelper dbHelper;
+    private class AddRemoveFav implements View.OnLongClickListener {
         FoodViewHolder viewHolder;
         int elementNum;
-        byte action;
-        Set<Integer> changeElement;
 
-
-        public AddRemoveFav(DatabaseHelper dbHelper, FoodViewHolder viewHolder, int elementNum, byte action, Handler handler, Set<Integer> changeElement) {
-            this.dbHelper = dbHelper;
+        public AddRemoveFav(FoodViewHolder viewHolder, int elementNum) {
             this.viewHolder = viewHolder;
-            this.action = action;
             this.elementNum = elementNum;
-            this.changeElement = changeElement;
         }
 
         @Override
         public boolean onLongClick(View v) {
-            if (action == Constants.ACTION_GET_FOOD_CURR_ORDERED) {
-                //nothing
+            Log.d("dtagRecyclerView", "Start update fav");
+            boolean changeTo = false;
+            if (foods.get(elementNum).isFavorite()) {
+                changeTo = false;
+                //hidefav
+                viewHolder.ivFoodRVFav.setVisibility(View.GONE);
             } else {
-                Log.d("dtagRecyclerView", "Start update fav");
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                ContentValues cv = new ContentValues();
-                cv.put("server_id", viewHolder.food_id);
-                cv.put("res_id", viewHolder.res_id);
-                cv.put("cat_id", viewHolder.cat_id);
-                cv.put("ru_name", viewHolder.ru_name);
-                cv.put("en_name", viewHolder.en_name);
-                cv.put("picture", viewHolder.picture);
-                cv.put("ru_descr", viewHolder.ru_descr);
-                cv.put("en_descr", viewHolder.en_descr);
-                cv.put("price", viewHolder.price);
-                cv.put("min_amount", viewHolder.min_amount);
-                cv.put("units", viewHolder.units);
-                cv.put("ordered", viewHolder.ordered);
-                cv.put("offer", viewHolder.offer);
-                cv.put("vegetarian", viewHolder.vegetarian);
-                if (viewHolder.favorite != 1) {
-                    //set fav to 1
-                    viewHolder.favorite = 1;
-                    cv.put("favorite", viewHolder.favorite);
-                    viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
-                } else {
-                    //set fa to 0
-                    viewHolder.favorite = 0;
-                    cv.put("favorite", viewHolder.favorite);
-                    viewHolder.ivFoodRVFav.setVisibility(View.GONE);
-                }
-                cv.put("featured", viewHolder.featured);
-                cv.put("in_order", viewHolder.in_order);
-                int result = db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + viewHolder.food_id + " and res_id=" + viewHolder.res_id, null);
-                Log.d("dtagRecyclerView", "Fav updated = " + result);
-                db.close();
-                if (changeElement.contains(elementNum)) {
-                    changeElement.remove(elementNum);
-                } else {
-                    changeElement.add(elementNum);
-                }
+                changeTo = true;
+                //show fav
+                viewHolder.ivFoodRVFav.setVisibility(View.VISIBLE);
             }
+            //update local
+            foods.get(elementNum).setFavorite(changeTo);
+            //update in DB
+            component.foodRepository().updateFavorites(foods.get(elementNum).getServer_id(), changeTo);
             return true;
         }
     }

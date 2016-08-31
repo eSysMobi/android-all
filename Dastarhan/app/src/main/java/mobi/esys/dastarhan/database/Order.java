@@ -6,6 +6,7 @@ import io.realm.annotations.PrimaryKey;
 
 public class Order extends RealmObject {
 
+    @PrimaryKey
     private int id_order;
     private int id_food;
     private int count;
@@ -23,6 +24,10 @@ public class Order extends RealmObject {
         this.id_food = id_food;
         this.count = count;
         this.price = price;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public int getId_order() {

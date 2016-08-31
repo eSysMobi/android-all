@@ -1,28 +1,23 @@
 package mobi.esys.dastarhan;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.MenuInflater;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.tasks.GetCuisines;
-import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.RVCuisinesAdapter;
 
 public class MainActivity extends AppCompatActivity
@@ -98,12 +93,12 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(MainActivity.this,BasketActivity.class);
+            Intent intent = new Intent(MainActivity.this, BasketActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 
         } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(MainActivity.this,PromoActivity.class);
+            Intent intent = new Intent(MainActivity.this, PromoActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_settings) {
             Intent intent = new Intent(MainActivity.this, SettingActivity.class);

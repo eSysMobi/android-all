@@ -18,7 +18,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.RVRestaurantsAdapter;
 
 public class Restaurants extends AppCompatActivity
@@ -64,7 +63,6 @@ public class Restaurants extends AppCompatActivity
 
     private void updateRestaurants() {
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
         RVRestaurantsAdapter adapter = new RVRestaurantsAdapter(this, (DastarhanApp) getApplication(), locale, cuisineID);
         if (mrvRestaurants.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvRestaurants");

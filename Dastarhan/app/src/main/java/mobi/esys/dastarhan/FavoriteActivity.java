@@ -16,8 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.DatabaseHelper;
-import mobi.esys.dastarhan.utils.RVFoodAdapter;
+import mobi.esys.dastarhan.utils.RVFoodAdapterFavorite;
 
 public class FavoriteActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,8 +59,7 @@ public class FavoriteActivity extends AppCompatActivity
 
     private void updateFavoriteList(){
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVFoodAdapter adapter = new RVFoodAdapter(dbHelper, this, locale, Constants.ACTION_GET_FOOD_FAVORITE, null, null);
+        RVFoodAdapterFavorite adapter = new RVFoodAdapterFavorite(this, (DastarhanApp) getApplication(), locale);
         if (mrvFavorite.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFavorite");
             mrvFavorite.setAdapter(adapter);

@@ -18,11 +18,16 @@ class OrderRealmRepository implements OrderRepository {
     }
 
     @Override
-    public void add(final Order order) {
+    public void addOrUpdate(final Order order) {
         realmTemplate.executeInRealm(new RealmTransactionCallback<Object>() {
             @Override
             public Object execute(Realm realm) {
-                realm.copyToRealm(order);
+                if (order.getCount() > 0) {
+                    realm.copyToRealmOrUpdate(order);
+                } else {
+                    Order searched = realm.where(Order.class).equalTo("id_order", order.getId_order()).findFirst();
+                    searched.deleteFromRealm();
+                }
                 return null;
             }
         });
