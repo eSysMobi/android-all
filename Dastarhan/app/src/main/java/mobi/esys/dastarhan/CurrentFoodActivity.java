@@ -1,26 +1,19 @@
 package mobi.esys.dastarhan;
 
-import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.MenuInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -28,45 +21,32 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.DatabaseHelper;
+import java.util.List;
+
+import mobi.esys.dastarhan.database.CommonOperation;
+import mobi.esys.dastarhan.database.Food;
+import mobi.esys.dastarhan.database.FoodRepository;
+import mobi.esys.dastarhan.database.Order;
+import mobi.esys.dastarhan.database.RealmComponent;
 
 public class CurrentFoodActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private final String TAG = "dtagCurrentFood";
+    private RealmComponent component;
+    private FoodRepository foodRepository;
+    private Food food;
+
     private transient SharedPreferences prefs;
-    private int current_order;
-    private boolean order_executed;
 
-    private boolean canOrdered = false;
-
-    private SQLiteDatabase db;
-    private Cursor cursor;
-
+    private boolean canOrdered = true;
     private TextView mtvCurrFoodPrice;
     private TextView mtvCurrFoodName;
     private TextView mtvCurrFoodDescr;
     private Button mbCurrFoodAddShopping;
     private ImageView mivCurrFoodFavorite;
-    private ImageView mivCurrFoodVegan;
 
-    private int currentFoodID;
-    private int res_id = 0;
-    private int cat_id = 0;
-    private String ru_name = "";
-    private String en_name = "";
-    private String picture = "";
-    private String ru_descr = "";
-    private String en_descr = "";
-    private double price = 0;
-    private int min_amount = 0;
-    private String units = "";
-    private int ordered = 0;
-    private int offer = 0;
-    private int vegetarian = 0;
-    private int favorite = 0;
-    private int featured = 0;
-    private int in_order = 0;
+    private ImageView mivCurrFoodVegan;
 
 
     @Override
@@ -88,13 +68,13 @@ public class CurrentFoodActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
-        current_order = prefs.getInt(Constants.PREF_CURR_NUM_ORDER, 1);
-        order_executed = prefs.getBoolean(Constants.PREF_CURR_ORDER_EXECUTED, false);
+        component = ((DastarhanApp) getApplication()).realmComponent();
+        foodRepository = component.foodRepository();
 
-        currentFoodID = getIntent().getIntExtra("currentFoodID", -42);
+        int currentFoodID = getIntent().getIntExtra("currentFoodID", -42);
 
         Log.d(TAG, "Choose FOOD ID from intent = " + currentFoodID);
+        food = foodRepository.getById(currentFoodID);
 
         mtvCurrFoodPrice = (TextView) findViewById(R.id.tvCurrFoodPrice);
         mtvCurrFoodName = (TextView) findViewById(R.id.tvCurrFoodName);
@@ -107,37 +87,16 @@ public class CurrentFoodActivity extends AppCompatActivity
         mivCurrFoodFavorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (favorite != 0) {
-                    favorite = 0;
+                if (food.isFavorite()) {
+                    food.setFavorite(false);
                     mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_empty));
                 } else {
-                    favorite = 1;
+                    food.setFavorite(true);
                     mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
                 }
 
-                DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
-                db = dbHelper.getWritableDatabase();
-                ContentValues cv = new ContentValues();
-                cv.put("server_id", currentFoodID);
-                cv.put("res_id", res_id);
-                cv.put("cat_id", cat_id);
-                cv.put("ru_name", ru_name);
-                cv.put("en_name", en_name);
-                cv.put("picture", picture);
-                cv.put("ru_descr", ru_descr);
-                cv.put("en_descr", en_descr);
-                cv.put("price", price);
-                cv.put("min_amount", min_amount);
-                cv.put("units", units);
-                cv.put("ordered", ordered);
-                cv.put("offer", offer);
-                cv.put("vegetarian", vegetarian);
-                cv.put("favorite", favorite);
-                cv.put("featured", featured);
-                cv.put("in_order", in_order);
-
-                db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
-                db.close();
+                //update fav in DB
+                foodRepository.updateFavorites(food.getServer_id(), food.isFavorite());
             }
         });
 
@@ -146,169 +105,67 @@ public class CurrentFoodActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (canOrdered) {
-                    Intent intent = new Intent(CurrentFoodActivity.this, CurrentOrderActivity.class);
-                    startActivityForResult(intent, 88);
+                    //TODO create order
+                    canOrdered = false;
+
+                    CommonOperation.createOrder(component, food);
+
+                    mbCurrFoodAddShopping.setText(R.string.cant_order);
+                    mbCurrFoodAddShopping.setBackground(getResources().getDrawable(R.drawable.button_to_basket_selector));
+                    Toast.makeText(getApplicationContext(), "Added to shopping list", Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult requestCode " + requestCode + " resultCode " + resultCode);
-        if (data == null) {
-            return;
-        }
-        Log.d(TAG, "all ok");
-        if (requestCode == 88 && resultCode == Activity.RESULT_OK) {
-            int count = data.getIntExtra("count",1);
-            String notice = data.getStringExtra("notice");
-            Log.d(TAG, "Saving order " + current_order + " Count: " + count + " Notice: " + notice);
-
-            canOrdered = false;
-            if (order_executed) {
-                current_order++;
-                order_executed = false;
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(Constants.PREF_CURR_NUM_ORDER, current_order);
-                editor.putBoolean(Constants.PREF_CURR_ORDER_EXECUTED, order_executed);
-                editor.apply();
-            }
-
-            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
-            db = dbHelper.getWritableDatabase();
-            ContentValues cv;
-
-            cv = new ContentValues();
-            cv.put("server_id", currentFoodID);
-            cv.put("res_id", res_id);
-            cv.put("cat_id", cat_id);
-            cv.put("ru_name", ru_name);
-            cv.put("en_name", en_name);
-            cv.put("picture", picture);
-            cv.put("ru_descr", ru_descr);
-            cv.put("en_descr", en_descr);
-            cv.put("price", price);
-            cv.put("min_amount", min_amount);
-            cv.put("units", units);
-            cv.put("ordered", ordered);
-            cv.put("offer", offer);
-            cv.put("vegetarian", vegetarian);
-            cv.put("favorite", favorite);
-            cv.put("featured", featured);
-            cv.put("in_order", current_order);
-            db.update(Constants.DB_TABLE_FOOD, cv, "server_id=" + currentFoodID + " and res_id=" + res_id, null);
-
-            cv = new ContentValues();
-            cv.put("id_order", current_order);
-            cv.put("id_food", currentFoodID);
-            cv.put("count", count);
-            cv.put("price", price);
-            cv.put("notice", notice);
-            long rowID = db.insert(Constants.DB_TABLE_ORDERS, null, cv);
-            Log.d(TAG, "row order inserted, ID = " + rowID);
-
-            db.close();
-
-            mbCurrFoodAddShopping.setText(R.string.cant_order);
-            Toast.makeText(getApplicationContext(), "Added to shopping list", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
     protected void onResume() {
-        try {
-            DatabaseHelper dbHelper = new DatabaseHelper(this);
-            db = dbHelper.getReadableDatabase();
+        if (food != null) {
+            //set data from DB to view
 
-            String selectQuery;
             String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-            if (currentFoodID != -42) {
-                selectQuery = "SELECT * FROM " + Constants.DB_TABLE_FOOD + " WHERE server_id = " + currentFoodID;
 
-                cursor = db.rawQuery(selectQuery, null);
-
-                String name = "";
-                String priceString = "";
-                if (cursor.getCount() == 1) {
-                    cursor.moveToFirst();
-
-                    res_id = cursor.getInt(cursor.getColumnIndexOrThrow("res_id"));
-                    cat_id = cursor.getInt(cursor.getColumnIndexOrThrow("cat_id"));
-                    ru_name = cursor.getString(cursor.getColumnIndexOrThrow("ru_name"));
-                    en_name = cursor.getString(cursor.getColumnIndexOrThrow("en_name"));
-                    picture = cursor.getString(cursor.getColumnIndexOrThrow("picture"));
-                    ru_descr = cursor.getString(cursor.getColumnIndexOrThrow("ru_descr"));
-                    en_descr = cursor.getString(cursor.getColumnIndexOrThrow("en_descr"));
-                    price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
-                    min_amount = cursor.getInt(cursor.getColumnIndexOrThrow("min_amount"));
-                    units = cursor.getString(cursor.getColumnIndexOrThrow("units"));
-                    ordered = cursor.getInt(cursor.getColumnIndexOrThrow("ordered"));
-                    offer = cursor.getInt(cursor.getColumnIndexOrThrow("offer"));
-                    vegetarian = cursor.getInt(cursor.getColumnIndexOrThrow("vegetarian"));
-                    favorite = cursor.getInt(cursor.getColumnIndexOrThrow("favorite"));
-                    featured = cursor.getInt(cursor.getColumnIndexOrThrow("featured"));
-                    in_order = cursor.getInt(cursor.getColumnIndexOrThrow("in_order"));
-
-                    if (in_order < current_order) {
-                        canOrdered = true;
-                    }
-
-                    if (canOrdered) {
-                        mbCurrFoodAddShopping.setText(R.string.to_order);
-                    } else {
-                        mbCurrFoodAddShopping.setText(R.string.cant_order);
-                    }
-
-                    if (locale.equals("ru")) {
-                        name = ru_name;
-                    } else {
-                        name = en_name;
-                    }
-
-                    mtvCurrFoodName.setText(name);
-
-                    priceString = String.valueOf(price); //String.valueOf(currentFoodPrice);
-                    priceString += " " + Constants.CURRENCY_VERY_SHORT;
-                    mtvCurrFoodPrice.setText(priceString);
-
-                    String description = "";
-                    if (locale.equals("ru")) {
-                        description = ru_descr;
-                    } else {
-                        description = en_descr;
-                    }
-                    mtvCurrFoodDescr.setText(description);
-
-                    //favorite
-                    if (favorite != 0) {
-                        mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
-                    }
-
-                    if (vegetarian == 0) {
-                        mivCurrFoodVegan.setVisibility(View.GONE);
-                    }
-                    cursor.close();
-                } else {
-                    cursor.close();
-                }
-            } else {
-                LinearLayout mllCurrentFood = (LinearLayout) findViewById(R.id.llCurrentFood);
-                if (mllCurrentFood != null) {
-                    mllCurrentFood.setVisibility(View.GONE);
-                }
-                FrameLayout mflCurrentFood = (FrameLayout) findViewById(R.id.flCurrentFood);
-                if (mflCurrentFood != null) {
-                    mflCurrentFood.setVisibility(View.GONE);
-                }
-                TextView mtvCurrFoodNotFound = (TextView) findViewById(R.id.tvCurrFoodNotFound);
-                if (mtvCurrFoodNotFound != null) {
-                    mtvCurrFoodNotFound.setVisibility(View.VISIBLE);
+            List<Order> orders = component.cartRepository().getCurrentCartOrders();
+            for (Order order : orders) {
+                if (order.getId_food() == food.getServer_id()) {
+                    canOrdered = false;
                 }
             }
-            db.close();
-        } catch (Exception e) {
+
+            if (canOrdered) {
+                mbCurrFoodAddShopping.setText(R.string.to_order);
+            } else {
+                mbCurrFoodAddShopping.setText(R.string.cant_order);
+            }
+
+            if (locale.equals("ru")) {
+                mtvCurrFoodName.setText(food.getRu_name());
+            } else {
+                mtvCurrFoodName.setText(food.getEn_name());
+            }
+
+            String priceString = String.valueOf(food.getPrice());
+            priceString += " " + Constants.CURRENCY_VERY_SHORT;
+            mtvCurrFoodPrice.setText(priceString);
+
+            if (locale.equals("ru")) {
+                mtvCurrFoodDescr.setText(food.getRu_descr());
+            } else {
+                mtvCurrFoodDescr.setText(food.getEn_descr());
+            }
+
+            //favorite
+            if (food.isFavorite()) {
+                mivCurrFoodFavorite.setImageDrawable(getResources().getDrawable(R.drawable.favorite_full));
+            }
+
+            if (food.isVegetarian()) {
+                mivCurrFoodVegan.setVisibility(View.VISIBLE);
+            } else {
+                mivCurrFoodVegan.setVisibility(View.GONE);
+            }
+        } else {
             LinearLayout mllCurrentFood = (LinearLayout) findViewById(R.id.llCurrentFood);
             if (mllCurrentFood != null) {
                 mllCurrentFood.setVisibility(View.GONE);
@@ -321,8 +178,6 @@ public class CurrentFoodActivity extends AppCompatActivity
             if (mtvCurrFoodNotFound != null) {
                 mtvCurrFoodNotFound.setVisibility(View.VISIBLE);
             }
-            Log.e(TAG, "Error with DB: " + e.toString());
-            e.printStackTrace();
         }
         super.onResume();
     }
@@ -370,7 +225,7 @@ public class CurrentFoodActivity extends AppCompatActivity
             Intent intent = new Intent(CurrentFoodActivity.this, FavoriteActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(CurrentFoodActivity.this,BasketActivity.class);
+            Intent intent = new Intent(CurrentFoodActivity.this, BasketActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_action_history) {
 

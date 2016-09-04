@@ -40,7 +40,7 @@
     <string name="enter_or_skip">Please input email and password or skip authentication</string>
     <string name="is_need_remember">Remember your credentials?</string>
     <string name="title_activity_promo">PromoActivity</string>
-    <string name="cant_order">Already in the cart</string>
+    <string name="cant_order">Already in the cart!</string>
     <string name="add_to_cart">Adding to the shopping cart…</string>
     <string name="title_activity_basket">BasketActivity</string>
     <string name="adding_address">Checking address</string>

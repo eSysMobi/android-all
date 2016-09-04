@@ -73,11 +73,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".CurrentOrderActivity"
-            android:label="@string/add_to_cart"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Dialog" />
-        <activity
             android:name=".BasketActivity"
             android:label="@string/title_activity_basket"
             android:screenOrientation="portrait"
