@@ -2,13 +2,10 @@ package mobi.esys.dastarhan;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuInflater;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.DatabaseHelper;
 import mobi.esys.dastarhan.utils.RVPromoAdapter;
 
 public class PromoActivity extends AppCompatActivity
@@ -60,8 +56,7 @@ public class PromoActivity extends AppCompatActivity
 
     private void updatePromoList(){
         String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        RVPromoAdapter adapter = new RVPromoAdapter(dbHelper, this, locale);
+        RVPromoAdapter adapter = new RVPromoAdapter(this, (DastarhanApp) getApplication(), locale);
         if (mrvPromo.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvPromo");
             mrvPromo.setAdapter(adapter);

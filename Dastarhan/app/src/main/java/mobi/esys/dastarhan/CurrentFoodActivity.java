@@ -105,7 +105,6 @@ public class CurrentFoodActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (canOrdered) {
-                    //TODO create order
                     canOrdered = false;
 
                     CommonOperation.createOrder(component, food);

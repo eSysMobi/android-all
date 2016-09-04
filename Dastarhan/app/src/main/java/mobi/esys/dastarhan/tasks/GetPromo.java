@@ -120,6 +120,7 @@ public class GetPromo extends AsyncTask<Void, Void, Void> {
                                 boolean gift_condition = (c.getInt("gift_condition") == 1);
 
                                 promo = new Promo(server_id,
+                                        res_id,
                                         condition,
                                         condition_par,
                                         limitedTime,

@@ -10,6 +10,7 @@ public class Promo extends RealmObject {
 
     @PrimaryKey
     private int server_id;
+    private int res_id;
     private Integer condition;      //условие акции
                                     // 1- Сумма заказа больше...
                                     // 2 - Покупка определенной группы блюд
@@ -48,6 +49,7 @@ public class Promo extends RealmObject {
     }
 
     public Promo(int server_id,
+                 int res_id,
                  Integer condition,
                  String condition_par,
                  boolean limitedTime,
@@ -61,6 +63,7 @@ public class Promo extends RealmObject {
                  String gift,
                  boolean gift_condition) {
         this.server_id = server_id;
+        this.res_id = res_id;
         this.condition = condition;
         this.condition_par = condition_par;
         this.limitedTime = limitedTime;
@@ -78,6 +81,8 @@ public class Promo extends RealmObject {
     public int getServer_id() {
         return server_id;
     }
+
+    public int getRes_id() {return res_id;}
 
     public Integer getCondition() {
         return condition;
@@ -135,6 +140,7 @@ public class Promo extends RealmObject {
         Promo promo = (Promo) o;
 
         if (server_id != promo.server_id) return false;
+        if (res_id != promo.res_id) return false;
         if (limitedTime != promo.limitedTime) return false;
         if (limitedData != promo.limitedData) return false;
         if (gift_condition != promo.gift_condition) return false;
@@ -156,6 +162,7 @@ public class Promo extends RealmObject {
     @Override
     public int hashCode() {
         int result = server_id;
+        result = 31 * result + res_id;
         result = 31 * result + (condition != null ? condition.hashCode() : 0);
         result = 31 * result + (condition_par != null ? condition_par.hashCode() : 0);
         result = 31 * result + (limitedTime ? 1 : 0);

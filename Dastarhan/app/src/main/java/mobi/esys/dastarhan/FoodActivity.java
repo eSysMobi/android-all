@@ -167,7 +167,6 @@ public class FoodActivity extends AppCompatActivity
 
     private void getFoodFromRestaurants() {
         //get restaurants ID from cuisines
-        CuisineRepository cuisineRepo = dastarhanApp.component.cuisineRepository();
         RestaurantRepository restaurantRepo = dastarhanApp.component.restaurantRepository();
         List<Restaurant> restaurants;
         if (cuisineID == -42) {
