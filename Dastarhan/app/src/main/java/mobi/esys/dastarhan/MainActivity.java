@@ -3,30 +3,28 @@ package mobi.esys.dastarhan;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.utils.RVCuisinesAdapter;
+import java.util.ArrayList;
+import java.util.List;
+
+import mobi.esys.dastarhan.utils.FragNavController;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, BaseFragment.FragmentNavigation {
 
     private final String TAG = "dtagMainActivity";
 
-    private ProgressBar mpbCuisines;
-    private RecyclerView mrvCuisines;
+    private FragNavController mNavController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,28 +45,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mpbCuisines = (ProgressBar) findViewById(R.id.pbCuisines);
-        mrvCuisines = (RecyclerView) findViewById(R.id.rvCuisines);
+        List<Fragment> fragments = new ArrayList<>();
 
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        mrvCuisines.setLayoutManager(llm);
+        fragments.add(new MainFragment());
 
-        updateCuisines();
-    }
+        mNavController = new FragNavController(savedInstanceState, getSupportFragmentManager(), R.id.mainContainer, fragments);
 
-    private void updateCuisines() {
-        String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        RVCuisinesAdapter adapter = new RVCuisinesAdapter(this, (DastarhanApp) getApplication(), locale);
-        if (mrvCuisines.getAdapter() == null) {
-            Log.d(TAG, "New adapter in mrvCuisines");
-            mrvCuisines.setAdapter(adapter);
-        } else {
-            Log.d(TAG, "Swap adapter in mrvCuisines");
-            mrvCuisines.swapAdapter(adapter, true);
-        }
-
-        mpbCuisines.setVisibility(View.GONE);
-        mrvCuisines.setVisibility(View.VISIBLE);
+        mNavController.switchTab(FragNavController.TAB1);
     }
 
     @Override
@@ -76,9 +59,16 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (mNavController.getCurrentStack().size() > 1) {
+            mNavController.pop();
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void pushFragment(Fragment fragment) {
+        mNavController.push(fragment);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
