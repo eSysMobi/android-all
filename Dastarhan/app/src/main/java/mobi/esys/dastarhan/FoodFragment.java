@@ -1,38 +1,27 @@
 package mobi.esys.dastarhan;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.dastarhan.database.CuisineRepository;
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.tasks.GetFood;
 import mobi.esys.dastarhan.utils.FoodCheckElement;
 import mobi.esys.dastarhan.utils.RVFoodAdapterMain;
 
-public class FoodActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class FoodFragment extends BaseFragment {
 
     private final String TAG = "dtagFoodActivity";
     private DastarhanApp dastarhanApp;
@@ -41,54 +30,60 @@ public class FoodActivity extends AppCompatActivity
     private ProgressBar mpbFood;
     private Handler handlerFood;
 
+    private static final String ARG_CUISINE = "cuisine_id";
+    private static final String ARG_RESTAURANT = "restaurant_id";
     private int cuisineID;
     private Integer[] restaurantsID = null;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_food);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    public FoodFragment() {
+        // Required empty public constructor
+    }
 
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-
-        dastarhanApp = (DastarhanApp) getApplication();
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_food_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        mrvFood = (RecyclerView) findViewById(R.id.rvFood);
-        mpbFood = (ProgressBar) findViewById(R.id.pbFood);
-
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        mrvFood.setLayoutManager(llm);
-
-        //TODO
-        handlerFood = new HandleFood();
-
-        cuisineID = getIntent().getIntExtra("cuisineID", -42);
-        restaurantsID = new Integer[1];
-        restaurantsID[0] = getIntent().getIntExtra("restID", -50);
-        Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
-        Log.d(TAG, "Restaurant ID from intent = " + restaurantsID[0]);
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @return A new instance of fragment FoodFragment.
+     */
+    public static FoodFragment newInstance(int cuisineID, int restID) {
+        FoodFragment fragment = new FoodFragment();
+        //args
+        Bundle bundle = new Bundle();
+        bundle.putInt(ARG_CUISINE, cuisineID);
+        bundle.putInt(ARG_RESTAURANT, restID);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Override
-    protected void onResume() {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.content_food, container, false);
+        Bundle bundle = getArguments();
+        cuisineID = bundle.getInt(ARG_CUISINE, -42);
+        restaurantsID = new Integer[1];
+        restaurantsID[0] = bundle.getInt(ARG_RESTAURANT, -50);
+        Log.d(TAG, "Cuisine ID from intent = " + cuisineID);
+        Log.d(TAG, "Restaurant ID from intent = " + restaurantsID[0]);
+
+        dastarhanApp = (DastarhanApp) getActivity().getApplication();
+
+        mrvFood = (RecyclerView) view.findViewById(R.id.rvFood);
+        mpbFood = (ProgressBar) view.findViewById(R.id.pbFood);
+
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
+        mrvFood.setLayoutManager(llm);
+
+        handlerFood = new HandleFood();
+
+        return view;
+    }
+
+    @Override
+    public void onResume() {
         if (cuisineID != -50) {
             //get food from cuisine
             getFoodFromRestaurants();
-            //no need, restaurants get in splash-screen
-            //GetRestaurants gr = new GetRestaurants(this, handlerFood);
-            //gr.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         } else {
             //if we have that restaurant
             if (restaurantsID[0] != -50) {
@@ -217,8 +212,8 @@ public class FoodActivity extends AppCompatActivity
 
 
     private void updateFood() {
-        String locale = getApplicationContext().getResources().getConfiguration().locale.getLanguage();
-        RVFoodAdapterMain adapter = new RVFoodAdapterMain(this, dastarhanApp, locale, restaurantsID);
+        String locale = getContext().getResources().getConfiguration().locale.getLanguage();
+        RVFoodAdapterMain adapter = new RVFoodAdapterMain(mFragmentNavigation, dastarhanApp, locale, restaurantsID);
         if (mrvFood.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvFood");
             mrvFood.setAdapter(adapter);
@@ -229,66 +224,5 @@ public class FoodActivity extends AppCompatActivity
 
         mpbFood.setVisibility(View.GONE);
         mrvFood.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_food_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_action_menu) {
-            Intent intent = new Intent(FoodActivity.this, MainActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_action_favorites) {
-            Intent intent = new Intent(FoodActivity.this, FavoriteActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(FoodActivity.this, BasketActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_action_history) {
-
-        } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(FoodActivity.this, PromoActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_action_settings) {
-            Intent intent = new Intent(FoodActivity.this, SettingActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_action_info) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_food_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.search_btn, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.action_search:
-                Toast.makeText(getApplicationContext(), "Search pressed", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 }

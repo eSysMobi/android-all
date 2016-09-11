@@ -12,7 +12,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 import mobi.esys.dastarhan.Constants;
+import mobi.esys.dastarhan.CurrentRestaurantFragment;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Food;
@@ -31,10 +33,12 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
     private String locale;
     private List<String> gifts_names;
     private List<String> conditions_names;
+    private FragmentNavigation navigation;
 
     //constructor
-    public RVPromoAdapter(Context mContext, DastarhanApp dastarhanApp, String locale) {
+    public RVPromoAdapter(Context mContext, FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale) {
         this.mContext = mContext;
+        this.navigation = navigation;
         component = dastarhanApp.realmComponent();
         promos = component.promoRepository().getAll();
         restaurants = component.restaurantRepository().getAll();
@@ -317,10 +321,10 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
             viewHolder.tvPromoConditionsExact.setText(conditions_names.get(i));
 
 
-            CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.restaraunt_id);
+            CustomClickListener customClickListener = new CustomClickListener(navigation, viewHolder.restaraunt_id);
             viewHolder.itemView.setOnClickListener(customClickListener);
 
-            CustomLongClickListener customLongClickListener = new CustomLongClickListener(mContext, viewHolder.restaraunt_id);
+            CustomLongClickListener customLongClickListener = new CustomLongClickListener(navigation, viewHolder.restaraunt_id);
             viewHolder.itemView.setOnLongClickListener(customLongClickListener);
         }
     }
@@ -377,17 +381,18 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
 
     private static class CustomClickListener implements View.OnClickListener {
         private int id;
-        private Context mContext;
+        private FragmentNavigation navigation;
 
-        public CustomClickListener(Context mContext, int id) {
-            this.mContext = mContext;
+        public CustomClickListener(FragmentNavigation navigation, int id) {
+            this.navigation = navigation;
             this.id = id;
         }
 
         @Override
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Click PROMO in RecyclerView with id = " + id);
-//            Intent intent = new Intent(mContext, FoodActivity.class);
+            //TODO link with food in promo
+//            Intent intent = new Intent(mContext, FoodFragment.class);
 //            intent.putExtra("restID",id);
 //            intent.putExtra("cuisineID", -50);
 //            mContext.startActivity(intent);
@@ -396,20 +401,18 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
 
     private static class CustomLongClickListener implements View.OnLongClickListener {
         private int id;
-        private Context mContext;
+        private FragmentNavigation navigation;
 
-        public CustomLongClickListener(Context mContext, int id) {
-            this.mContext = mContext;
+        public CustomLongClickListener(FragmentNavigation navigation, int id) {
+            this.navigation = navigation;
             this.id = id;
         }
 
         @Override
         public boolean onLongClick(View v) {
             Log.d("dtagRecyclerView", "Long click PROMO in RecyclerView with id = " + id);
-
-//            Intent intent = new Intent(mContext, CurrentRestaurantActivity.class);
-//            intent.putExtra("restID",id);
-//            mContext.startActivity(intent);
+            CurrentRestaurantFragment fragment = CurrentRestaurantFragment.newInstance(id);
+            navigation.replaceFragment(fragment, "Ресторан");
             return true;
         }
     }

@@ -1,9 +1,10 @@
 package mobi.esys.dastarhan;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,25 +13,35 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
-import mobi.esys.dastarhan.utils.FragNavController;
+import mobi.esys.dastarhan.database.Order;
+import mobi.esys.dastarhan.database.RealmComponent;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, BaseFragment.FragmentNavigation {
 
     private final String TAG = "dtagMainActivity";
+    private final FragmentManager fm = getSupportFragmentManager();
 
-    private FragNavController mNavController;
+    private TextView title;
+    private TextView cartCount;
+    private Stack<String> titles = new Stack<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            title = (TextView) toolbar.findViewById(R.id.toolbar_title);
+            cartCount = (TextView) toolbar.findViewById(R.id.toolbar_cart_count);
+        }
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
@@ -45,13 +56,26 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        List<Fragment> fragments = new ArrayList<>();
+        //set cart count
+        List<Order> orders = ((DastarhanApp) getApplication()).realmComponent().cartRepository().getCurrentCartOrders();
+        if(orders!= null){
+            cartCount.setText(String.valueOf(orders.size()));
+        }
 
-        fragments.add(new MainFragment());
+        replaceFragment(MainFragment.newInstance(), "Dastarhan");
+    }
 
-        mNavController = new FragNavController(savedInstanceState, getSupportFragmentManager(), R.id.mainContainer, fragments);
-
-        mNavController.switchTab(FragNavController.TAB1);
+    @Override
+    public void replaceFragment(Fragment fragment, String settingTitle) {
+        String backStateName = fragment.getClass().getName();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.mainContainer, fragment);
+        ft.addToBackStack(backStateName);
+        ft.commit();
+        if (title != null) {
+            titles.push(settingTitle);
+            title.setText(settingTitle);
+        }
     }
 
     @Override
@@ -59,16 +83,20 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (mNavController.getCurrentStack().size() > 1) {
-            mNavController.pop();
+        } else if (fm.getBackStackEntryCount() <= 1) {
+            finish();
         } else {
             super.onBackPressed();
+            String popped = titles.pop();
+            String peeked = titles.peek();
+            if(peeked!= null){
+                settingTitle(peeked);
+            }
         }
     }
 
-    @Override
-    public void pushFragment(Fragment fragment) {
-        mNavController.push(fragment);
+    void settingTitle(String incTitle){
+        title.setText(incTitle);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -77,47 +105,50 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        List<Fragment> fragments = fm.getFragments();
+        Fragment currentFragment = new BaseFragment();
+        if (fragments.size() > 0) {
+            currentFragment = fragments.get(fragments.size() - 1);
+        }
+
         if (id == R.id.nav_action_menu) {
-            //not need
+            //check is current fragment NOT is MainFragment
+            if (!(currentFragment instanceof MainFragment)) {
+                MainFragment fragment = MainFragment.newInstance();
+                replaceFragment(fragment, "Dastarhan");
+            }
         } else if (id == R.id.nav_action_favorites) {
-            Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
-            startActivity(intent);
+            //check is current fragment NOT is FavoriteFragment
+            if (!(currentFragment instanceof FavoriteFragment)) {
+                FavoriteFragment fragment = FavoriteFragment.newInstance();
+                replaceFragment(fragment, "Избранное");
+            }
         } else if (id == R.id.nav_action_bucket) {
-            Intent intent = new Intent(MainActivity.this, BasketActivity.class);
-            startActivity(intent);
+            //check is current fragment NOT is BasketFragment
+            if (!(currentFragment instanceof BasketFragment)) {
+                BasketFragment fragment = BasketFragment.newInstance();
+                replaceFragment(fragment, "Корзина");
+            }
         } else if (id == R.id.nav_action_history) {
-
+            //TODO history fragment
         } else if (id == R.id.nav_action_promo) {
-            Intent intent = new Intent(MainActivity.this, PromoActivity.class);
-            startActivity(intent);
+            //check is current fragment NOT is PromoFragment
+            if (!(currentFragment instanceof PromoFragment)) {
+                PromoFragment fragment = PromoFragment.newInstance();
+                replaceFragment(fragment, "Акции");
+            }
         } else if (id == R.id.nav_action_settings) {
-            Intent intent = new Intent(MainActivity.this, SettingActivity.class);
-            startActivity(intent);
+            //check is current fragment NOT is SettingFragment
+            if (!(currentFragment instanceof SettingFragment)) {
+                SettingFragment fragment = SettingFragment.newInstance();
+                replaceFragment(fragment, "Настройки");
+            }
         } else if (id == R.id.nav_action_info) {
-
+            //TODO info fragment
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.search_btn, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.action_search:
-                Toast.makeText(getApplicationContext(), "Search pressed", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 }

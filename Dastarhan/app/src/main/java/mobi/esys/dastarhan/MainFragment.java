@@ -39,16 +39,10 @@ public class MainFragment extends BaseFragment {
      * this fragment using the provided parameters.
      * @return A new instance of fragment MainFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
         //args if need
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -58,7 +52,7 @@ public class MainFragment extends BaseFragment {
         mpbCuisines = (ProgressBar) view.findViewById(R.id.pbCuisines);
         mrvCuisines = (RecyclerView) view.findViewById(R.id.rvCuisines);
 
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mrvCuisines.setLayoutManager(llm);
 
         updateCuisines();
@@ -68,7 +62,7 @@ public class MainFragment extends BaseFragment {
 
     private void updateCuisines() {
         String locale = getActivity().getResources().getConfiguration().locale.getLanguage();
-        RVCuisinesAdapter adapter = new RVCuisinesAdapter(getActivity(), (DastarhanApp) getActivity().getApplication(), locale);
+        RVCuisinesAdapter adapter = new RVCuisinesAdapter(mFragmentNavigation, (DastarhanApp) getActivity().getApplication(), locale);
         if (mrvCuisines.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvCuisines");
             mrvCuisines.setAdapter(adapter);
@@ -80,4 +74,5 @@ public class MainFragment extends BaseFragment {
         mpbCuisines.setVisibility(View.GONE);
         mrvCuisines.setVisibility(View.VISIBLE);
     }
+
 }

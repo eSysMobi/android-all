@@ -1,7 +1,5 @@
 package mobi.esys.dastarhan.utils;
 
-import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,16 +8,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.dastarhan.CurrentRestaurantActivity;
+
+import mobi.esys.dastarhan.CurrentRestaurantFragment;
 import mobi.esys.dastarhan.DastarhanApp;
-import mobi.esys.dastarhan.FoodActivity;
+import mobi.esys.dastarhan.FoodFragment;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Cuisine;
 import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.Restaurant;
+import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
@@ -27,14 +26,14 @@ import mobi.esys.dastarhan.database.Restaurant;
 public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdapter.RestaurantViewHolder> {
     private final String TAG = "dtagRVRestAdapter";
 
-    private Context mContext;
+    private FragmentNavigation navigation;
     private String locale;
     private List<Restaurant> restaurants;
     private RealmComponent component;
 
     //constructor
-    public RVRestaurantsAdapter(Context mContext, DastarhanApp dastarhanApp, String locale, int cuisineID) {
-        this.mContext = mContext;
+    public RVRestaurantsAdapter(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, int cuisineID) {
+        this.navigation = navigation;
         this.locale = locale;
         component = dastarhanApp.realmComponent();
 
@@ -81,11 +80,13 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         Restaurant restaurant = restaurants.get(i);
 
         viewHolder.restaraunt_id = restaurant.getServer_id();
+        String restName = "";
         if (locale.equals("ru")) {
-            viewHolder.tvRestaurant.setText(restaurant.getRu_name());
+            restName = restaurant.getRu_name();
         } else {
-            viewHolder.tvRestaurant.setText(restaurant.getEn_name());
+            restName = restaurant.getEn_name();
         }
+        viewHolder.tvRestaurant.setText(restName);
 
         String cuisinesNames = "";
         String rawCuisines = restaurant.getCuisines();
@@ -123,48 +124,46 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
         //viewHolder.ivCuisine.setImageBitmap(...);
 
-        CustomClickListener customClickListener = new CustomClickListener(mContext, viewHolder.restaraunt_id);
+        CustomClickListener customClickListener = new CustomClickListener(navigation, viewHolder.restaraunt_id, restName);
         viewHolder.itemView.setOnClickListener(customClickListener);
 
-        CustomLongClickListener customLongClickListener = new CustomLongClickListener(mContext, viewHolder.restaraunt_id);
+        CustomLongClickListener customLongClickListener = new CustomLongClickListener(navigation, viewHolder.restaraunt_id);
         viewHolder.itemView.setOnLongClickListener(customLongClickListener);
     }
 
     private static class CustomClickListener implements View.OnClickListener {
         private int id;
-        private Context mContext;
+        private FragmentNavigation navigation;
+        String restName;
 
-        public CustomClickListener(Context mContext, int id) {
-            this.mContext = mContext;
+        public CustomClickListener(FragmentNavigation navigation, int id, String restName) {
+            this.navigation = navigation;
             this.id = id;
+            this.restName = restName;
         }
 
         @Override
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
-            Intent intent = new Intent(mContext, FoodActivity.class);
-            intent.putExtra("restID", id);
-            intent.putExtra("cuisineID", -50);
-            mContext.startActivity(intent);
+            FoodFragment fragment = FoodFragment.newInstance(-50,id);
+            navigation.replaceFragment(fragment, "Блюда " + restName);
         }
     }
 
     private static class CustomLongClickListener implements View.OnLongClickListener {
         private int id;
-        private Context mContext;
+        private FragmentNavigation navigation;
 
-        public CustomLongClickListener(Context mContext, int id) {
-            this.mContext = mContext;
+        public CustomLongClickListener(FragmentNavigation navigation, int id) {
+            this.navigation = navigation;
             this.id = id;
         }
 
         @Override
         public boolean onLongClick(View v) {
             Log.d("dtagRecyclerView", "Long click RESTARAUNT in RecyclerView with id = " + id);
-
-            Intent intent = new Intent(mContext, CurrentRestaurantActivity.class);
-            intent.putExtra("restID", id);
-            mContext.startActivity(intent);
+            CurrentRestaurantFragment fragment = CurrentRestaurantFragment.newInstance(id);
+            navigation.replaceFragment(fragment, "Ресторан");
             return true;
         }
     }

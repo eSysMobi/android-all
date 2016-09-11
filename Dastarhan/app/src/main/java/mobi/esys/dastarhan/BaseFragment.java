@@ -15,6 +15,6 @@ public class BaseFragment extends Fragment {
     }
 
     public interface FragmentNavigation {
-        public void pushFragment(Fragment fragment);
+        void replaceFragment(Fragment fragment, String title);
     }
 }

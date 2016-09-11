@@ -19,7 +19,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.dastarhan.CurrentFoodActivity;
+import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
+import mobi.esys.dastarhan.CurrentFoodFragment;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Cart;
@@ -32,7 +33,7 @@ import mobi.esys.dastarhan.database.RealmComponent;
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.FoodViewHolder> {
-    private Context mContext;
+    private FragmentNavigation navigation;
     private RealmComponent component;
     private String locale;
     private Handler handler;
@@ -44,8 +45,8 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
 
 
     //constructor
-    public RVFoodAdapterCart(Context mContext, DastarhanApp dastarhanApp, String locale, Handler handler) {
-        this.mContext = mContext;
+    public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Handler handler) {
+        this.navigation = navigation;
         component = dastarhanApp.realmComponent();
         this.locale = locale;
         this.handler = handler;
@@ -144,7 +145,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             viewHolder.ivFoodRVPromo.setVisibility(View.GONE);
         }
 
-        GoToFullFood goToFullFood = new GoToFullFood(mContext, viewHolder.food.getServer_id());
+        GoToFullFood goToFullFood = new GoToFullFood(navigation, viewHolder.food.getServer_id());
         viewHolder.itemView.setOnClickListener(goToFullFood);
 
         //set type of buttons
@@ -204,19 +205,18 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
 
     private static class GoToFullFood implements View.OnClickListener {
         private int id;
-        private Context mContext;
+        private FragmentNavigation navigation;
 
-        public GoToFullFood(Context mContext, int id) {
-            this.mContext = mContext;
+        public GoToFullFood(FragmentNavigation navigation, int id) {
+            this.navigation = navigation;
             this.id = id;
         }
 
         @Override
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Choose FOOD in RecyclerView with id = " + id);
-            Intent intent = new Intent(mContext, CurrentFoodActivity.class);
-            intent.putExtra("currentFoodID", id);
-            mContext.startActivity(intent);
+            CurrentFoodFragment fragment = CurrentFoodFragment.newInstance(id);
+            navigation.replaceFragment(fragment, "");
         }
     }
 

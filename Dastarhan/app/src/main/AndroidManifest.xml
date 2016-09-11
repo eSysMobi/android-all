@@ -33,60 +33,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".Restaurants"
-            android:label="@string/title_activity_restaurants"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".FoodActivity"
-            android:label="@string/title_activity_food"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".CurrentFoodActivity"
-            android:label="@string/title_activity_current_food"
-            android:parentActivityName=".FoodActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="mobi.esys.dastarhan.FoodActivity" />
-        </activity>
-        <activity
-            android:name=".FavoriteActivity"
-            android:label="@string/title_activity_favorite"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".CurrentRestaurantActivity"
-            android:label="@string/title_activity_current_restaurant"
-            android:parentActivityName=".Restaurants"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="mobi.esys.dastarhan.Restaurants" />
-        </activity>
-        <activity
-            android:name=".PromoActivity"
-            android:label="@string/title_activity_promo"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".BasketActivity"
-            android:label="@string/title_activity_basket"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".AddAddressActivity"
             android:label="@string/adding_address"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Dialog" />
-        <activity
-            android:name=".SettingActivity"
-            android:label="@string/title_activity_setting"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

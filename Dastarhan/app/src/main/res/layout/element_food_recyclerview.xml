@@ -84,6 +84,67 @@
                 android:text="В корзину"
                 android:textColor="#ffffff" />
 
+            <LinearLayout
+                android:id="@+id/bFoodRVAddRemoveFromCart"
+                android:layout_width="99dp"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:layout_below="@+id/llFoodRVPriceBlock"
+                android:layout_alignLeft="@+id/llFoodRVPriceBlock"
+                android:layout_alignStart="@+id/llFoodRVPriceBlock"
+                android:layout_alignRight="@+id/llFoodRVPriceBlock"
+                android:layout_alignEnd="@+id/llFoodRVPriceBlock">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape_cart_remove"
+                    android:id="@+id/bCartRemoveOne">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:singleLine="true"
+                        android:text="\u2014"
+                        android:textColor="#ffffff"
+                        android:textSize="20sp" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape_cart_center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvFoodRVCount"
+                        android:layout_gravity="center"
+                        android:singleLine="true"
+                        android:text="1"
+                        android:maxLines="1"
+                        android:maxLength="2"
+                        android:textSize="20sp" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_shape_cart_add"
+                    android:id="@+id/bCartAddOne">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:singleLine="true"
+                        android:text="+"
+                        android:textColor="#ffffff"
+                        android:textSize="20sp" />
+                </FrameLayout>
+            </LinearLayout>
+
         </LinearLayout>
 
         <TextView
@@ -110,68 +171,9 @@
             android:text="250 г. / 450 ккал."
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#dc000000"
-            android:textSize="15sp" />
-
-        <LinearLayout
-            android:id="@+id/bFoodRVAddRemoveFromCart"
-            android:layout_width="99dp"
-            android:layout_height="36dp"
-            android:orientation="horizontal"
-            android:layout_below="@+id/llFoodRVPriceBlock"
-            android:layout_alignLeft="@+id/llFoodRVPriceBlock"
-            android:layout_alignStart="@+id/llFoodRVPriceBlock"
-            android:layout_alignRight="@+id/llFoodRVPriceBlock"
-            android:layout_alignEnd="@+id/llFoodRVPriceBlock">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/button_shape_cart_remove"
-                android:id="@+id/bCartRemoveOne">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:singleLine="true"
-                    android:text="\u2014"
-                    android:textColor="#ffffff"
-                    android:textSize="20sp" />
-            </FrameLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/button_shape_cart_center">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tvFoodRVCount"
-                    android:layout_gravity="center"
-                    android:singleLine="true"
-                    android:text="1"
-                    android:maxLines="1"
-                    android:maxLength="2"
-                    android:textSize="20sp" />
-            </FrameLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/button_shape_cart_add"
-                android:id="@+id/bCartAddOne">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:singleLine="true"
-                    android:text="+"
-                    android:textColor="#ffffff"
-                    android:textSize="20sp" />
-            </FrameLayout>
-        </LinearLayout>
+            android:textSize="15sp"
+            android:layout_toLeftOf="@+id/llFoodRVPriceBlock"
+            android:layout_toStartOf="@+id/llFoodRVPriceBlock" />
 
     </RelativeLayout>
 
