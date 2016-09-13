@@ -7,5 +7,7 @@ public interface UnitOfWork {
 
     void startUOW();
 
+    void addEventToBroadcast(String eventName);
+
     boolean isStarted();
 }

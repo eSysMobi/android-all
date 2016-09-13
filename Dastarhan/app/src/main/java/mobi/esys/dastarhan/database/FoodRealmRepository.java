@@ -1,5 +1,7 @@
 package mobi.esys.dastarhan.database;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +15,13 @@ import io.realm.RealmResults;
 
 class FoodRealmRepository implements FoodRepository {
     private final RealmTemplate realmTemplate;
+    private UnitOfWork uow;
+    private EventBus bus = EventBus.getDefault();
 
     @Inject
     FoodRealmRepository(RealmConfiguration config, UnitOfWork uow) {
         realmTemplate = new RealmTemplate(config, uow);
+        this.uow = uow;
     }
 
     @Override
@@ -28,6 +33,11 @@ class FoodRealmRepository implements FoodRepository {
                 return null;
             }
         });
+        if (uow.isStarted()) {
+            uow.addEventToBroadcast(FoodUpdateEvent.class.getName());
+        } else {
+            bus.post(new FoodUpdateEvent());
+        }
     }
 
     @Override
@@ -44,6 +54,11 @@ class FoodRealmRepository implements FoodRepository {
                 return null;
             }
         });
+        if (uow.isStarted()) {
+            uow.addEventToBroadcast(FoodUpdateEvent.class.getName());
+        } else {
+            bus.post(new FoodUpdateEvent());
+        }
     }
 
     @Override
@@ -60,6 +75,11 @@ class FoodRealmRepository implements FoodRepository {
                 return null;
             }
         });
+        if (uow.isStarted()) {
+            uow.addEventToBroadcast(FoodUpdateEvent.class.getName());
+        } else {
+            bus.post(new FoodUpdateEvent());
+        }
     }
 
     @Override

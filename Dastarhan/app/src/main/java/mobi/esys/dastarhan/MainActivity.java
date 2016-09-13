@@ -13,14 +13,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import mobi.esys.dastarhan.database.Order;
+import mobi.esys.dastarhan.database.OrderUpdateEvent;
 import mobi.esys.dastarhan.database.RealmComponent;
 
 public class MainActivity extends AppCompatActivity
@@ -28,10 +34,14 @@ public class MainActivity extends AppCompatActivity
 
     private final String TAG = "dtagMainActivity";
     private final FragmentManager fm = getSupportFragmentManager();
+    private Stack<String> titles = new Stack<>();
+
+    private final EventBus bus = EventBus.getDefault();
+    private RealmComponent component;
 
     private TextView title;
     private TextView cartCount;
-    private Stack<String> titles = new Stack<>();
+    private LinearLayout llCartToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +51,21 @@ public class MainActivity extends AppCompatActivity
         if (toolbar != null) {
             title = (TextView) toolbar.findViewById(R.id.toolbar_title);
             cartCount = (TextView) toolbar.findViewById(R.id.toolbar_cart_count);
+            llCartToolbar = (LinearLayout) toolbar.findViewById(R.id.llCartToolbar);
+            llCartToolbar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    List<Fragment> fragments = fm.getFragments();
+                    Fragment currentFragment = new BaseFragment();
+                    if (fragments.size() > 0) {
+                        currentFragment = fragments.get(fragments.size() - 1);
+                    }
+                    if (!(currentFragment instanceof BasketFragment)) {
+                        BasketFragment fragment = BasketFragment.newInstance();
+                        replaceFragment(fragment, "Корзина");
+                    }
+                }
+            });
         }
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -56,11 +81,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        component = ((DastarhanApp) getApplication()).realmComponent();
+
         //set cart count
-        List<Order> orders = ((DastarhanApp) getApplication()).realmComponent().cartRepository().getCurrentCartOrders();
-        if(orders!= null){
-            cartCount.setText(String.valueOf(orders.size()));
-        }
+        updateCartCount();
 
         replaceFragment(MainFragment.newInstance(), "Dastarhan");
     }
@@ -75,6 +99,30 @@ public class MainActivity extends AppCompatActivity
         if (title != null) {
             titles.push(settingTitle);
             title.setText(settingTitle);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        bus.register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        bus.unregister(this);
+        super.onPause();
+    }
+
+    @Subscribe
+    public void onOrderUpdateEvent(OrderUpdateEvent event) {
+        updateCartCount();
+    }
+
+    private void updateCartCount(){
+        List<Order> orders = component.cartRepository().getCurrentCartOrders();
+        if(orders!= null){
+            cartCount.setText(String.valueOf(orders.size()));
         }
     }
 
