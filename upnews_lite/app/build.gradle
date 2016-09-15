@@ -30,8 +30,8 @@ android {
         minSdkVersion 12
         targetSdkVersion 23
         signingConfig signingConfigs.config
-        versionCode 18
-        versionName '2.7.3'
+        versionCode 19
+        versionName '2.8.0'
     }
     buildTypes {
         release {
@@ -52,6 +52,7 @@ android {
         compile 'com.squareup.picasso:picasso:2.5.2'
         compile 'com.google.code.gson:gson:2.4'
         compile 'com.android.support:appcompat-v7:23.1.1'
+        compile 'org.greenrobot:eventbus:3.0.0'
     }
     productFlavors {
     }

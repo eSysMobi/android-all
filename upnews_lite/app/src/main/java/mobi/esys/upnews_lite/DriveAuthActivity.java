@@ -24,6 +24,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,32 +33,33 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import mobi.esys.constants.UNLConsts;
+import mobi.esys.events.EventSyncStart;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
 
 public class DriveAuthActivity extends Activity implements View.OnClickListener {
-    private transient SharedPreferences prefs;
-    private transient GoogleAccountCredential credential;
-    private transient static final int REQUEST_ACCOUNT_PICKER = 101;
-    private transient static final int REQUEST_AUTHORIZATION = 102;
-    private transient static final int REQUEST_AUTH_IF_ERROR = 103;
+    private SharedPreferences prefs;
+    private GoogleAccountCredential credential;
+    private static final int REQUEST_ACCOUNT_PICKER = 101;
+    private static final int REQUEST_AUTHORIZATION = 102;
+    private static final int REQUEST_AUTH_IF_ERROR = 103;
 
-    private transient boolean isFirstAuth;
-    private transient UNLApp mApp;
-    private transient Drive drive;
-    private transient String accName;
+    private boolean isFirstAuth;
+    private UNLApp mApp;
+    private Drive drive;
+    private String accName;
 
-    private transient TextView mtvDriveAuthActivity;
-    private transient ProgressBar mpbDriveAuthActivity;
-    private transient Button gdAuthBtn;
+    private TextView mtvDriveAuthActivity;
+    private ProgressBar mpbDriveAuthActivity;
+    private Button gdAuthBtn;
 
-    private transient boolean externalStorageIsAvailable = false;
-    private transient boolean buttonPressed = false;
+    private boolean externalStorageIsAvailable = false;
+    private boolean buttonPressed = false;
 
-    private transient Handler handler = null;
-    private transient View decorView = null;
+    private Handler handler = null;
+    private View decorView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +99,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         if (externalStorageIsAvailable) {
             if (NetWork.isNetworkAvailable(mApp)) {
                 Log.d("unTag_DriveAuthActivity", "Account name: " + accName);
-                if (accName.isEmpty()) {
-                    //if we have not accName
-                } else {
+                if (!accName.isEmpty()) {
                     //mtvDriveAuthActivity.setText(getString(R.string.autostart_accdrive_message_p1) + accName + getString(R.string.autostart_accdrive_message_p2));
                     mtvDriveAuthActivity.setText(R.string.autostart_drive10);
                     gdAuthBtn.setText(R.string.change_profile);
@@ -280,6 +280,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     private void createFolderInDriveIfDontExists() {
         if (!UNLApp.getIsCreatingDriveFolder()) {
             UNLApp.setIsCreatingDriveFolder(true);
+            //TODO change to fragment
             CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(DriveAuthActivity.this, true, mApp, true);
             createDriveFolderTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }

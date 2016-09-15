@@ -20,5 +20,7 @@
     <string name="autostart_accdrive_message_p2">" will start in 10 seconds…"</string>
     <string name="change_profile">Change profile</string>
     <string name="autostart_drive10">Autostart in 10 seconds…</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
