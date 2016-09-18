@@ -1,16 +1,13 @@
 package mobi.esys.taskmanager;
 
-import android.app.Application;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
 import java.util.List;
-import java.util.Set;
 
 import mobi.esys.data.GDFile;
-import mobi.esys.net.NetWork;
 import mobi.esys.server.UNLServer;
 import mobi.esys.tasks.CheckAndGetLogoFromGDriveTask;
 import mobi.esys.tasks.DownloadVideoTask;
@@ -31,14 +28,12 @@ public class TaskManager extends Handler {
     private static volatile TaskManager instance;
     private static final String TAG = "unTag_TaskManager";
 
-    private String source = "";
-
-    private boolean[] tasks = null;
-    private int currentTask = 0;
+    private boolean[] tasks = new boolean[5];
+    private int currentTask;
 
     private boolean isRunning = false;
 
-    private UNLApp mApp = null;
+    private UNLApp mApp;
     private transient UNLServer server = null;
     private transient List<GDFile> gdFiles = null;
     private transient String serverMD5 = null;
@@ -50,63 +45,9 @@ public class TaskManager extends Handler {
     private byte statMaxCount = 7;
 
     //constructor
-    private TaskManager() {
-        tasks = new boolean[5];
-        for (int i = 0; i < tasks.length; i++) {
-            tasks[i] = false;
-        }
-    }
-
-    //lazy return instance of this class
-    public static TaskManager getInstance() {
-        TaskManager localInstance = instance;
-        if (localInstance == null) {
-            synchronized (TaskManager.class) {
-                localInstance = instance;
-                if (localInstance == null) {
-                    instance = localInstance = new TaskManager();
-                }
-            }
-        }
-        return localInstance;
-    }
-
-    public void init(UNLApp incomingApp, String incSource) {
+    public TaskManager(UNLApp incomingApp) {
         this.mApp = incomingApp;
-        this.source = incSource;
-//        if (server == null) {
-//            server = new UNLServer(mApp);
-//        }
-    }
-
-    public void setNeedLogo(boolean needLogo) {
-        if (!isRunning) {
-            this.tasks[0] = needLogo;
-        }
-    }
-
-    public void setNeedCountFaces(boolean needCountFaces) {
-        if (!isRunning) {
-            this.tasks[1] = needCountFaces;
-        }
-    }
-
-    public void setNeedRss(boolean needRss) {
-        if (!isRunning) {
-            this.tasks[2] = needRss;
-        }
-    }
-
-    public void setNeedDown(boolean needDown) {
-        if (!isRunning) {
-            this.tasks[3] = needDown;
-        }
-    }
-
-    public void setNeedSendStat(boolean needSendStat) {
-        if (!isRunning) {
-            this.tasks[4] = needSendStat;
-        }
+        init();
     }
 
     public void startAllTask() {
@@ -114,9 +55,6 @@ public class TaskManager extends Handler {
             Log.d(TAG, "Start executing all tasks");
             if (!isRunning) {
                 isRunning = true;
-//                serverMD5 = server.getMD5FromServer();
-//                gdFiles = server.getGdFiles();
-//                startTask(currentTask);
                 GetServer gs = new GetServer();
                 gs.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
@@ -128,13 +66,12 @@ public class TaskManager extends Handler {
     }
 
     private class GetServer extends AsyncTask {
-
         @Override
         protected Object doInBackground(Object[] params) {
             //if (NetWork.isNetworkAvailable(mApp)) {
-                server = new UNLServer(mApp);
-                serverMD5 = server.getMD5FromServer();
-                gdFiles = server.getGdFiles();
+            server = new UNLServer(mApp);
+            serverMD5 = server.getMD5FromServer();
+            gdFiles = server.getGdFiles();
             //}
             return null;
         }
@@ -150,10 +87,9 @@ public class TaskManager extends Handler {
             switch (numOfTask) {
                 case 0:
                     Log.d(TAG, "Start task 0 (LOGO)");
-                    CheckAndGetLogoFromGDriveTask task = new CheckAndGetLogoFromGDriveTask(mApp, this, server.getGdLogo(), source);
+                    CheckAndGetLogoFromGDriveTask task = new CheckAndGetLogoFromGDriveTask(mApp, this, server.getGdLogo());
                     task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//                    Thread threadLogo = new Thread(task);
-//                    threadLogo.start();
+                    tasks[0] = false;
                     break;
                 case 1:
                     Log.d(TAG, "Start task 1 (CHECK FACES)");
@@ -164,7 +100,7 @@ public class TaskManager extends Handler {
                     if (rssCurrCount <= 0) {
                         Log.d(TAG, "Start task 2 (RSS)");
                         rssCurrCount = rssMaxCount;
-                        RSSTask rssTask = new RSSTask(mApp, this, server.getGdRSS(), source);
+                        RSSTask rssTask = new RSSTask(mApp, this, server.getGdRSS());
                         rssTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } else {
                         Log.d(TAG, "RSS task 2 started after " + rssCurrCount + " videos");
@@ -174,7 +110,7 @@ public class TaskManager extends Handler {
                     break;
                 case 3:
                     Log.d(TAG, "Start task 3 (DOWNLOAD)");
-                    DownloadVideoTask downloadVideoTask = new DownloadVideoTask(mApp, this, gdFiles, serverMD5, source);
+                    DownloadVideoTask downloadVideoTask = new DownloadVideoTask(mApp, this, gdFiles, serverMD5);
                     downloadVideoTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case 4:
@@ -183,8 +119,6 @@ public class TaskManager extends Handler {
                         statCurrCount = statMaxCount;
                         SendStatisticsToGD sstGD = new SendStatisticsToGD(mApp, this);
                         sstGD.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        //Thread threadSend = new Thread(sstGD, "SendStatisticsToGD");
-                        //threadSend.start();
                     } else {
                         Log.d(TAG, "Send statistic task 4 started after " + statCurrCount + " videos");
                         statCurrCount--;
@@ -206,14 +140,6 @@ public class TaskManager extends Handler {
         }
     }
 
-    public void needRssNOW() {
-        rssCurrCount = 0;
-    }
-
-    public void needSendStatNOW() {
-        statCurrCount = 0;
-    }
-
     private void nextTask() {
         Log.d(TAG, "Task " + currentTask + " is ended");
         currentTask++;
@@ -233,10 +159,16 @@ public class TaskManager extends Handler {
             nextTask();
         }
         if (msg.what == 43) {  //clear all
-            currentTask = 0;
-            tasks = new boolean[5];
+            init();
         }
         super.handleMessage(msg);
+    }
+
+    private void init() {
+        currentTask = 0;
+        for (int i = 0; i < tasks.length; i++) {
+            tasks[i] = true;
+        }
     }
 
 }

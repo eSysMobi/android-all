@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 

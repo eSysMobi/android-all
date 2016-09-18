@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.data.GDFile;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
@@ -41,7 +41,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient String actName;
     private transient SharedPreferences prefs;
 
-    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5, String incActName) {
+    public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5) {
         downCount = 0;
         mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);

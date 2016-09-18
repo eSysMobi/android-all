@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.upnews_lite.UNLApp;
@@ -42,8 +42,8 @@ public class DeleteBrokeFilesTask extends AsyncTask<Void, Void, Void> {
             if (!UNLApp.getIsDownloadTaskRunning()) {
                 Log.d(TAG, "Start deleting broken files");
 
-                String[] localMD5 = prefs.getString("localMD5","").split(",");
-                String[] localNames = prefs.getString("localNames","").split(",");
+                String[] localMD5 = prefs.getString("localMD5", "").split(",");
+                String[] localNames = prefs.getString("localNames", "").split(",");
 
                 List<String> maskList = new ArrayList<>();  //masklist with names
                 Log.d(TAG, "md5 list " + md5set.toString());

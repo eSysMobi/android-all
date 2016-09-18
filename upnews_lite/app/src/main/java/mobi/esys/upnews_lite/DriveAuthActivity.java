@@ -24,22 +24,19 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
-import mobi.esys.constants.UNLConsts;
-import mobi.esys.events.EventSyncStart;
-import mobi.esys.fileworks.DirectoryWorks;
+import mobi.esys.UNLConsts;
 import mobi.esys.net.NetWork;
+import mobi.esys.tasks.CreateDriveFolderCallback;
 import mobi.esys.tasks.CreateDriveFolderTask;
 
 
-public class DriveAuthActivity extends Activity implements View.OnClickListener {
+public class DriveAuthActivity extends Activity implements CreateDriveFolderCallback {
     private SharedPreferences prefs;
     private GoogleAccountCredential credential;
     private static final int REQUEST_ACCOUNT_PICKER = 101;
@@ -79,7 +76,25 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         mpbDriveAuthActivity = (ProgressBar) findViewById(R.id.pbDriveAuthActivity);
         gdAuthBtn = (Button) findViewById(R.id.gdAuthBtn);
 
-        gdAuthBtn.setOnClickListener(this);
+        gdAuthBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (externalStorageIsAvailable) {
+                    //check inet
+                    if (NetWork.isNetworkAvailable(mApp)) {
+                        setLoadState(); //show loading screen
+                        buttonPressed = true;
+                        picker();
+                    } else {
+                        Log.d("unTag_DriveAuthActivity", "We have no inet");
+                        Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Log.d("unTag_DriveAuthActivity", "External storage is not available");
+                    Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
         if (UNLConsts.ALLOW_HIDEUI_DRIVEACTIVITY && Build.VERSION.SDK_INT >= 14) {
             decorView = getWindow().getDecorView();
@@ -127,17 +142,8 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
                     Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
                 }
 
-                DirectoryWorks directoryWorks = new DirectoryWorks(UNLConsts.VIDEO_DIR_NAME);
-
-                if (directoryWorks.getDirFileList("if have files").length == 0) {
-                    startActivity(new Intent(DriveAuthActivity.this,
-                            FirstVideoActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-                    DriveAuthActivity.this.finish();
-                } else {
-                    startActivity(new Intent(DriveAuthActivity.this,
-                            FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
-                    DriveAuthActivity.this.finish();
-                }
+                startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+                finish();
             }
         } else {
             Log.d("unTag_DriveAuthActivity", "External storage is not available");
@@ -209,7 +215,6 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
 
                 }
                 break;
-
             case REQUEST_AUTHORIZATION:
                 if (resultCode == Activity.RESULT_OK) {
                     createFolderInDriveIfDontExists();
@@ -273,15 +278,10 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         }
     }
 
-    public void catchUSERException(Intent intent) {
-        startActivityForResult(intent, REQUEST_AUTHORIZATION);
-    }
-
     private void createFolderInDriveIfDontExists() {
         if (!UNLApp.getIsCreatingDriveFolder()) {
             UNLApp.setIsCreatingDriveFolder(true);
-            //TODO change to fragment
-            CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(DriveAuthActivity.this, true, mApp, true);
+            CreateDriveFolderTask createDriveFolderTask = new CreateDriveFolderTask(this, this, mApp);
             createDriveFolderTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
@@ -289,7 +289,7 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
     private void createFolderIfNotExist() {
         //checking availability external storage
         String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
+        if (state.equals(Environment.MEDIA_MOUNTED)) {
             externalStorageIsAvailable = true;
             //UNLApp.setAppExtCachePath(mApp.getExternalCacheDir().getAbsolutePath());
             UNLApp.setAppExtCachePath(Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -317,27 +317,21 @@ public class DriveAuthActivity extends Activity implements View.OnClickListener 
         }
     }
 
-    /**
-     * Called when a view has been clicked.
-     *
-     * @param v The view that was clicked.
-     */
     @Override
-    public void onClick(View v) {
-        if (externalStorageIsAvailable) {
-            //check inet
-            if (NetWork.isNetworkAvailable(mApp)) {
-                setLoadState(); //show loading screen
-                buttonPressed = true;
-                picker();
-            } else {
-                Log.d("unTag_DriveAuthActivity", "We have no inet");
-                Toast.makeText(DriveAuthActivity.this, getResources().getText(R.string.no_inet), Toast.LENGTH_LONG).show();
-            }
+    public void authIsFailed(boolean failWithException) {
+        if (failWithException) {
+            startActivityForResult(credential.newChooseAccountIntent(),
+                    REQUEST_AUTHORIZATION);
+            //or REQUEST_ACCOUNT_PICKER ?
         } else {
-            Log.d("unTag_DriveAuthActivity", "External storage is not available");
-            Toast.makeText(DriveAuthActivity.this, "External storage is not available", Toast.LENGTH_LONG).show();
+            //nothing to do
         }
+    }
+
+    @Override
+    public void startVideoActivity() {
+        startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
+        finish();
     }
 
     private static class mHandler extends Handler {

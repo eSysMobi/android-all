@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.upnews_lite.UNLApp;
 
 /**

@@ -1,17 +1,14 @@
 package mobi.esys.tasks;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 
 import java.net.URL;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.net.NetWork;
 import mobi.esys.rss.RSS;
-import mobi.esys.upnews_lite.FirstVideoActivity;
-import mobi.esys.upnews_lite.FullscreenActivity;
 import mobi.esys.upnews_lite.UNLApp;
 
 /**

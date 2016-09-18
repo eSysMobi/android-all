@@ -1,4 +1,4 @@
-package mobi.esys.constants;
+package mobi.esys;
 
 public final class UNLConsts {
 
@@ -32,20 +32,8 @@ public final class UNLConsts {
     //RSS constants
     public static final int RSS_SIZE = 128;
 
-    //logo constants
     public static final String[] UNL_ACCEPTED_FILE_EXTS = {"mp4", "avi"};
-    public static final String SIGNAL_TO_FULLSCREEN = "status";
-    public static final byte GET_LOGO_STATUS_OK = 100;
-    public static final byte GET_LOGO_STATUS_NOT_OK = 101;
-    public static final byte STATUS_NEED_CHECK_LOGO = 102;
-    public static final String BROADCAST_ACTION = "com.moby.esys.backbroadcast";
-    public static final String BROADCAST_ACTION_FIRST = "com.moby.esys.backbroadcast.first";
-
-    //signals
-    public static final byte SIGNAL_TOAST = 90;
-    public static final byte SIGNAL_CAMERASHOT = 80;
-    public static final byte SIGNAL_START_RSS = 60;
-    public static final byte SIGNAL_REC_TO_MP = 50;
+    ;
 
     //time constants
     public final static int APP_START_DELAY = 10000;

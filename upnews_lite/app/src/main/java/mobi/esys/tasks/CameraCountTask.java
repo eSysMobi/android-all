@@ -21,7 +21,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.upnews_lite.UNLApp;
 

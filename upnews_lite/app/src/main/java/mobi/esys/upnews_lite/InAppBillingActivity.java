@@ -5,13 +5,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -28,7 +26,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.tasks.GetProductInfoTask;
 
 public class InAppBillingActivity extends Activity {
@@ -172,7 +170,7 @@ public class InAppBillingActivity extends Activity {
         UNLApp mApp = (UNLApp) getApplication();
         int versionCode = BuildConfig.VERSION_CODE;
         SharedPreferences prefs = mApp.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, MODE_PRIVATE);
-        if(prefs.getInt("lastAppVersion",0)!=versionCode){
+        if (prefs.getInt("lastAppVersion", 0) != versionCode) {
             //clear all saved data
             Log.w("unTag_InAppBillingAct", "Version not matched. Clearing SharedPreferences.");
             SharedPreferences.Editor editor = prefs.edit();

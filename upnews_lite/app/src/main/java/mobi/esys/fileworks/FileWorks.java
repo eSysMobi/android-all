@@ -28,7 +28,7 @@ public class FileWorks {
         this.file = incomingFile;
     }
 
-    public File getFile(){
+    public File getFile() {
         return file;
     }
 
@@ -121,7 +121,7 @@ public class FileWorks {
                     currentExtension) + "$", Matcher.quoteReplacement("." + newExtension));
 
         }
-        if(new File(path).renameTo(new File(target))){
+        if (new File(path).renameTo(new File(target))) {
             result = target;
         }
 

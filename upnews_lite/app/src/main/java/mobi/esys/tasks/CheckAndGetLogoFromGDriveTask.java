@@ -1,10 +1,12 @@
 package mobi.esys.tasks;
 
-import android.content.Intent;
-import android.os.*;
+import android.os.AsyncTask;
+import android.os.Handler;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,8 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.data.GDFile;
+import mobi.esys.events.EventLogoLoadingComplete;
 import mobi.esys.net.NetWork;
 import mobi.esys.upnews_lite.UNLApp;
 
@@ -25,27 +28,19 @@ public class CheckAndGetLogoFromGDriveTask extends AsyncTask<Void, Void, Void> {
     private GDFile newRemoteLogo;
     private transient Drive drive;
     private Handler handler;
-    private String actName;
 
-    public CheckAndGetLogoFromGDriveTask(UNLApp incomingApp, Handler incHandler, GDFile remoteLogo, String source) {
+    public CheckAndGetLogoFromGDriveTask(UNLApp incomingApp, Handler incHandler, GDFile remoteLogo) {
         app = incomingApp;
         drive = UNLApp.getDriveService();
         handler = incHandler;
         newRemoteLogo = remoteLogo;
-        actName = source;
     }
 
 
     @Override
     protected Void doInBackground(Void... params) {
-
-        //set priority
-        //android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
-
         if (NetWork.isNetworkAvailable(app)) {
-
 //            String newMD5 = newRemoteLogo.getGdFileMD5();
-
             if (!newRemoteLogo.getGdFileSize().equals("0")) {
                 String logoDirPath = UNLApp.getAppExtCachePath()
                         + UNLConsts.VIDEO_DIR_NAME
@@ -153,7 +148,7 @@ public class CheckAndGetLogoFromGDriveTask extends AsyncTask<Void, Void, Void> {
                 //Fail. In Google Drive SUDDENLY no logo file, or it corrupt
                 signalUseStandardLogo();
             }
-        }else {
+        } else {
             //Fail. We have no inet
             signalUseStandardLogo();
         }
@@ -161,28 +156,12 @@ public class CheckAndGetLogoFromGDriveTask extends AsyncTask<Void, Void, Void> {
     }
 
     private void signalUseNewLogo() {
-        if ("first".equals(actName)) {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
-            app.sendBroadcast(intentOut);
-        } else {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_OK);
-            app.sendBroadcast(intentOut);
-        }
+        EventBus.getDefault().post(new EventLogoLoadingComplete(true));
         handler.sendEmptyMessage(42);
     }
 
     private void signalUseStandardLogo() {
-        if ("first".equals(actName)) {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
-            app.sendBroadcast(intentOut);
-        } else {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.GET_LOGO_STATUS_NOT_OK);
-            app.sendBroadcast(intentOut);
-        }
+        EventBus.getDefault().post(new EventLogoLoadingComplete(false));
         handler.sendEmptyMessage(42);
     }
 

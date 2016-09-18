@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import mobi.esys.constants.UNLConsts;
+import mobi.esys.UNLConsts;
 import mobi.esys.data.GDFile;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
@@ -36,7 +36,7 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
 
     private transient String TAG = "unTag_RSSTask";
 
-    public RSSTask(UNLApp app, Handler h, GDFile incGdRSS, String actName) {
+    public RSSTask(UNLApp app, Handler h, GDFile incGdRSS) {
         mApp = app;
         gdRSS = incGdRSS;
         handler = h;
