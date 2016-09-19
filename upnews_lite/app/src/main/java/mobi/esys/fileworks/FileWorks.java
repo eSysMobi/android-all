@@ -28,10 +28,6 @@ public class FileWorks {
         this.file = incomingFile;
     }
 
-    public File getFile() {
-        return file;
-    }
-
     private static byte[] createChecksum(String filename) {
         InputStream fis;
         byte[] sum = new byte[1];
@@ -62,6 +58,10 @@ public class FileWorks {
         }
 
         return sum;
+    }
+
+    public File getFile() {
+        return file;
     }
 
     public String getFileMD5() {

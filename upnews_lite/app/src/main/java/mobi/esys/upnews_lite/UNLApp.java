@@ -30,7 +30,7 @@ public class UNLApp extends Application {
     private static String curPlayFile;
     private static String fullDeviceIdForStatistic = "";
     private static String appExtCachePath;
-    private static Integer[] camerasID = null;
+    private static int[] camerasID;
     private static List<HashCache> hashCaches;
 
     public static String getFullDeviceIdForStatistic() {
@@ -56,28 +56,28 @@ public class UNLApp extends Application {
         return result;
     }
 
-    public static void setIsCamerasWorking(boolean state) {
-        UNLApp.isCamerasWorking.set(state);
-    }
-
     public static boolean getIsCamerasWorking() {
         return isCamerasWorking.get();
     }
 
-    public static void setIsCreatingDriveFolder(boolean state) {
-        UNLApp.isCreatingDriveFolder.set(state);
+    public static void setIsCamerasWorking(boolean state) {
+        UNLApp.isCamerasWorking.set(state);
     }
 
     public static boolean getIsCreatingDriveFolder() {
         return isCreatingDriveFolder.get();
     }
 
-    public static void setCamerasID(Integer[] camerasID) {
-        UNLApp.camerasID = camerasID;
+    public static void setIsCreatingDriveFolder(boolean state) {
+        UNLApp.isCreatingDriveFolder.set(state);
     }
 
-    public static Integer[] getCamerasID() {
+    public static int[] getCamerasID() {
         return camerasID;
+    }
+
+    public static void setCamerasID(int[] camerasID) {
+        UNLApp.camerasID = camerasID;
     }
 
     public static String getAppExtCachePath() {
@@ -88,13 +88,17 @@ public class UNLApp extends Application {
         appExtCachePath = newPath;
     }
 
+    public static boolean getIsDownloadTaskRunning() {
+        return isDownloadTaskRunning.get();
+    }
+
     public static void setIsDownloadTaskRunning(boolean state) {
         Log.d("unTag_UNLApp", "Set isDownloadTaskRunning " + state);
         isDownloadTaskRunning.set(state);
     }
 
-    public static boolean getIsDownloadTaskRunning() {
-        return isDownloadTaskRunning.get();
+    public static boolean getIsDeleting() {
+        return isDeleting.get();
     }
 
     public static void setIsDeleting(boolean state) {
@@ -102,8 +106,8 @@ public class UNLApp extends Application {
         isDeleting.set(state);
     }
 
-    public static boolean getIsDeleting() {
-        return isDeleting.get();
+    public static boolean getIsStatFileWriting() {
+        return isStatFileWriting.get();
     }
 
     public static void setIsStatFileWriting(boolean state) {
@@ -111,8 +115,8 @@ public class UNLApp extends Application {
         isStatFileWriting.set(state);
     }
 
-    public static boolean getIsStatFileWriting() {
-        return isStatFileWriting.get();
+    public static boolean getIsStatNetFileWriting() {
+        return isStatNetFileWriting.get();
     }
 
     public static void setIsStatNetFileWriting(boolean state) {
@@ -120,32 +124,28 @@ public class UNLApp extends Application {
         isStatNetFileWriting.set(state);
     }
 
-    public static boolean getIsStatNetFileWriting() {
-        return isStatNetFileWriting.get();
+    public static String getCurPlayFile() {
+        return curPlayFile;
     }
 
     public static void setCurPlayFile(String incCrPlayFile) {
         curPlayFile = incCrPlayFile;
     }
 
-    public static String getCurPlayFile() {
-        return curPlayFile;
-    }
-
-    public void registerGoogle(Drive drive) {
-        driveService = drive;
-    }
-
     public static Drive getDriveService() {
         return driveService;
+    }
+
+    public static synchronized List<HashCache> getHashCaches() {
+        return hashCaches;
     }
 
     public static synchronized void setHashCaches(List<HashCache> incHashCaches) {
         hashCaches = incHashCaches;
     }
 
-    public static synchronized List<HashCache> getHashCaches() {
-        return hashCaches;
+    public void registerGoogle(Drive drive) {
+        driveService = drive;
     }
 
     @Override

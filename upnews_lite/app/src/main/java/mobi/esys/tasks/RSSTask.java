@@ -1,12 +1,13 @@
 package mobi.esys.tasks;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.services.drive.Drive;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,13 +22,14 @@ import java.net.URL;
 
 import mobi.esys.UNLConsts;
 import mobi.esys.data.GDFile;
+import mobi.esys.events.EventStartRSS;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class RSSTask extends AsyncTask<Void, Void, URL> {
-    private transient String mActName;
+    private final EventBus bus = EventBus.getDefault();
     private transient Drive drive;
     private transient UNLApp mApp;
     private transient String rssString = "";
@@ -40,7 +42,6 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
         mApp = app;
         gdRSS = incGdRSS;
         handler = h;
-        mActName = actName;
         drive = app.getDriveService();
     }
 
@@ -144,27 +145,16 @@ public class RSSTask extends AsyncTask<Void, Void, URL> {
     @Override
     protected void onPostExecute(URL rssURL) {
         super.onPostExecute(rssURL);
-
         if (rssURL != null) {
             //we have url - call RSSFeedTask
             Log.d(TAG, "URL in rss.txt download XML in RSSFeedTask");
-            RSSFeedTask rssFeedTask = new RSSFeedTask(mApp, handler, mActName);
+            RSSFeedTask rssFeedTask = new RSSFeedTask(mApp, handler);
             rssFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, rssURL);
         } else {
             //we have line - show rss in activity
             Log.d(TAG, "Strings in rss.txt. Show it.");
             if (!rssString.isEmpty()) {
-                if ("first".equals(mActName)) {
-                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
-                    intentOut.putExtra("rssToShow", rssString);
-                    mApp.sendBroadcast(intentOut);
-                } else {
-                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
-                    intentOut.putExtra("rssToShow", rssString);
-                    mApp.sendBroadcast(intentOut);
-                }
+                bus.post(new EventStartRSS(rssString));
             }
             handler.sendEmptyMessage(42);
         }

@@ -32,10 +32,10 @@ import mobi.esys.upnews_lite.UNLApp;
  * Created by ZeyUzh on 27.01.2016.
  */
 public class SendStatisticsToGD extends AsyncTask<Void, Void, Void> {
-    private transient SharedPreferences prefs;
     private static final String FOLDER_STAT_NAME = UNLConsts.GD_STATISTICS_DIR_NAME;
     private static final String STAT_MIME_TYPE = UNLConsts.STATISTICS_MIME_TYPE;
     private static final String TAG = "unTag_SendStatGD";
+    private transient SharedPreferences prefs;
     private transient Drive drive;
     private transient UNLApp mApp;
     private String statisticsGDDirID;

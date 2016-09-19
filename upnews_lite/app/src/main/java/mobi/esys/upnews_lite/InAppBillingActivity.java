@@ -24,7 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import mobi.esys.UNLConsts;
 import mobi.esys.tasks.GetProductInfoTask;
@@ -122,28 +121,11 @@ public class InAppBillingActivity extends Activity {
             Log.w("unTag_InAppBillingAct", "numCameras version is " + numCameras);
 
             if (numCameras > 0) {
-                List<Integer> cameraIdList = new ArrayList<>();
-                for (int i = 0; i < numCameras; i++) {
-                    /*
-                    // check supporting face detection for camera
-                    android.hardware.Camera mCamera = null;
-                    mCamera = android.hardware.Camera.open(i);
-                    android.hardware.Camera.Parameters params = mCamera.getParameters();
-
-                    int faceSupport = params.getMaxNumDetectedFaces();
-                    Log.d("unTag_InAppBillingAct", "Camera with id " + i + " support MaxNumDetectedFaces " + faceSupport);
-                    if (faceSupport > 0) {
-                        cameraIdList.add(String.valueOf(i));
-                    }
-                    mCamera.release();
-                    */
-                    cameraIdList.add(i);
+                int[] cameraIdArray = new int[numCameras];
+                for (int i = 0; i < cameraIdArray.length; i++) {
+                    cameraIdArray[i] = i;
                 }
-                if (cameraIdList.size() > 0) {
-                    Integer[] cameraIdArray = new Integer[cameraIdList.size()];
-                    cameraIdArray = cameraIdList.toArray(cameraIdArray);
-                    UNLApp.setCamerasID(cameraIdArray);
-                }
+                UNLApp.setCamerasID(cameraIdArray);
             }
         }
 

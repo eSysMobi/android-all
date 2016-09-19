@@ -1,7 +1,6 @@
 package mobi.esys.tasks;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -12,6 +11,8 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,12 +25,14 @@ import java.util.Set;
 
 import mobi.esys.UNLConsts;
 import mobi.esys.data.GDFile;
+import mobi.esys.events.EventToast;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.fileworks.FileWorks;
 import mobi.esys.net.NetWork;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
+    private final EventBus bus = EventBus.getDefault();
     private transient Handler handler;
     private transient List<GDFile> gdFiles;
     private transient List<String> serverMD5;
@@ -38,7 +41,6 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     private transient List<String> folderMD5;
     private transient Drive drive;
     private transient UNLApp mApp;
-    private transient String actName;
     private transient SharedPreferences prefs;
 
     public DownloadVideoTask(UNLApp app, Handler incHandler, List<GDFile> incGDFiles, String incServerMD5) {
@@ -48,11 +50,18 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
         handler = incHandler;
         drive = UNLApp.getDriveService();
         gdFiles = incGDFiles;
-        actName = incActName;
         //convert String to List
         serverMD5 = new ArrayList<>();
         String[] md5sAppArray = incServerMD5.split(",");
         serverMD5 = Arrays.asList(md5sAppArray);
+    }
+
+    public static void append(java.io.File file, byte[] bytes) throws Exception {
+        long fileLength = file.length();
+        RandomAccessFile raf = new RandomAccessFile(file, "rw");
+        raf.seek(fileLength);
+        raf.write(bytes);
+        raf.close();
     }
 
     @Override
@@ -242,42 +251,17 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
             cancel(true);
             Log.d("unTag_down", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
 
-            if ("first".equals(actName)) {
-                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
-                intentOut.putExtra("toastText", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
-                mApp.sendBroadcast(intentOut);
-            } else {
-                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
-                intentOut.putExtra("toastText", "In the external storage is not more available memory. New files are not downloaded until you free up space.");
-                mApp.sendBroadcast(intentOut);
-            }
+            bus.post(new EventToast("In the external storage is not more available memory. New files are not downloaded until you free up space."));
         }
     }
-
 
     @Override
     protected void onPostExecute(Void result) {
         super.onPostExecute(result);
         stopDownload();
 
-        if ("first".equals(actName)) {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
-            intentOut.putExtra("recToMP_tag", "download_done");
-            intentOut.putExtra("recToMP_message", "Download ends fine");
-            mApp.sendBroadcast(intentOut);
-        } else {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
-            intentOut.putExtra("recToMP_tag", "download_done");
-            intentOut.putExtra("recToMP_message", "Download ends fine");
-            mApp.sendBroadcast(intentOut);
-        }
-
         if (!UNLApp.getIsDeleting() && serverMD5 != null) {
-            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, serverMD5, actName);
+            DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, serverMD5);
             brokeFilesTask.execute();
         }
     }
@@ -286,33 +270,11 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
     protected void onCancelled() {
         super.onCancelled();
         stopDownload();
-
-        if ("first".equals(actName)) {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
-            intentOut.putExtra("recToMP_tag", "download_error");
-            intentOut.putExtra("recToMP_message", "Download canceled");
-            mApp.sendBroadcast(intentOut);
-        } else {
-            Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-            intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_REC_TO_MP);
-            intentOut.putExtra("recToMP_tag", "download_error");
-            intentOut.putExtra("recToMP_message", "Download canceled");
-            mApp.sendBroadcast(intentOut);
-        }
     }
 
     private void stopDownload() {
         UNLApp.setIsDownloadTaskRunning(false);
         handler.sendEmptyMessage(42);
-    }
-
-    public static void append(java.io.File file, byte[] bytes) throws Exception {
-        long fileLength = file.length();
-        RandomAccessFile raf = new RandomAccessFile(file, "rw");
-        raf.seek(fileLength);
-        raf.write(bytes);
-        raf.close();
     }
 
 

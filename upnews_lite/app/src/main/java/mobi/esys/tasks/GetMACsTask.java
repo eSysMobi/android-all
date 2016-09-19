@@ -46,6 +46,42 @@ public class GetMACsTask implements Runnable {
         macs = new ArrayList<>();
     }
 
+    private static String getHardwareAddress(String ip) {
+        String hw = "UNKNOWN";
+        BufferedReader bufferedReader = null;
+        try {
+            if (ip != null) {
+                String ptrn = String.format(MAC_RE, ip.replace(".", "\\."));
+                Pattern pattern = Pattern.compile(ptrn);
+                bufferedReader = new BufferedReader(new FileReader("/proc/net/arp"), BUF);
+                String line;
+                Matcher matcher;
+                while ((line = bufferedReader.readLine()) != null) {
+                    //Log.e(TAG, ip + " line = " + line);
+                    matcher = pattern.matcher(line);
+                    if (matcher.matches()) {
+                        hw = matcher.group(1);
+                        break;
+                    }
+                }
+            } else {
+                Log.e(TAG, "ip is null");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Can't open/read file ARP: " + e.getMessage());
+            return hw;
+        } finally {
+            try {
+                if (bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
+        }
+        return hw;
+    }
+
     @Override
     public void run() {
         if (thisDeviceIP != null && !thisDeviceIP.isEmpty()) {
@@ -134,42 +170,6 @@ public class GetMACsTask implements Runnable {
                 }
             }
         };
-    }
-
-    private static String getHardwareAddress(String ip) {
-        String hw = "UNKNOWN";
-        BufferedReader bufferedReader = null;
-        try {
-            if (ip != null) {
-                String ptrn = String.format(MAC_RE, ip.replace(".", "\\."));
-                Pattern pattern = Pattern.compile(ptrn);
-                bufferedReader = new BufferedReader(new FileReader("/proc/net/arp"), BUF);
-                String line;
-                Matcher matcher;
-                while ((line = bufferedReader.readLine()) != null) {
-                    //Log.e(TAG, ip + " line = " + line);
-                    matcher = pattern.matcher(line);
-                    if (matcher.matches()) {
-                        hw = matcher.group(1);
-                        break;
-                    }
-                }
-            } else {
-                Log.e(TAG, "ip is null");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Can't open/read file ARP: " + e.getMessage());
-            return hw;
-        } finally {
-            try {
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-            } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
-        }
-        return hw;
     }
 
     private synchronized void addMacToList(String adding) {

@@ -27,10 +27,10 @@ import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class Playback {
+    private static final String TAG = "unTag_Playback";
     private transient MediaController mController;
     private transient Context mContext;
     private transient VideoView mVideo;
-    private static final String TAG = "unTag_Playback";
     private transient String[] files;
     private transient String nameCurrentPlayedFile = "";
     private transient int videofileIndex = 0;
@@ -63,6 +63,10 @@ public class Playback {
         mApp = app;
         prefs = app.getApplicationContext().getSharedPreferences(UNLConsts.APP_PREF, Context.MODE_PRIVATE);
         this.defaultVideoURI = defaultVideoURI;
+        directoryWorks = new DirectoryWorks(
+                UNLConsts.VIDEO_DIR_NAME +
+                        UNLConsts.GD_STORAGE_DIR_NAME +
+                        "/");
     }
 
     public void playFolder() {
@@ -70,8 +74,8 @@ public class Playback {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 bus.post(new EventCameraShot(nameCurrentPlayedFile));
-                nextTrack();
                 tm.startAllTask();
+                nextTrack();
             }
 
         });

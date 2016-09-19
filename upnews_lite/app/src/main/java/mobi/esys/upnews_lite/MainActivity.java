@@ -34,12 +34,13 @@ import mobi.esys.fileworks.FileWorks;
 import mobi.esys.playback.Playback;
 import mobi.esys.system.MarqueeTextView;
 import mobi.esys.taskmanager.TaskManager;
-import mobi.esys.tasks.CameraShotTask;
 import mobi.esys.tasks.GetMACsTask;
+import mobi.esys.tasks.camera.CameraShotTask;
 
 public class MainActivity extends Activity {
     private static final String TAG = "unTag_MainActivity";
     private static transient int DELAY_NAV_HIDE = 2000;
+    private final EventBus bus = EventBus.getDefault();
     private Playback playback;
     private MarqueeTextView textView;
     private boolean isFirstRSS;
@@ -47,18 +48,12 @@ public class MainActivity extends Activity {
     private ImageView mLogo;
     private SurfaceHolder holder;
     private Uri defaultVideoURI;
-
     //Get MACs
     private transient Handler handlerGetMACs = null;
     private transient Runnable runnableGetMACs = null;
-
     private transient Handler handlerHideUI;
     private transient View decorView = null;
-
     private transient TaskManager tm;
-
-    private final EventBus bus = EventBus.getDefault();
-
 
     @Override
     protected void onCreate(Bundle stateBundle) {
@@ -152,7 +147,7 @@ public class MainActivity extends Activity {
         String nameCurrentPlayedFile = event.getFileName();
         if (!nameCurrentPlayedFile.isEmpty()) {
             Log.d(TAG, "Start face counting after ending file " + nameCurrentPlayedFile);
-            CameraShotTask csTask = new CameraShotTask(holder, MainActivity.this, nameCurrentPlayedFile, mApp);
+            CameraShotTask csTask = new CameraShotTask(holder, MainActivity.this, nameCurrentPlayedFile);
             csTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
             Log.d(TAG, "Can't start face counting after ending file because nameCurrentPlayedFile is empty");
@@ -229,6 +224,19 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void setUISmall() {
+        //not need check SDK version because checking in onCreate
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            Log.d(TAG, "UiVisibility before " + decorView.getSystemUiVisibility());
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            Log.d(TAG, "UiVisibility after " + decorView.getSystemUiVisibility());
+        }
+    }
+
+    public void forceSetUISmall() {
+        setUISmall();
+    }
+
     private static class mHandler extends Handler {
         MainActivity wrActivity;
 
@@ -241,19 +249,6 @@ public class MainActivity extends Activity {
             super.handleMessage(msg);
             wrActivity.setUISmall();
         }
-    }
-
-    private void setUISmall() {
-        //not need check SDK version because checking in onCreate
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            Log.d(TAG, "UiVisibility before " + decorView.getSystemUiVisibility());
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-            Log.d(TAG, "UiVisibility after " + decorView.getSystemUiVisibility());
-        }
-    }
-
-    public void forceSetUISmall() {
-        setUISmall();
     }
 
 //    @Override

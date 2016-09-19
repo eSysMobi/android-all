@@ -37,12 +37,11 @@ import mobi.esys.tasks.CreateDriveFolderTask;
 
 
 public class DriveAuthActivity extends Activity implements CreateDriveFolderCallback {
-    private SharedPreferences prefs;
-    private GoogleAccountCredential credential;
     private static final int REQUEST_ACCOUNT_PICKER = 101;
     private static final int REQUEST_AUTHORIZATION = 102;
     private static final int REQUEST_AUTH_IF_ERROR = 103;
-
+    private SharedPreferences prefs;
+    private GoogleAccountCredential credential;
     private boolean isFirstAuth;
     private UNLApp mApp;
     private Drive drive;
@@ -334,6 +333,10 @@ public class DriveAuthActivity extends Activity implements CreateDriveFolderCall
         finish();
     }
 
+    private void setUISmall() {
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+    }
+
     private static class mHandler extends Handler {
 
         WeakReference<DriveAuthActivity> wrActivity;
@@ -349,9 +352,5 @@ public class DriveAuthActivity extends Activity implements CreateDriveFolderCall
             if (activity != null)
                 activity.setUISmall();
         }
-    }
-
-    private void setUISmall() {
-        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
     }
 }

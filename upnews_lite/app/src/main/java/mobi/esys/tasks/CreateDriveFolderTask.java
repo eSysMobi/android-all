@@ -30,17 +30,17 @@ import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class CreateDriveFolderTask extends AsyncTask<Void, Void, Void> {
-    private transient SharedPreferences prefs;
-    private transient Context mContext;
-    private transient boolean isAuthSuccess = false;
     private static final String RSS_TITLE = UNLConsts.GD_RSS_FILE_TITLE;
     private static final String RSS_MIME_TYPE = UNLConsts.GD_RSS_FILE_MIME_TYPE;
     private static final String LOGO_TITLE = UNLConsts.GD_LOGO_FILE_TITLE;
     private static final String LOGO_MIME_TYPE = UNLConsts.GD_LOGO_FILE_MIME_TYPE;
     private static final String TAG = "unTag_CrDriveFolderTask";
+    CreateDriveFolderCallback mCallback;
+    private transient SharedPreferences prefs;
+    private transient Context mContext;
+    private transient boolean isAuthSuccess = false;
     private transient Drive drive;
     private transient UNLApp mApp;
-    CreateDriveFolderCallback mCallback;
 
     public CreateDriveFolderTask(Context context, CreateDriveFolderCallback callback, UNLApp app) {
         mContext = context;

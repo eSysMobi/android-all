@@ -1,12 +1,13 @@
 package mobi.esys.tasks;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.net.URL;
 
-import mobi.esys.UNLConsts;
+import mobi.esys.events.EventStartRSS;
 import mobi.esys.net.NetWork;
 import mobi.esys.rss.RSS;
 import mobi.esys.upnews_lite.UNLApp;
@@ -15,14 +16,13 @@ import mobi.esys.upnews_lite.UNLApp;
  * Created by Артем on 26.02.2015.
  */
 public class RSSFeedTask extends AsyncTask<URL, Void, String> {
-    private transient String mActName;
+    private final EventBus bus = EventBus.getDefault();
     private transient UNLApp mApp;
     private transient Handler handler;
 
-    public RSSFeedTask(UNLApp app, Handler h, String actName) {
+    public RSSFeedTask(UNLApp app, Handler h) {
         mApp = app;
         handler = h;
-        mActName = actName;
     }
 
     /**
@@ -55,17 +55,7 @@ public class RSSFeedTask extends AsyncTask<URL, Void, String> {
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
         if (s != null && !s.isEmpty()) {
-            if ("first".equals(mActName)) {
-                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION_FIRST);
-                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
-                intentOut.putExtra("rssToShow", s);
-                mApp.sendBroadcast(intentOut);
-            } else {
-                Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_START_RSS);
-                intentOut.putExtra("rssToShow", s);
-                mApp.sendBroadcast(intentOut);
-            }
+            bus.post(new EventStartRSS(s));
         }
         handler.sendEmptyMessage(42);
     }

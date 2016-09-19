@@ -24,8 +24,8 @@ import mobi.esys.upnews_lite.R;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class DirectoryWorks {
-    private transient String directoryPath;
     private static final String DIR_WORKS_TAG = "unTag_DirectoryWorks";
+    private transient String directoryPath;
 
     public DirectoryWorks(String directoryPath) {
         this.directoryPath = directoryPath;

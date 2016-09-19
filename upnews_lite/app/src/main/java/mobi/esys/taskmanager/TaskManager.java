@@ -25,9 +25,8 @@ import mobi.esys.upnews_lite.UNLApp;
  * 4 - sending statistics in GD
  */
 public class TaskManager extends Handler {
-    private static volatile TaskManager instance;
     private static final String TAG = "unTag_TaskManager";
-
+    private static volatile TaskManager instance;
     private boolean[] tasks = new boolean[5];
     private int currentTask;
 
@@ -62,23 +61,6 @@ public class TaskManager extends Handler {
             }
         } else {
             Log.d(TAG, "Need initializing. Use init(UNLApp incomingApp)");
-        }
-    }
-
-    private class GetServer extends AsyncTask {
-        @Override
-        protected Object doInBackground(Object[] params) {
-            //if (NetWork.isNetworkAvailable(mApp)) {
-            server = new UNLServer(mApp);
-            serverMD5 = server.getMD5FromServer();
-            gdFiles = server.getGdFiles();
-            //}
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Object o) {
-            startTask(currentTask);
         }
     }
 
@@ -168,6 +150,21 @@ public class TaskManager extends Handler {
         currentTask = 0;
         for (int i = 0; i < tasks.length; i++) {
             tasks[i] = true;
+        }
+    }
+
+    private class GetServer extends AsyncTask {
+        @Override
+        protected Object doInBackground(Object[] params) {
+            server = new UNLServer(mApp);
+            serverMD5 = server.getMD5FromServer();
+            gdFiles = server.getGdFiles();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Object o) {
+            startTask(currentTask);
         }
     }
 

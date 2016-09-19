@@ -1,12 +1,13 @@
-package mobi.esys.tasks;
+package mobi.esys.tasks.camera;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.FaceDetector;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import mobi.esys.UNLConsts;
+import mobi.esys.events.EventToast;
 import mobi.esys.fileworks.DirectoryWorks;
 import mobi.esys.upnews_lite.UNLApp;
 
@@ -29,18 +31,17 @@ import mobi.esys.upnews_lite.UNLApp;
  * Created by ZeyUzh on 27.04.2016.
  */
 public class CameraCountTask extends AsyncTask<Void, Void, Void> {
-    private int MAX_FACES = 15;
+    private final EventBus bus = EventBus.getDefault();
+    private final int MAX_FACES = 15;
     private Context mContext;
     private String mVideoName;
     private List<String> filesForCounting;
     private int count = 0;
     private boolean allowToast = UNLConsts.ALLOW_TOAST;
-    UNLApp mApp;
 
-    public CameraCountTask(Context context, String videoName, UNLApp app, List<String> incFilesForCounting) {
+    public CameraCountTask(Context context, String videoName, List<String> incFilesForCounting) {
         mContext = context;
         mVideoName = videoName;
-        mApp = app;
         filesForCounting = incFilesForCounting;
     }
 
@@ -67,11 +68,8 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
                 background_image = null;
 
                 if (allowToast) {
-                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
                     String toastText = "camera " + i + " detect " + face_count + " faces";
-                    intentOut.putExtra("toastText", toastText);
-                    mApp.sendBroadcast(intentOut);
+                    bus.post(new EventToast(toastText));
                 }
             }
         }
@@ -213,11 +211,8 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
                 out.close();
 
                 if (allowToast) {
-                    Intent intentOut = new Intent(UNLConsts.BROADCAST_ACTION);
-                    intentOut.putExtra(UNLConsts.SIGNAL_TO_FULLSCREEN, UNLConsts.SIGNAL_TOAST);
                     String toastText = "cameras detect " + count + " faces";
-                    intentOut.putExtra("toastText", toastText);
-                    mApp.sendBroadcast(intentOut);
+                    bus.post(new EventToast(toastText));
                 }
 
             } catch (FileNotFoundException e) {
@@ -237,6 +232,8 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
             }
         } else {
             Log.w("unTag_Camera", "Do not write in statistics files because statistics is sending");
+            Log.d("unTag_Camera", "Release camera thread!");
+            UNLApp.setIsCamerasWorking(false);
         }
     }
 }

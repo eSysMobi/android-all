@@ -24,13 +24,13 @@ import mobi.esys.fileworks.FileWorks;
 import mobi.esys.upnews_lite.UNLApp;
 
 public class UNLServer {
+    private static final String TAG = "unTag_UNLServer";
+    private transient static Drive drive;
     private transient String folderId;
     private transient SharedPreferences prefs;
     private transient List<GDFile> gdFiles;
-    private transient static Drive drive;
     private transient GDFile gdRSS;
     private transient GDFile gdLogo;
-    private static final String TAG = "unTag_UNLServer";
     private transient boolean allOK = false;
 
 
