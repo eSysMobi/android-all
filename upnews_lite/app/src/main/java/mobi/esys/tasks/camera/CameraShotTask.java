@@ -23,7 +23,6 @@ import mobi.esys.upnews_lite.UNLApp;
  * Created by ZeyUzh on 17.01.2016.
  */
 public class CameraShotTask extends AsyncTask<Void, Void, Void> {
-    static Clb callbackJPEG = null; //this callback must be static, otherwise GC kill it
     private final EventBus bus = EventBus.getDefault();
     private Context mContext;
     private String mVideoName;
@@ -119,8 +118,14 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
                     mCamera.enableShutterSound(false);
                 mCamera.startPreview();
 
-                callbackJPEG = new Clb();
-                mCamera.takePicture(null, null, callbackJPEG);
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Log.d("unTag_Camera", "Start JPEG callback from camera " + currentCamID);
+                        Thread thread = new Thread(new SaveImage(data));
+                        thread.start();
+                    }
+                });
             } else {
                 throw new IOException();
             }
@@ -152,15 +157,6 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
             mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
-        }
-    }
-
-    private class Clb implements Camera.PictureCallback {
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-            Log.d("unTag_Camera", "Start JPEG callback from camera " + currentCamID);
-            Thread thread = new Thread(new SaveImage(data));
-            thread.start();
         }
     }
 
