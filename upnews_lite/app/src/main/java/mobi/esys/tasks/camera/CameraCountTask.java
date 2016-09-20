@@ -13,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -35,18 +36,21 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
     private final int MAX_FACES = 15;
     private Context mContext;
     private String mVideoName;
-    private List<String> filesForCounting;
+    private List<byte[]> datas;
     private int count = 0;
     private boolean allowToast = UNLConsts.ALLOW_TOAST;
 
-    public CameraCountTask(Context context, String videoName, List<String> incFilesForCounting) {
+    public CameraCountTask(Context context, String videoName, List<byte[]> datas) {
         mContext = context;
         mVideoName = videoName;
-        filesForCounting = incFilesForCounting;
+        this.datas = datas;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
+        Log.d("unTag_Camera", "Start saving files");
+        List<String> filesForCounting = saveAll(datas);
+
         Log.d("unTag_Camera", "Start counting faces");
         //count faces
         for (int i = 0; i < filesForCounting.size(); i++) {
@@ -77,6 +81,41 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
         finalCount();
 
         return null;
+    }
+
+    List<String> saveAll(List<byte[]> datas) {
+        List<String> result = new ArrayList<>();
+        for (int i=0; i<datas.size(); i++) {
+            String tmpFilePath = UNLApp.getAppExtCachePath()
+                    + UNLConsts.VIDEO_DIR_NAME
+                    + UNLConsts.GD_STATISTICS_DIR_NAME    // or GD_LOGO_DIR_NAME
+                    + "/"
+                    + i + "_" + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
+            File tmpFileForFaceDetecting = new File(tmpFilePath);
+
+            if (tmpFileForFaceDetecting.exists()) {
+                tmpFileForFaceDetecting.delete();
+            }
+
+            FileOutputStream fos;
+            try {
+                fos = new FileOutputStream(tmpFileForFaceDetecting);
+                fos.write(datas.get(i));
+                //fos.flush();
+                fos.close();
+                Log.d("unTag_Camera", "Photo from camera " + i + " is written on SD");
+
+                result.add(tmpFilePath);
+            } catch (IOException e) {
+                Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + i + ": " + e.toString());
+                if (allowToast) {
+                    String toastText = "Problem with writing picture on SD from camera id " + i;
+                    bus.post(new EventToast(toastText));
+                }
+            }
+        }
+
+        return result;
     }
 
 

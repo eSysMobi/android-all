@@ -3,6 +3,7 @@ package mobi.esys.upnews_lite;
 import android.app.Application;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -34,22 +35,17 @@ public class UNLApp extends Application {
     private static List<HashCache> hashCaches;
 
     public static String getFullDeviceIdForStatistic() {
-        if (fullDeviceIdForStatistic.isEmpty()) {
-            fullDeviceIdForStatistic = getDeviceId();
-        }
         return fullDeviceIdForStatistic;
     }
 
-    private static String getDeviceId() {
+    private String getDeviceId() {
         String result = "";
         try {
             String manufacturer = Build.MANUFACTURER;
             String model = Build.MODEL;
-            String serial = Build.SERIAL;
-            if (model.startsWith(manufacturer)) {
-                return model + "-" + serial;
-            }
-            result = manufacturer + " " + model + "-" + serial;
+            String android_id = Settings.Secure.getString(getContentResolver(),
+                    Settings.Secure.ANDROID_ID);
+            result = manufacturer + " " + model + "-" + android_id;
         } catch (Exception e) {
             result = "UNKNOWN DEVICE";
         }
@@ -159,6 +155,7 @@ public class UNLApp extends Application {
         isStatFileWriting = new AtomicBoolean(false);
         isStatNetFileWriting = new AtomicBoolean(false);
         hashCaches = new ArrayList<>();
+        fullDeviceIdForStatistic = getDeviceId();
     }
 
     @Override

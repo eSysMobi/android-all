@@ -10,6 +10,7 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -97,8 +98,9 @@ public class InAppBillingActivity extends Activity {
 
         };
 
-        //check cameras
         Log.w("unTag_InAppBillingAct", "SDK version is " + Build.VERSION.SDK_INT);
+        Log.w("unTag_InAppBillingAct", "Device name is " + UNLApp.getFullDeviceIdForStatistic());
+        //check cameras
         /*
         //camera2 api
         if (Build.VERSION.SDK_INT >= 21) {
@@ -118,7 +120,7 @@ public class InAppBillingActivity extends Activity {
         //if (Build.VERSION.SDK_INT >= 14 && Build.VERSION.SDK_INT < 21) {
         if (Build.VERSION.SDK_INT >= 11) {
             int numCameras = android.hardware.Camera.getNumberOfCameras();
-            Log.w("unTag_InAppBillingAct", "numCameras version is " + numCameras);
+            Log.w("unTag_InAppBillingAct", "Number of cameras is " + numCameras);
 
             if (numCameras > 0) {
                 int[] cameraIdArray = new int[numCameras];

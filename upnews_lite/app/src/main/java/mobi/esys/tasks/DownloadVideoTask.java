@@ -262,7 +262,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
 
         if (!UNLApp.getIsDeleting() && serverMD5 != null) {
             DeleteBrokeFilesTask brokeFilesTask = new DeleteBrokeFilesTask(mApp, serverMD5);
-            brokeFilesTask.execute();
+            brokeFilesTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 

@@ -22,21 +22,21 @@ import mobi.esys.upnews_lite.UNLApp;
 /**
  * Created by ZeyUzh on 17.01.2016.
  */
-public class CameraShotTask extends AsyncTask<Void, Void, Void> {
+public class CameraShotTask extends AsyncTask<Void, Void, Void> implements SaveCallback {
     private final EventBus bus = EventBus.getDefault();
     private Context mContext;
     private String mVideoName;
     private Camera mCamera = null;
     private int currentCamID;
-    private List<String> filesForCounting;
     private SurfaceHolder sHolder;
     private boolean allowToast = UNLConsts.ALLOW_TOAST;
+    private List<byte[]> datas = new ArrayList<>();
+    private Clb callback = new Clb(this);
 
     public CameraShotTask(SurfaceHolder mHolder, Context context, String videoName) {
         mContext = context;
         sHolder = mHolder;
         mVideoName = videoName;
-        filesForCounting = new ArrayList<>();
     }
 
     @Override
@@ -60,9 +60,9 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
                     //start recursive camera shots from camera 0
                     if (successLogoDirCheck) {
                         UNLApp.setIsCamerasWorking(true);
+                        Log.d("unTag_Camera", "We have " + UNLApp.getCamerasID().length + " cameras.");
                         currentCamID = UNLApp.getCamerasID()[0];
-                        Log.d("unTag_Camera", "We have " + UNLApp.getCamerasID().length + " cameras. Start with id=" + currentCamID);
-                        getPhotoAndSave(currentCamID);
+                        getNextPhoto();
                     }
                 } else {
                     Log.d("unTag_Camera", "Cameras working in another thread");
@@ -77,6 +77,14 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
         return null;
     }
 
+    private void getNextPhoto() {
+        if (currentCamID < UNLApp.getCamerasID().length) {
+            getPhotoAndSave(currentCamID);
+        } else {
+            finalCount();
+        }
+    }
+
     private void getPhotoAndSave(int cameraId) {
         try {
             releaseCameraAndPreview();
@@ -86,10 +94,10 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
                 mCamera.setPreviewDisplay(sHolder);
 
                 if (allowToast) {
-                    String toastText = "camera " + currentCamID + " opened";
+                    String toastText = "camera " + cameraId + " opened";
                     bus.post(new EventToast(toastText));
                 }
-                Log.d("unTag_Camera", "Camera " + currentCamID + " is open");
+                Log.d("unTag_Camera", "Camera " + cameraId + " is open");
 
                 //set parameters
                 Camera.Parameters parameters = mCamera.getParameters();
@@ -118,14 +126,8 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
                     mCamera.enableShutterSound(false);
                 mCamera.startPreview();
 
-                mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        Log.d("unTag_Camera", "Start JPEG callback from camera " + currentCamID);
-                        Thread thread = new Thread(new SaveImage(data));
-                        thread.start();
-                    }
-                });
+                mCamera.takePicture(null, null, callback);
+
             } else {
                 throw new IOException();
             }
@@ -133,21 +135,38 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
             Log.e("unTag_Camera", "Camera id " + currentCamID + " is not open. Next camera. Error: " + e.getMessage());
             mCamera = null;
             if (allowToast) {
-                String toastText = "Problem with camera id " + currentCamID;
+                String toastText = "Problem with camera id " + cameraId;
                 bus.post(new EventToast(toastText));
             }
             currentCamID++;
-            if (currentCamID < UNLApp.getCamerasID().length) {
-                getPhotoAndSave(currentCamID);
-            } else {
-                finalCount();
-            }
+            getNextPhoto();
+        }
+    }
+
+    @Override
+    public void prepareToSave(byte[] pict) {
+        datas.add(pict);
+        releaseCameraAndPreview();
+        currentCamID++;
+        getNextPhoto();
+    }
+
+    private class Clb implements Camera.PictureCallback {
+        private SaveCallback callback;
+
+        public Clb(SaveCallback callback) {
+            this.callback = callback;
         }
 
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            callback.prepareToSave(data);
+        }
     }
 
     private void finalCount() {
-        CameraCountTask ccTask = new CameraCountTask(mContext, mVideoName, filesForCounting);
+        //save and count
+        CameraCountTask ccTask = new CameraCountTask(mContext, mVideoName, datas);
         ccTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -157,60 +176,6 @@ public class CameraShotTask extends AsyncTask<Void, Void, Void> {
             mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
-        }
-    }
-
-    private class SaveImage implements Runnable {
-        private byte[] data;
-
-        public SaveImage(byte[] data) {
-            this.data = data;
-        }
-
-        @Override
-        public void run() {
-            String tmpFilePath = UNLApp.getAppExtCachePath()
-                    + UNLConsts.VIDEO_DIR_NAME
-                    + UNLConsts.GD_STATISTICS_DIR_NAME    // or GD_LOGO_DIR_NAME
-                    + "/"
-                    + currentCamID + "_" + UNLConsts.STATISTICS_TEMP_PHOTO_FILE_NAME;//+ "tmp.jpg";
-            File tmpFileForFaceDetecting = new File(tmpFilePath);
-
-            if (tmpFileForFaceDetecting.exists()) {
-                tmpFileForFaceDetecting.delete();
-            }
-
-            FileOutputStream fos;
-            try {
-                fos = new FileOutputStream(tmpFileForFaceDetecting);
-                fos.write(data);
-                //fos.flush();
-                fos.close();
-                Log.d("unTag_Camera", "Photo from camera " + currentCamID + " is written on SD");
-
-                filesForCounting.add(tmpFilePath);
-
-                if (allowToast) {
-                    String toastText = "camera " + currentCamID + " saved photo";
-                    bus.post(new EventToast(toastText));
-                }
-            } catch (IOException e) {
-                Log.d("unTag_Camera", "Problem with writing picture on SD from camera id " + currentCamID + ": " + e.toString());
-                if (allowToast) {
-                    String toastText = "Problem with writing picture on SD from camera id " + currentCamID;
-                    bus.post(new EventToast(toastText));
-                }
-            } finally {
-                data = null;
-            }
-            releaseCameraAndPreview();
-
-            currentCamID++;
-            if (currentCamID < UNLApp.getCamerasID().length) {
-                getPhotoAndSave(currentCamID);
-            } else {
-                finalCount();
-            }
         }
     }
 }
