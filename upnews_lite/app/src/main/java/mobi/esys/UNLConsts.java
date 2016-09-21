@@ -39,7 +39,7 @@ public final class UNLConsts {
     public final static int APP_START_DELAY = 10000;
     public final static int MACS_START_DELAY = 8000;
     public final static int MACS_CYCLE_DELAY = 2 * 60 * 1000;
-    public static long START_OLD_PROFILE_DELAY = 10000;
+    public static long START_OLD_PROFILE_DELAY = 15 *1000;
 
 
     //permissions constants

@@ -19,6 +19,6 @@
     <string name="autostart_accdrive_message_p1">"Старый профиль "</string>
     <string name="autostart_accdrive_message_p2">" будет запущен через 10 секунд…"</string>
     <string name="change_profile">Сменить профиль</string>
-    <string name="autostart_drive10">Автостарт через 10 секунд…</string>
+    <string name="autostart_drive10">Автостарт через 15 секунд…</string>
 
 </resources>

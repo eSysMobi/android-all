@@ -54,7 +54,6 @@ public class UNLServer {
             e.printStackTrace();
         }
 
-
         if (allOK) {  //if getting GDfiles in saveURLS() is success
             for (int i = 0; i < gdFiles.size(); i++) {
                 if (Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS)

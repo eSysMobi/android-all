@@ -253,12 +253,7 @@ public class CameraCountTask extends AsyncTask<Void, Void, Void> {
                     String toastText = "cameras detect " + count + " faces";
                     bus.post(new EventToast(toastText));
                 }
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessError e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Log.e("unTag_Camera", "Old today statistics file! Delete it!");
                 boolean statusDel = statisticFile.delete();

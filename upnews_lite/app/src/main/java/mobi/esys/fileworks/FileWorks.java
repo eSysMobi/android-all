@@ -65,6 +65,7 @@ public class FileWorks {
     }
 
     public String getFileMD5() {
+        Log.w("unTag_FileWorks", "Getting MD5 from file " + file.getName() +" on thread " + Thread.currentThread().getName());
         byte[] b;
 
         b = createChecksum(file.getAbsolutePath());
