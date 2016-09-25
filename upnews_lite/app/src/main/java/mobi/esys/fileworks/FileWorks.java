@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.twmacinta.util.MD5;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,6 +67,17 @@ public class FileWorks {
     }
 
     public String getFileMD5() {
+        Log.w("unTag_FileWorks", "Getting MD5 from file " + file.getName() +" on thread " + Thread.currentThread().getName());
+        String result = "";
+        try {
+            result = MD5.asHex(MD5.getHash(file));
+        } catch (IOException e) {
+            Log.e("unTag_FileWorks", "Error getting MD5. " + e.getMessage());
+        }
+        return result;
+    }
+
+    public String getFileMD5_old() {
         Log.w("unTag_FileWorks", "Getting MD5 from file " + file.getName() +" on thread " + Thread.currentThread().getName());
         byte[] b;
 

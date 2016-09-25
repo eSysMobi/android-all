@@ -26,7 +26,6 @@ import mobi.esys.upnews_lite.UNLApp;
  */
 public class TaskManager extends Handler {
     private static final String TAG = "unTag_TaskManager";
-    private static volatile TaskManager instance;
     private boolean[] tasks = new boolean[5];
     private int currentTask;
 
@@ -36,6 +35,9 @@ public class TaskManager extends Handler {
     private transient UNLServer server = null;
     private transient List<GDFile> gdFiles = null;
     private transient String serverMD5 = null;
+
+    private byte downCurrCount = 0;
+    private byte downMaxCount = 3;
 
     private byte rssCurrCount = 0;
     private byte rssMaxCount = 20;
@@ -91,9 +93,16 @@ public class TaskManager extends Handler {
                     }
                     break;
                 case 3:
-                    Log.d(TAG, "Start task 3 (DOWNLOAD)");
-                    DownloadVideoTask downloadVideoTask = new DownloadVideoTask(mApp, this, gdFiles, serverMD5);
-                    downloadVideoTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    if (downCurrCount <= 0) {
+                        Log.d(TAG, "Start task 3 (DOWNLOAD)");
+                        downCurrCount = downMaxCount;
+                        DownloadVideoTask downloadVideoTask = new DownloadVideoTask(mApp, this, gdFiles, serverMD5);
+                        downloadVideoTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        Log.d(TAG, "DOWNLOAD task 3 started after " + downCurrCount + " videos");
+                        downCurrCount--;
+                        nextTask();
+                    }
                     break;
                 case 4:
                     if (statCurrCount <= 0) {

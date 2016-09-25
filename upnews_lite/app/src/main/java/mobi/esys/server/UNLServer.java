@@ -73,14 +73,13 @@ public class UNLServer {
                         UNLConsts.GD_STORAGE_DIR_NAME +
                         "/");
         String[] files = directoryWorks.getDirFileList("add md5 from dd-files");
-        for (int i = 0; i < files.length; i++) {
-            String fileName = files[i].substring(files[i].lastIndexOf('/') + 1, files[i].length());
+        for (String file : files) {
+            String fileName = file.substring(file.lastIndexOf('/') + 1, file.length());
             if (fileName.startsWith(UNLConsts.PREFIX_USER_VIDEOFILES)) {
-                FileWorks fileWorks = new FileWorks(files[i]);
+                FileWorks fileWorks = new FileWorks(file);
                 String tmpMD5 = fileWorks.getFileMD5();
-                if (!resultMD5.contains(tmpMD5) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
+                if (!tmpMD5.isEmpty() && !resultMD5.contains(tmpMD5) && Arrays.asList(UNLConsts.UNL_ACCEPTED_FILE_EXTS).contains(fileWorks.getFileExtension())) {
                     resultMD5 = resultMD5 + "," + tmpMD5;
-
                 }
             }
         }

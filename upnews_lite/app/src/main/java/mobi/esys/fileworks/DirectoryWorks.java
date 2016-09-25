@@ -318,8 +318,8 @@ public class DirectoryWorks {
         Log.w("unTag_DirectoryWorks", "Getting MD5 on thread " + Thread.currentThread().getName());
         String[] files = getDirFileList("getMD5SUM");
         List<String> dirMD5s = new ArrayList<String>();
-        for (int i = 0; i < files.length; i++) {
-            FileWorks fileWorks = new FileWorks(files[i]);
+        for (String file : files) {
+            FileWorks fileWorks = new FileWorks(file);
             dirMD5s.add(fileWorks.getFileMD5());
         }
         return dirMD5s;
@@ -329,8 +329,8 @@ public class DirectoryWorks {
         Log.w("unTag_DirectoryWorks", "Getting MD5 on thread " + Thread.currentThread().getName());
         String[] files = getOnlyVideoDirFileList("getMD5SUM");
         List<String> dirMD5s = new ArrayList<String>();
-        for (int i = 0; i < files.length; i++) {
-            FileWorks fileWorks = new FileWorks(files[i]);
+        for (String file : files) {
+            FileWorks fileWorks = new FileWorks(file);
             dirMD5s.add(fileWorks.getFileMD5());
         }
         return dirMD5s;

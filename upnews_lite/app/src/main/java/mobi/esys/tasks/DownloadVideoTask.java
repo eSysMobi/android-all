@@ -196,7 +196,7 @@ public class DownloadVideoTask extends AsyncTask<Void, Void, Void> {
                         output.flush();
                         output.close();
 
-                        //checking successful write     TODO is this checking really need?
+                        //checking successful write
                         FileWorks fileWorks = new FileWorks(downFile.getAbsolutePath());
                         String downloadedMD5 = fileWorks.getFileMD5();
                         if (serverMD5.contains(downloadedMD5)) {
