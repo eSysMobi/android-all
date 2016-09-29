@@ -19,10 +19,12 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class LoginActivity extends AppCompatActivity {
+import mobi.esys.dastarhan.tasks.Authorize;
+
+public class LoginActivity extends AppCompatActivity implements Authorize.AuthCallback {
 
     private static final String TAG = "dtagLoginActivity";
-    private transient SharedPreferences prefs;
+    private SharedPreferences prefs;
 
     private Button mbLogin;
     private TextView mtvSignUp;
@@ -115,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.d(TAG, "done");
                 if (EditorInfo.IME_ACTION_DONE == actionId) {
                     if (!metEmail.getText().toString().isEmpty() && !metPass.getText().toString().isEmpty()) {
-                        startAnimSave();
+                        authorize();
                     } else {
                         Toast.makeText(getApplicationContext(), "Please input email and password", Toast.LENGTH_SHORT).show();
                     }
@@ -130,11 +132,10 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!metEmail.getText().toString().isEmpty() || !metPass.getText().toString().isEmpty()) {
                     if (!metEmail.getText().toString().isEmpty() && !metPass.getText().toString().isEmpty()) {
-                        startAnimSave();
+                        authorize();
                     } else {
                         Toast.makeText(getApplicationContext(), R.string.enter_or_skip, Toast.LENGTH_SHORT).show();
                     }
-
                 } else {
                     returnResult();
                 }
@@ -145,20 +146,23 @@ public class LoginActivity extends AppCompatActivity {
         mtvSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Need start registration activity", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Coming soon...", Toast.LENGTH_SHORT).show();
             }
         });
 
         mtvRemind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Need start activity for remind password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Coming soon...", Toast.LENGTH_SHORT).show();
             }
         });
 
         mbLoginRememberYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, true);
+                editor.apply();
                 returnResult();
             }
         });
@@ -166,9 +170,47 @@ public class LoginActivity extends AppCompatActivity {
         mbLoginRememberNo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, false);
+                editor.apply();
                 returnResult();
             }
         });
+    }
+
+    private void authorize() {
+        Authorize authorizeTask = new Authorize(this);
+        authorizeTask.execute(metEmail.getText().toString(), metPass.getText().toString());
+    }
+
+    @Override
+    public void onPrepared() {
+        lockUI();
+    }
+
+    @Override
+    public void onSuccess(String authToken) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(Constants.PREF_SAVED_LOGIN, metEmail.getText().toString());
+        editor.putString(Constants.PREF_SAVED_PASS, metPass.getText().toString());
+        editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, authToken);
+        editor.apply();
+
+        startAnimSave();
+        unLockUI();
+    }
+
+    @Override
+    public void onFail() {
+        unLockUI();
+    }
+
+    private void lockUI() {
+        //TODO
+    }
+
+    private void unLockUI() {
+        //TODO
     }
 
     private void startAnimSave() {
@@ -191,14 +233,18 @@ public class LoginActivity extends AppCompatActivity {
         //fade_3.setAnimationListener(new animList(mbLogin, mbLogin, true));
         fade_3.setAnimationListener(new Animation.AnimationListener() {
             @Override
-            public void onAnimationStart(Animation animation) {}
+            public void onAnimationStart(Animation animation) {
+            }
+
             @Override
             public void onAnimationEnd(Animation animation) {
                 mbLogin.setVisibility(View.INVISIBLE);
                 mbLogin.setEnabled(false);
             }
+
             @Override
-            public void onAnimationRepeat(Animation animation) {}
+            public void onAnimationRepeat(Animation animation) {
+            }
         });
         mbLogin.startAnimation(fade_3);
 
@@ -215,7 +261,7 @@ public class LoginActivity extends AppCompatActivity {
         mtvRemind.startAnimation(fade_5);
 
         TextView mtvRemember = (TextView) findViewById(R.id.tvRemember);
-        Animation fade_6_0 = new AlphaAnimation(1,0);
+        Animation fade_6_0 = new AlphaAnimation(1, 0);
         fade_6_0.setDuration(1);
         fade_6_0.setFillAfter(true);
         fade_6_0.setStartOffset(1200);
@@ -226,7 +272,7 @@ public class LoginActivity extends AppCompatActivity {
         fade_6_1.setAnimationListener(new animList(mtvRemember, mtvRemember, false));
         mtvRemember.startAnimation(fade_6_1);
 
-        Animation fade_7_0 = new AlphaAnimation(1,0);
+        Animation fade_7_0 = new AlphaAnimation(1, 0);
         fade_7_0.setDuration(1);
         fade_7_0.setFillAfter(true);
         fade_7_0.setStartOffset(1400);
@@ -237,7 +283,7 @@ public class LoginActivity extends AppCompatActivity {
         fade_7_1.setAnimationListener(new animList(mbLoginRememberYes, mbLoginRememberYes, false));
         mbLoginRememberYes.startAnimation(fade_7_1);
 
-        Animation fade_8_0 = new AlphaAnimation(1,0);
+        Animation fade_8_0 = new AlphaAnimation(1, 0);
         fade_8_0.setDuration(1);
         fade_8_0.setFillAfter(true);
         fade_8_0.setStartOffset(1400);
@@ -252,7 +298,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private class animList implements Animation.AnimationListener {
-
         View v;
         View v2;
         boolean hide;
@@ -270,7 +315,6 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 v2.setEnabled(true);
             }
-
         }
 
         @Override
@@ -285,7 +329,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void onAnimationRepeat(Animation animation) {
-
+            //nothing here
         }
     }
 

@@ -1,6 +1,7 @@
 package mobi.esys.dastarhan;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +25,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private Handler handler;
     private DastarhanApp dastarhanApp;
+    private SharedPreferences prefs;
 
     private boolean readyCuisines = false;
     private boolean readyRestaurants = false;
@@ -37,6 +39,7 @@ public class SplashActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
 
         dastarhanApp = (DastarhanApp) getApplication();
+        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
 
         handler = new HandleCuisines();
         GetCuisines gc = new GetCuisines(dastarhanApp, handler);
@@ -85,9 +88,9 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private void checkIsAllReady(){
-        if(readyCuisines && readyRestaurants &&readyPromos){
-            goLoginActivity();
+    private void checkIsAllReady() {
+        if (readyCuisines && readyRestaurants && readyPromos) {
+            goToLoginActivity();
         }
     }
 
@@ -106,9 +109,19 @@ public class SplashActivity extends AppCompatActivity {
         gp.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    private void goLoginActivity() {
-        Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_SPLASH);
+    private void goToLoginActivity() {
+        boolean isAuthPersist = prefs.getBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, false);
+        if (isAuthPersist) {
+            goToMainActivity();
+        } else {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(Constants.PREF_SAVED_LOGIN, "");
+            editor.putString(Constants.PREF_SAVED_PASS, "");
+            editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+            editor.apply();
+            Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_SPLASH);
+        }
     }
 
     @Override
@@ -117,9 +130,13 @@ public class SplashActivity extends AppCompatActivity {
         Log.d(TAG, "Login after splash requestCode " + requestCode + " resultCode " + resultCode);
         if (requestCode == REQUEST_CODE_SPLASH) {
             //if(resultCode == Activity.RESULT_OK){ }
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            goToMainActivity();
         }
+    }
+
+    private void goToMainActivity() {
+        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

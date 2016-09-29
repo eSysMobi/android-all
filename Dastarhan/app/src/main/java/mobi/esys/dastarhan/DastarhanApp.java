@@ -20,6 +20,23 @@ public class DastarhanApp extends Application {
     private long lastCheck = 0;
     private List<FoodCheckElement> foodCheck;
 
+    private static String sessionLogin;
+    private static String sessionPass;
+
+    public static void setSessionInfo(String sessionL, String sessionP){
+        sessionLogin = sessionL;
+        sessionPass = sessionP;
+    }
+
+    public static String getSessionLogin() {
+        return sessionLogin;
+    }
+
+    public static String getSessionPass() {
+        return sessionPass;
+    }
+
+
     public void setLastCheck(){
         lastCheck = System.currentTimeMillis();
     }

@@ -8,6 +8,8 @@ public class Constants {
     public static final String APP_PREF = "dastarhan_preferences";
     public static final String PREF_SAVED_LOGIN = "saved_login";
     public static final String PREF_SAVED_PASS = "saved_pass";
+    public static final String PREF_SAVED_AUTH_TOKEN = "saved_auth_token";
+    public static final String PREF_SAVED_AUTH_IS_PERSIST = "saved_auth_is_persist";
     public static final String PREF_CURR_NUM_ORDER = "current_order";
     public static final String PREF_CURR_ORDER_EXECUTED = "order_executed";
 
@@ -26,6 +28,8 @@ public class Constants {
     public static final int CALLBACK_GET_PROMO_SHOW_PROGRESS_BAR = 74;
 
     //api
+    public static final String URL_AUTHORIZATION = "http://dastarhan.net/index.php/user_api/auth/format/json";
+    public static final String URL_REGISTRATION = "http://dastarhan.net/index.php/user_api/register/format/json";
     public static final String URL_CUISINES = "http://dastarhan.net/index.php/user_api/cui/format/json";
     public static final String URL_RESTORANS = "http://dastarhan.net/index.php/user_api/rest/format/json";
     public static final String URL_FOOD = "http://dastarhan.net/index.php/user_api/food/format/json?resid=";
