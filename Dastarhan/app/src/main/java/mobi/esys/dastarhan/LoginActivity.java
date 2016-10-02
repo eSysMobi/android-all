@@ -38,6 +38,8 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
     private boolean hasText1 = false;
     private boolean hasText2 = false;
 
+    private int result = RESULT_OK;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,7 +203,8 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
     }
 
     @Override
-    public void onFail() {
+    public void onFail(int errorCode) {
+        result = errorCode;
         unLockUI();
     }
 
@@ -335,8 +338,7 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
 
     private void returnResult() {
         Intent intent = new Intent();
-        //intent.putExtra("count", 5);
-        setResult(RESULT_OK, intent);
+        setResult(result, intent);
         finish();
     }
 

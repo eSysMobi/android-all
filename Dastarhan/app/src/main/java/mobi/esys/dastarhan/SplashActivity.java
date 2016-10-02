@@ -1,5 +1,6 @@
 package mobi.esys.dastarhan;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -8,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,6 @@ import mobi.esys.dastarhan.utils.FoodCheckElement;
 public class SplashActivity extends AppCompatActivity {
 
     private final String TAG = "dtagSplashActivity";
-    public final int REQUEST_CODE_SPLASH = 89;
 
     private Handler handler;
     private DastarhanApp dastarhanApp;
@@ -120,7 +121,7 @@ public class SplashActivity extends AppCompatActivity {
             editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, "");
             editor.apply();
             Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_SPLASH);
+            startActivityForResult(intent, Constants.REQUEST_CODE_SPLASH);
         }
     }
 
@@ -128,9 +129,24 @@ public class SplashActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Login after splash requestCode " + requestCode + " resultCode " + resultCode);
-        if (requestCode == REQUEST_CODE_SPLASH) {
-            //if(resultCode == Activity.RESULT_OK){ }
-            goToMainActivity();
+        if (requestCode == Constants.REQUEST_CODE_SPLASH) {
+            switch (resultCode) {
+                case RESULT_OK:
+                    goToMainActivity();
+                    break;
+                case RESULT_CANCELED:
+                    finish();
+                    break;
+                case Constants.RESULT_CODE_NO_INET:
+                    Toast.makeText(this, R.string.no_inet, Toast.LENGTH_SHORT).show();
+                    break;
+                case Constants.RESULT_CODE_NO_USER_EXISTS:
+                    Toast.makeText(this, R.string.user_not_exists, Toast.LENGTH_SHORT).show();
+                    break;
+                case Constants.RESULT_CODE_AUTH_ERROR:
+                    Toast.makeText(this, R.string.auth_error, Toast.LENGTH_SHORT).show();
+                    break;
+            }
         }
     }
 

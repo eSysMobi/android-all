@@ -63,6 +63,8 @@
     <string name="need_enter_house_num">Enter house number</string>
     <string name="need_enter_district">Enter district/street</string>
     <string name="need_enter_city">Enter city name</string>
+
+    <!--promo-->
     <string name="discount_all">%1$s discount on all meals of the restaurant</string>
     <string name="discount">Discount</string>
     <string name="meal_for_gift">Free food</string>
@@ -87,7 +89,13 @@
     <string name="every_day">every day</string>
     <string name="see_all">See all</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--settings-->
+    <string name="add_your_address">Add address</string>
+    <string name="authorize">Log in</string>
+    <string name="deauthorize">Log out</string>
+
+    <string name="no_inet">No internet connection</string>
+    <string name="user_not_exists">This user is not exists</string>
+    <string name="auth_error">Authorization error</string>
 
 </resources>

@@ -66,4 +66,12 @@ public class Constants {
     //time
     public static final int CONNECTION_TIMEOUT = 3 * 1000; //3 sec
     public static final int FOOD_CHECKING_INTERVAL = 15 * 60 * 1000; //15 min
+
+    //request codes
+    public static final int REQUEST_CODE_SPLASH = 89;
+    public static final int REQUEST_CODE_SETTINGS = 99;
+    //result codes
+    public static final int RESULT_CODE_NO_INET = 10;
+    public static final int RESULT_CODE_NO_USER_EXISTS = 11;
+    public static final int RESULT_CODE_AUTH_ERROR = 12;
 }

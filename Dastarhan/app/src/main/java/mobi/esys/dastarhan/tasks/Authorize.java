@@ -3,7 +3,6 @@ package mobi.esys.dastarhan.tasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,10 +14,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import mobi.esys.dastarhan.Constants;
-import mobi.esys.dastarhan.DastarhanApp;
-import mobi.esys.dastarhan.database.Cuisine;
-import mobi.esys.dastarhan.database.CuisineRepository;
-import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
  * Created by ZeyUzh on 18.05.2016.
@@ -27,6 +22,7 @@ public class Authorize extends AsyncTask<String, Void, String> {
     private final String TAG = "dtagAuthorization";
     private AuthCallback callback;
 
+    private int errorCode = 0;
 
     public Authorize(AuthCallback callback) {
         this.callback = callback;
@@ -65,12 +61,18 @@ public class Authorize extends AsyncTask<String, Void, String> {
                 JSONObject authJson = new JSONObject(responseStrBuilder.toString());
 
                 // Getting apikey
-                if(authJson.has("apikey")) {
+                if (authJson.has("apikey")) {
                     result = authJson.getString("apikey");
+                } else {
+                    errorCode = Constants.RESULT_CODE_NO_USER_EXISTS;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                Log.e(TAG, "Error IOException " + e.toString());
+                Log.e(TAG, "Error IOException " + e.getMessage());
+                if (e.getMessage().startsWith("Unable to resolve host \"dastarhan.net\": No address associated with hostname")) {
+                    errorCode = Constants.RESULT_CODE_NO_INET;
+                } else {
+                    errorCode = Constants.RESULT_CODE_AUTH_ERROR;
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
@@ -85,7 +87,7 @@ public class Authorize extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         if (result.isEmpty()) {
-            callback.onFail();
+            callback.onFail(errorCode);
         } else {
             callback.onSuccess(result);
         }
@@ -93,7 +95,8 @@ public class Authorize extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onCancelled() {
-        callback.onFail();
+        errorCode = 0;
+        callback.onFail(errorCode);
         super.onCancelled();
     }
 
@@ -102,7 +105,7 @@ public class Authorize extends AsyncTask<String, Void, String> {
 
         void onSuccess(String authToken);
 
-        void onFail();
+        void onFail(int errorCode);
     }
 }
 
