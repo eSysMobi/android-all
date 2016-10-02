@@ -134,17 +134,8 @@ public class SplashActivity extends AppCompatActivity {
                 case RESULT_OK:
                     goToMainActivity();
                     break;
-                case RESULT_CANCELED:
+                default:
                     finish();
-                    break;
-                case Constants.RESULT_CODE_NO_INET:
-                    Toast.makeText(this, R.string.no_inet, Toast.LENGTH_SHORT).show();
-                    break;
-                case Constants.RESULT_CODE_NO_USER_EXISTS:
-                    Toast.makeText(this, R.string.user_not_exists, Toast.LENGTH_SHORT).show();
-                    break;
-                case Constants.RESULT_CODE_AUTH_ERROR:
-                    Toast.makeText(this, R.string.auth_error, Toast.LENGTH_SHORT).show();
                     break;
             }
         }

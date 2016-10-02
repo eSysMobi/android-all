@@ -18,13 +18,16 @@ import mobi.esys.dastarhan.Constants;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
-public class Authorize extends AsyncTask<String, Void, String> {
-    private final String TAG = "dtagAuthorization";
+public class SignUp extends AsyncTask<String, Void, Void> {
+    private final String TAG = "dtagSignUp";
     private AuthCallback callback;
+
+    private String login;
+    private String password;
 
     private int errorCode = 0;
 
-    public Authorize(AuthCallback callback) {
+    public SignUp(AuthCallback callback) {
         this.callback = callback;
     }
 
@@ -35,14 +38,12 @@ public class Authorize extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        String result = "";
-
+    protected Void doInBackground(String... params) {
         URL url;
         HttpURLConnection urlConnection = null;
         if (params.length == 2) {
             try {
-                String urlString = Constants.URL_AUTHORIZATION + "?email=" + params[0] + "&pass=" + params[1];
+                String urlString = Constants.URL_REGISTRATION + "?email=" + params[0] + "&pass=" + params[1];
                 url = new URL(urlString);
 
                 urlConnection = (HttpURLConnection) url
@@ -60,37 +61,38 @@ public class Authorize extends AsyncTask<String, Void, String> {
 
                 JSONObject authJson = new JSONObject(responseStrBuilder.toString());
 
-                // Getting apikey
-                if (authJson.has("apikey")) {
-                    result = authJson.getString("apikey");
+                // check
+                if (authJson.has("id")) {
+                    login = params[0];
+                    password = params[1];
                 } else {
-                    errorCode = Constants.RESULT_CODE_NO_USER_EXISTS;
+                    errorCode = Constants.RESULT_CODE_USER_ALREADY_EXISTS;
                 }
             } catch (IOException e) {
                 Log.e(TAG, "Error IOException " + e.getMessage());
                 if (e.getMessage().startsWith("Unable to resolve host \"dastarhan.net\": No address associated with hostname")) {
                     errorCode = Constants.RESULT_CODE_NO_INET;
                 } else {
-                    errorCode = Constants.RESULT_CODE_AUTH_ERROR;
+                    errorCode = Constants.RESULT_CODE_SIGNUP_ERROR;
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Error JSONException " + e.getMessage());
-                errorCode = Constants.RESULT_CODE_AUTH_ERROR;
+                errorCode = Constants.RESULT_CODE_SIGNUP_ERROR;
             } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
             }
         }
-        return result;
+        return null;
     }
 
     @Override
-    protected void onPostExecute(String result) {
-        if (result.isEmpty()) {
-            callback.onFail(errorCode);
+    protected void onPostExecute(Void aVoid) {
+        if (login != null && password != null) {
+            callback.onSuccessSighUp(login, password);
         } else {
-            callback.onSuccessAuth(result);
+            callback.onFail(errorCode);
         }
     }
 

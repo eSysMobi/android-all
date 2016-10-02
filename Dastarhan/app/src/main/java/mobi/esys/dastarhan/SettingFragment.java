@@ -67,7 +67,7 @@ public class SettingFragment extends BaseFragment {
                     editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, "");
                     editor.putBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, false);
                     editor.apply();
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.deauthorize));
+                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
                 } else {
                     isAuthorized = !isAuthorized;
                     //Authorization
@@ -85,25 +85,13 @@ public class SettingFragment extends BaseFragment {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Login in settings requestCode " + requestCode + " resultCode " + resultCode);
         if (requestCode == Constants.REQUEST_CODE_SETTINGS) {
-            switch (resultCode) {
-                case Activity.RESULT_OK:
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.deauthorize));
-                    break;
-                case Activity.RESULT_CANCELED:
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
-                    break;
-                case Constants.RESULT_CODE_NO_INET:
-                    Toast.makeText(getContext(), R.string.no_inet, Toast.LENGTH_SHORT).show();
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
-                    break;
-                case Constants.RESULT_CODE_NO_USER_EXISTS:
-                    Toast.makeText(getContext(), R.string.user_not_exists, Toast.LENGTH_SHORT).show();
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
-                    break;
-                case Constants.RESULT_CODE_AUTH_ERROR:
-                    Toast.makeText(getContext(), R.string.auth_error, Toast.LENGTH_SHORT).show();
-                    tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
-                    break;
+            isAuthorized = !prefs.getString(Constants.PREF_SAVED_LOGIN, "").isEmpty();
+            if (isAuthorized) {
+                //Deathorization
+                tvSettingsAuthDeauth.setText(getResources().getString(R.string.deauthorize));
+            } else {
+                //Authorization
+                tvSettingsAuthDeauth.setText(getResources().getString(R.string.authorize));
             }
         }
     }

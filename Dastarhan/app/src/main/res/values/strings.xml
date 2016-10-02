@@ -32,12 +32,12 @@
     <string name="email">Email:</string>
     <string name="payment_method">Payment method:</string>
     <string name="login">Log in</string>
-    <string name="skip">Skip authentication</string>
+    <string name="skip">Skip</string>
     <string name="login_email">Email</string>
     <string name="login_pass">Password</string>
     <string name="login_sign_up">Sign up?</string>
     <string name="login_remind">Remind?</string>
-    <string name="enter_or_skip">Please input email and password or skip authentication</string>
+    <string name="enter_or_skip">Please input email and password or press Skip</string>
     <string name="is_need_remember">Remember your credentials?</string>
     <string name="title_activity_promo">PromoActivity</string>
     <string name="cant_order">Already in the cart!</string>
@@ -96,6 +96,9 @@
 
     <string name="no_inet">No internet connection</string>
     <string name="user_not_exists">This user is not exists</string>
+    <string name="user_already_exists">This user already exists</string>
     <string name="auth_error">Authorization error</string>
+    <string name="signup_error">Sign up error</string>
+    <string name="registration">Sigh up</string>
 
 </resources>

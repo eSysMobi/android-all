@@ -19,9 +19,11 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import mobi.esys.dastarhan.tasks.AuthCallback;
 import mobi.esys.dastarhan.tasks.Authorize;
+import mobi.esys.dastarhan.tasks.SignUp;
 
-public class LoginActivity extends AppCompatActivity implements Authorize.AuthCallback {
+public class LoginActivity extends AppCompatActivity implements AuthCallback {
 
     private static final String TAG = "dtagLoginActivity";
     private SharedPreferences prefs;
@@ -37,8 +39,9 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
 
     private boolean hasText1 = false;
     private boolean hasText2 = false;
+    private boolean regMode = false;
 
-    private int result = RESULT_OK;
+    private int result = RESULT_CANCELED;
 
 
     @Override
@@ -73,7 +76,11 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
             public void afterTextChanged(Editable s) {
                 hasText1 = s.toString().length() > 0;
                 if (hasText1 || hasText2) {
-                    mbLogin.setText(getResources().getString(R.string.login));
+                    if (regMode) {
+                        mbLogin.setText(getResources().getString(R.string.registration));
+                    } else {
+                        mbLogin.setText(getResources().getString(R.string.login));
+                    }
                 } else {
                     mbLogin.setText(getResources().getString(R.string.skip));
                 }
@@ -96,17 +103,23 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
         metEmail.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //nothing here
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //nothing here
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 hasText2 = s.toString().length() > 0;
                 if (hasText1 || hasText2) {
-                    mbLogin.setText(getResources().getString(R.string.login));
+                    if (regMode) {
+                        mbLogin.setText(getResources().getString(R.string.registration));
+                    } else {
+                        mbLogin.setText(getResources().getString(R.string.login));
+                    }
                 } else {
                     mbLogin.setText(getResources().getString(R.string.skip));
                 }
@@ -119,7 +132,11 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
                 Log.d(TAG, "done");
                 if (EditorInfo.IME_ACTION_DONE == actionId) {
                     if (!metEmail.getText().toString().isEmpty() && !metPass.getText().toString().isEmpty()) {
-                        authorize();
+                        if (regMode) {
+                            registration(metEmail.getText().toString(), metPass.getText().toString());
+                        } else {
+                            authorize(metEmail.getText().toString(), metPass.getText().toString());
+                        }
                     } else {
                         Toast.makeText(getApplicationContext(), "Please input email and password", Toast.LENGTH_SHORT).show();
                     }
@@ -132,23 +149,31 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
         mbLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!metEmail.getText().toString().isEmpty() || !metPass.getText().toString().isEmpty()) {
+                if (regMode) {
                     if (!metEmail.getText().toString().isEmpty() && !metPass.getText().toString().isEmpty()) {
-                        authorize();
+                        registration(metEmail.getText().toString(), metPass.getText().toString());
                     } else {
                         Toast.makeText(getApplicationContext(), R.string.enter_or_skip, Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    returnResult();
+                    if (!metEmail.getText().toString().isEmpty() || !metPass.getText().toString().isEmpty()) {
+                        if (!metEmail.getText().toString().isEmpty() && !metPass.getText().toString().isEmpty()) {
+                            authorize(metEmail.getText().toString(), metPass.getText().toString());
+                        } else {
+                            Toast.makeText(getApplicationContext(), R.string.enter_or_skip, Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        result = RESULT_OK;
+                        returnResult();
+                    }
                 }
-
             }
         });
 
         mtvSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Coming soon...", Toast.LENGTH_SHORT).show();
+                goToRegMode();
             }
         });
 
@@ -165,6 +190,7 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, true);
                 editor.apply();
+                result = RESULT_OK;
                 returnResult();
             }
         });
@@ -175,14 +201,47 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putBoolean(Constants.PREF_SAVED_AUTH_IS_PERSIST, false);
                 editor.apply();
+                result = RESULT_OK;
                 returnResult();
             }
         });
     }
 
-    private void authorize() {
+    private void goToRegMode() {
+        regMode = true;
+        metEmail.setText("");
+        metPass.setText("");
+        mbLogin.setText(R.string.registration);
+        mtvSignUp.setVisibility(View.GONE);
+        mtvRemind.setVisibility(View.GONE);
+    }
+
+    private void goToLoginMode() {
+        regMode = false;
+        metEmail.setText("");
+        metPass.setText("");
+        mbLogin.setText(R.string.skip);
+        mtvSignUp.setVisibility(View.VISIBLE);
+        mtvRemind.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (regMode) {
+            goToLoginMode();
+        } else {
+            returnResult();
+        }
+    }
+
+    private void authorize(String email, String pass) {
         Authorize authorizeTask = new Authorize(this);
-        authorizeTask.execute(metEmail.getText().toString(), metPass.getText().toString());
+        authorizeTask.execute(email, pass);
+    }
+
+    private void registration(String email, String pass) {
+        SignUp signUpTask = new SignUp(this);
+        signUpTask.execute(email, pass);
     }
 
     @Override
@@ -191,29 +250,65 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
     }
 
     @Override
-    public void onSuccess(String authToken) {
+    public void onSuccessAuth(String authToken) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(Constants.PREF_SAVED_LOGIN, metEmail.getText().toString());
         editor.putString(Constants.PREF_SAVED_PASS, metPass.getText().toString());
         editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, authToken);
         editor.apply();
 
+        result = RESULT_OK;
         startAnimSave();
         unLockUI();
     }
 
     @Override
+    public void onSuccessSighUp(String email, String pass) {
+        authorize(email, pass);
+        regMode = false;
+    }
+
+    @Override
     public void onFail(int errorCode) {
         result = errorCode;
+        switch (errorCode) {
+            case Constants.RESULT_CODE_NO_INET:
+                Toast.makeText(this, R.string.no_inet, Toast.LENGTH_SHORT).show();
+                break;
+            case Constants.RESULT_CODE_NO_USER_EXISTS:
+                goToLoginMode();
+                Toast.makeText(this, R.string.user_not_exists, Toast.LENGTH_SHORT).show();
+                break;
+            case Constants.RESULT_CODE_USER_ALREADY_EXISTS:
+                goToRegMode();
+                Toast.makeText(this, R.string.user_already_exists, Toast.LENGTH_SHORT).show();
+                break;
+            case Constants.RESULT_CODE_AUTH_ERROR:
+                goToLoginMode();
+                Toast.makeText(this, R.string.auth_error, Toast.LENGTH_SHORT).show();
+                break;
+            case Constants.RESULT_CODE_SIGNUP_ERROR:
+                Toast.makeText(this, R.string.signup_error, Toast.LENGTH_SHORT).show();
+                goToRegMode();
+                break;
+        }
         unLockUI();
     }
 
     private void lockUI() {
-        //TODO
+        metEmail.setEnabled(false);
+        metPass.setEnabled(false);
+        mbLogin.setEnabled(false);
+        mtvSignUp.setEnabled(false);
+        mtvRemind.setEnabled(false);
     }
 
     private void unLockUI() {
-        //TODO
+        metEmail.setEnabled(true);
+        metPass.setEnabled(true);
+        mbLogin.setEnabled(true);
+        mtvSignUp.setEnabled(true);
+        mtvRemind.setEnabled(true);
     }
 
     private void startAnimSave() {
@@ -296,8 +391,6 @@ public class LoginActivity extends AppCompatActivity implements Authorize.AuthCa
         fade_8_1.setStartOffset(1402);
         fade_8_1.setAnimationListener(new animList(mbLoginRememberNo, mbLoginRememberNo, false));
         mbLoginRememberNo.startAnimation(fade_8_1);
-
-        //startMainActivity();
     }
 
     private class animList implements Animation.AnimationListener {

@@ -35,15 +35,6 @@ public class Constants {
     public static final String URL_FOOD = "http://dastarhan.net/index.php/user_api/food/format/json?resid=";
     public static final String URL_PROMO = "http://dastarhan.net/index.php/user_api/offers/format/json?res_id=";
 
-    //DB
-    public static final String DB_NAME = "dastarhanDB";
-    public static final String DB_TABLE_CUISINES = "cuisines";
-    public static final String DB_TABLE_RESTAURANTS = "restaurants";
-    public static final String DB_TABLE_FOOD = "food";
-    public static final String DB_TABLE_ORDERS = "orders";
-    public static final String DB_TABLE_PROMO = "promo";
-    public static final String DB_TABLE_GIFTS = "gifts";
-
     //promo gifts type
     public static final String GIFT_TYPE_DISCOUNT_PERCENT_ALL = "discount_percent_all";     //Скидка в процентах на весь заказ
     public static final String GIFT_TYPE_DISCOUNT_AMOUNT_ALL = "discount_amount_all";       //Скидка в рублях на весь заказ
@@ -72,6 +63,8 @@ public class Constants {
     public static final int REQUEST_CODE_SETTINGS = 99;
     //result codes
     public static final int RESULT_CODE_NO_INET = 10;
-    public static final int RESULT_CODE_NO_USER_EXISTS = 11;
-    public static final int RESULT_CODE_AUTH_ERROR = 12;
+    public static final int RESULT_CODE_AUTH_ERROR = 11;
+    public static final int RESULT_CODE_SIGNUP_ERROR = 12;
+    public static final int RESULT_CODE_NO_USER_EXISTS = 13;
+    public static final int RESULT_CODE_USER_ALREADY_EXISTS = 14;
 }

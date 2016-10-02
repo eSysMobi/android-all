@@ -24,12 +24,12 @@
     <string name="email">Эл.почта:</string>
     <string name="payment_method">Платёжный метод:</string>
     <string name="login">Войти</string>
-    <string name="skip">Пропустить авторизацию</string>
+    <string name="skip">Пропустить</string>
     <string name="login_email">Эл.почта</string>
     <string name="login_pass">Пароль</string>
     <string name="login_sign_up">Регистрация?</string>
     <string name="login_remind">Напомнить?</string>
-    <string name="enter_or_skip">Пожалуйста введите эл.адрес и пароль или пропустите авторизацию</string>
+    <string name="enter_or_skip">Пожалуйста введите эл.адрес и пароль или нажмите Пропустить</string>
     <string name="is_need_remember">Запомнить учётные данные?</string>
     <string name="cant_order">Уже в корзине!</string>
     <string name="add_to_cart">Добавление в корзину…</string>
@@ -85,6 +85,9 @@
 
     <string name="no_inet">Отсутствует подключение к Интернету</string>
     <string name="user_not_exists">Такого пользователя не существует</string>
+    <string name="user_already_exists">Такой пользвоатель уже существует</string>
     <string name="auth_error">Ошибка авторизации</string>
+    <string name="signup_error">Ошибка регистрации</string>
+    <string name="registration">Регистрация</string>
 
 </resources>
