@@ -1,13 +1,19 @@
 package mobi.esys.dastarhan;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.iarcuschin.simpleratingbar.SimpleRatingBar;
 
 import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.Restaurant;
@@ -17,10 +23,11 @@ public class CurrentRestaurantFragment extends BaseFragment {
     private static final String ARG_RESTAURANT = "restaurant_id";
     private final String TAG = "dtagCurrRestActivity";
     private TextView mtvCurrRestName;
-    private ImageView mivCurrRestRating;
+    private SimpleRatingBar mCurrRestRating;
     private ImageView mivCurrRestImage;
     private ImageView mivCurrRestVegan;
     private FrameLayout mflCurrRestInfo;
+    private FrameLayout mflCurrRestRating;
     private TextView tvCurrRestRecomendationCount;
 
     private RealmComponent component;
@@ -57,10 +64,11 @@ public class CurrentRestaurantFragment extends BaseFragment {
         component = ((DastarhanApp) getActivity().getApplication()).realmComponent();
 
         mtvCurrRestName = (TextView) view.findViewById(R.id.tvCurrRestName);
-        mivCurrRestRating = (ImageView) view.findViewById(R.id.ivCurrRestRating);
+        mCurrRestRating = (SimpleRatingBar) view.findViewById(R.id.сurrRestRating);
         mivCurrRestImage = (ImageView) view.findViewById(R.id.ivCurrRestImage);
         mivCurrRestVegan = (ImageView) view.findViewById(R.id.ivCurrRestVegan);
         mflCurrRestInfo = (FrameLayout) view.findViewById(R.id.flCurrRestInfo);
+        mflCurrRestRating = (FrameLayout) view.findViewById(R.id.flCurrRestRating);
         tvCurrRestRecomendationCount = (TextView) view.findViewById(R.id.tvCurrRestRecomendationCount);
 
 
@@ -79,7 +87,13 @@ public class CurrentRestaurantFragment extends BaseFragment {
 
             tvCurrRestRecomendationCount.setText(String.valueOf(restaurant.getTotal_votes()));
 
-            setRatingInUI(restaurant.getTotal_rating());
+            mCurrRestRating.setRating(restaurant.getTotal_rating());
+            mflCurrRestRating.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showRateDialog();
+                }
+            });
 
             if (restaurant.getVegetarian() == 1) {
                 mivCurrRestVegan.setVisibility(View.GONE);
@@ -158,53 +172,41 @@ public class CurrentRestaurantFragment extends BaseFragment {
         return view;
     }
 
+    private void showRateDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.alertdialog_rate_rest, null);
+        dialogBuilder.setView(dialogView);
+
+        final SimpleRatingBar rating = (SimpleRatingBar) dialogView.findViewById(R.id.сurrRestRatingAD);
+
+        dialogBuilder.setTitle("Please rate the restaurant");
+        dialogBuilder.setPositiveButton("Vote", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //do something with edt.getText().toString();
+                Log.d(TAG, "Rating is " + rating.getRating());
+
+            }
+        });
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                //pass
+            }
+        });
+        AlertDialog b = dialogBuilder.create();
+        b.show();
+    }
+
+
     private void hideNotFoundData() {
         TextView mtvCurrRestNotFound = (TextView) getView().findViewById(R.id.tvCurrRestNotFound);
         if (mtvCurrRestNotFound != null) {
             mtvCurrRestNotFound.setVisibility(View.VISIBLE);
         }
         mtvCurrRestName.setVisibility(View.GONE);
-        mivCurrRestRating.setVisibility(View.GONE);
+        mCurrRestRating.setVisibility(View.GONE);
         mivCurrRestImage.setVisibility(View.GONE);
         mivCurrRestVegan.setVisibility(View.GONE);
         mflCurrRestInfo.setVisibility(View.GONE);
-    }
-
-    private void setRatingInUI(int rating) {
-        switch (rating) {
-            case 0:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_0));
-                break;
-            case 1:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_1));
-                break;
-            case 2:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_2));
-                break;
-            case 3:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_3));
-                break;
-            case 4:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_4));
-                break;
-            case 5:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_5));
-                break;
-            case 6:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_6));
-                break;
-            case 7:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_7));
-                break;
-            case 8:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_8));
-                break;
-            case 9:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_9));
-                break;
-            case 10:
-                mivCurrRestRating.setImageDrawable(getResources().getDrawable(R.drawable.rating_10));
-                break;
-        }
     }
 }

@@ -10,33 +10,33 @@
     tools:context=".CurrentRestaurantFragment">
 
     <RelativeLayout
+        android:id="@+id/rlCurrRestMainBlock"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:id="@+id/rlCurrRestMainBlock"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
         <ImageView
+            android:id="@+id/ivCurrRestImage"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:id="@+id/ivCurrRestImage"
             android:background="@drawable/def_restaurant" />
 
         <TextView
+            android:id="@+id/tvCurrRestName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Restaurant name"
-            android:id="@+id/tvCurrRestName"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/ivCurrRestImage"
             android:layout_marginLeft="20dp"
             android:layout_marginStart="20dp"
             android:layout_toLeftOf="@+id/ivCurrRestVegan"
-            android:layout_toStartOf="@+id/ivCurrRestVegan" />
+            android:layout_toRightOf="@+id/ivCurrRestImage"
+            android:layout_toStartOf="@+id/ivCurrRestVegan"
+            android:text="Restaurant name"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/tvRestaurantCuisines"
@@ -45,196 +45,205 @@
             android:layout_alignLeft="@+id/tvCurrRestName"
             android:layout_alignStart="@+id/tvCurrRestName"
             android:layout_below="@+id/tvCurrRestName"
+            android:layout_marginBottom="4dp"
+            android:layout_toLeftOf="@+id/ivCurrRestVegan"
+            android:layout_toStartOf="@+id/ivCurrRestVegan"
             android:singleLine="true"
             android:text="Cuisines"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="12sp"
-            android:layout_toLeftOf="@+id/ivCurrRestVegan"
-            android:layout_toStartOf="@+id/ivCurrRestVegan"
-            android:layout_marginBottom="4dp" />
+            android:textSize="12sp" />
 
-        <ImageView
+        <FrameLayout
+            android:id="@+id/flCurrRestRating"
             android:layout_width="110dp"
             android:layout_height="20dp"
-            android:id="@+id/ivCurrRestRating"
-            android:background="@drawable/rating_5"
-            android:layout_below="@+id/tvRestaurantCuisines"
             android:layout_alignLeft="@+id/tvRestaurantCuisines"
-            android:layout_alignStart="@+id/tvRestaurantCuisines" />
+            android:layout_alignStart="@+id/tvRestaurantCuisines"
+            android:layout_below="@+id/tvRestaurantCuisines">
+
+            <com.iarcuschin.simpleratingbar.SimpleRatingBar
+                android:id="@+id/сurrRestRating"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srb_isIndicator="true"
+                app:srb_numberOfStars="5"
+                app:srb_stepSize="0.5" />
+        </FrameLayout>
 
         <ImageView
+            android:id="@+id/ivCurrRestVegan"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:id="@+id/ivCurrRestVegan"
-            android:background="@drawable/vegan"
-            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_centerVertical="true"
+            android:background="@drawable/vegan" />
 
         <TextView
             android:id="@+id/textView5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/flCurrRestRating"
+            android:layout_marginLeft="8dp"
+            android:layout_toRightOf="@+id/flCurrRestRating"
             android:singleLine="true"
             android:text="Отзывов:"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="12sp"
-            android:layout_toRightOf="@+id/ivCurrRestRating"
-            android:layout_alignBottom="@+id/ivCurrRestRating" />
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/tvCurrRestRecomendationCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/textView5"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_toLeftOf="@+id/ivCurrRestVegan"
+            android:layout_toRightOf="@+id/textView5"
+            android:layout_toStartOf="@+id/ivCurrRestVegan"
             android:singleLine="true"
             android:text="0"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="12sp"
-            android:layout_alignBottom="@+id/textView5"
-            android:layout_toRightOf="@+id/textView5"
-            android:layout_toLeftOf="@+id/ivCurrRestVegan"
-            android:layout_toStartOf="@+id/ivCurrRestVegan"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp" />
+            android:textSize="12sp" />
     </RelativeLayout>
 
     <FrameLayout
+        android:id="@+id/flCurrRestInfo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/rlCurrRestMainBlock"
-        android:id="@+id/flCurrRestInfo"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_below="@+id/rlCurrRestMainBlock"
         android:background="@drawable/background_shape_mask"
-        android:paddingTop="12dp"
         android:paddingBottom="12dp"
+        android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingLeft="8dp">
+        android:paddingTop="12dp">
 
         <ScrollView
+            android:id="@+id/scrollView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/scrollView" >
+            android:layout_height="match_parent">
 
             <RelativeLayout
+                android:id="@+id/rvCurrRestInfoBlock"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/rvCurrRestInfoBlock">
+                android:layout_height="wrap_content">
 
                 <TextView
+                    android:id="@+id/tvCurrRestInfoTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/open_hours"
-                    android:id="@+id/tvCurrRestInfoTime" />
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text=""
                     android:id="@+id/tvCurrRestTime"
-                    android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoTime" />
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/schedule"
+                    android:layout_below="@+id/tvCurrRestInfoTime"
+                    android:layout_marginLeft="24dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
                     android:id="@+id/tvCurrRestInfoSchedule"
-                    android:layout_below="@+id/tvCurrRestTime"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text=""
+                    android:layout_below="@+id/tvCurrRestTime"
+                    android:text="@string/schedule"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
                     android:id="@+id/tvCurrRestSchedule"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/tvCurrRestInfoSchedule"
                     android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoSchedule"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="@string/tel"
-                    android:id="@+id/tvCurrRestInfoTel"
-                    android:layout_below="@+id/tvCurrRestSchedule"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text=""
-                    android:id="@+id/tvCurrRestTel"
-                    android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoTel"/>
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
+                    android:id="@+id/tvCurrRestInfoTel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_below="@+id/tvCurrRestSchedule"
+                    android:text="@string/tel"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/tvCurrRestTel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/tvCurrRestInfoTel"
+                    android:layout_marginLeft="24dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/tvCurrRestInfoTelOrder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_below="@+id/tvCurrRestTel"
                     android:text="@string/order_tel"
-                    android:id="@+id/tvCurrRestInfoTelOrder" />
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text=""
                     android:id="@+id/tvCurrRestTelOrder"
-                    android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoTelOrder"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_below="@+id/tvCurrRestInfoTelOrder"
+                    android:layout_marginLeft="24dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/tvCurrRestInfoEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_below="@+id/tvCurrRestTelOrder"
                     android:text="@string/email"
-                    android:id="@+id/tvCurrRestInfoEmail"/>
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text=""
                     android:id="@+id/tvCurrRestEmail"
-                    android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoEmail"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:layout_below="@+id/tvCurrRestInfoEmail"
+                    android:layout_marginLeft="24dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/tvCurrRestInfoPayment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_below="@+id/tvCurrRestEmail"
                     android:text="@string/payment_method"
-                    android:id="@+id/tvCurrRestInfoPayment"/>
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text=""
                     android:id="@+id/tvCurrRestPayment"
-                    android:layout_marginLeft="24dp"
-                    android:layout_below="@+id/tvCurrRestInfoPayment"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Description"
+                    android:layout_below="@+id/tvCurrRestInfoPayment"
+                    android:layout_marginLeft="24dp"
+                    android:text=""
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
                     android:id="@+id/tvCurrRestDesrc"
-                    android:layout_marginTop="12dp"
-                    android:layout_below="@+id/tvCurrRestPayment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"/>
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/tvCurrRestPayment"
+                    android:layout_marginTop="12dp"
+                    android:text="Description"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
             </RelativeLayout>
         </ScrollView>

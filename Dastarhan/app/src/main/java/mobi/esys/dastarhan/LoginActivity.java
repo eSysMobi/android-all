@@ -19,11 +19,11 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.tasks.AuthCallback;
+import mobi.esys.dastarhan.tasks.CallbackAuth;
 import mobi.esys.dastarhan.tasks.Authorize;
 import mobi.esys.dastarhan.tasks.SignUp;
 
-public class LoginActivity extends AppCompatActivity implements AuthCallback {
+public class LoginActivity extends AppCompatActivity implements CallbackAuth {
 
     private static final String TAG = "dtagLoginActivity";
     private SharedPreferences prefs;

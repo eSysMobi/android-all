@@ -3,7 +3,7 @@ package mobi.esys.dastarhan.tasks;
 /**
  * Created by ZeyUzh on 02.10.2016.
  */
-public interface AuthCallback {
+public interface CallbackAuth {
 
     void onPrepared();
 

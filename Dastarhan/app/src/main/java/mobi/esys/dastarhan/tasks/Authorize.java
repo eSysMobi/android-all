@@ -20,11 +20,11 @@ import mobi.esys.dastarhan.Constants;
  */
 public class Authorize extends AsyncTask<String, Void, String> {
     private final String TAG = "dtagAuthorization";
-    private AuthCallback callback;
+    private CallbackAuth callback;
 
     private int errorCode = 0;
 
-    public Authorize(AuthCallback callback) {
+    public Authorize(CallbackAuth callback) {
         this.callback = callback;
     }
 

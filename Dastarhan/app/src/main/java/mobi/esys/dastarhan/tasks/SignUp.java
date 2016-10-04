@@ -20,14 +20,14 @@ import mobi.esys.dastarhan.Constants;
  */
 public class SignUp extends AsyncTask<String, Void, Void> {
     private final String TAG = "dtagSignUp";
-    private AuthCallback callback;
+    private CallbackAuth callback;
 
     private String login;
     private String password;
 
     private int errorCode = 0;
 
-    public SignUp(AuthCallback callback) {
+    public SignUp(CallbackAuth callback) {
         this.callback = callback;
     }
 
