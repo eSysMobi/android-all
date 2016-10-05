@@ -67,7 +67,7 @@
                 android:layout_height="match_parent"
                 app:srb_isIndicator="true"
                 app:srb_numberOfStars="5"
-                app:srb_stepSize="0.5" />
+                app:srb_stepSize="1" />
         </FrameLayout>
 
         <ImageView

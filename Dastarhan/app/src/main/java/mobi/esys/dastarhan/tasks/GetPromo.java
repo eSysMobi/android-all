@@ -52,7 +52,7 @@ public class GetPromo extends AsyncTask<Void, Void, Void> {
 
         for (int i = 0; i < restaurantsID.length; i++) {
             try {
-                url = new URL(Constants.URL_PROMO + restaurantsID[i]);
+                url = new URL(Constants.URL_PROMO + "?res_id=" + restaurantsID[i]);
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setReadTimeout(Constants.CONNECTION_TIMEOUT);

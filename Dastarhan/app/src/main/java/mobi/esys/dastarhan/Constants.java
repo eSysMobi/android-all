@@ -32,8 +32,11 @@ public class Constants {
     public static final String URL_REGISTRATION = "http://dastarhan.net/index.php/user_api/register/format/json";
     public static final String URL_CUISINES = "http://dastarhan.net/index.php/user_api/cui/format/json";
     public static final String URL_RESTORANS = "http://dastarhan.net/index.php/user_api/rest/format/json";
-    public static final String URL_FOOD = "http://dastarhan.net/index.php/user_api/food/format/json?resid=";
-    public static final String URL_PROMO = "http://dastarhan.net/index.php/user_api/offers/format/json?res_id=";
+    public static final String URL_FOOD = "http://dastarhan.net/index.php/user_api/food/format/json";
+    public static final String URL_PROMO = "http://dastarhan.net/index.php/user_api/offers/format/json";
+        //http://dastarhan.net/index.php/user_api/voteforrest/format/json?id=80&apikey=INVxnl733PjB6620jPYY&res=16&vote=8
+    public static final String URL_VOTE_FOR_REST = "http://dastarhan.net/index.php/user_api/voteforrest/format/json";
+
 
     //promo gifts type
     public static final String GIFT_TYPE_DISCOUNT_PERCENT_ALL = "discount_percent_all";     //Скидка в процентах на весь заказ
@@ -61,10 +64,13 @@ public class Constants {
     //request codes
     public static final int REQUEST_CODE_SPLASH = 89;
     public static final int REQUEST_CODE_SETTINGS = 99;
+    public static final int REQUEST_CODE_VOTE_REST = 109;
     //result codes
     public static final int RESULT_CODE_NO_INET = 10;
+    public static final int RESULT_CODE_ERROR = 9;
     public static final int RESULT_CODE_AUTH_ERROR = 11;
     public static final int RESULT_CODE_SIGNUP_ERROR = 12;
     public static final int RESULT_CODE_NO_USER_EXISTS = 13;
     public static final int RESULT_CODE_USER_ALREADY_EXISTS = 14;
+    public static final int RESULT_CODE_VOTE_ALREADY_VOTED = 21;
 }

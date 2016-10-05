@@ -1,36 +1,39 @@
 package mobi.esys.dastarhan;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.iarcuschin.simpleratingbar.SimpleRatingBar;
 
-import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.Restaurant;
+import mobi.esys.dastarhan.database.RestaurantRepository;
 
 public class CurrentRestaurantFragment extends BaseFragment {
 
-    private static final String ARG_RESTAURANT = "restaurant_id";
     private final String TAG = "dtagCurrRestActivity";
+    private SharedPreferences prefs;
+
+    private static final String ARG_RESTAURANT = "restaurant_id";
+
     private TextView mtvCurrRestName;
     private SimpleRatingBar mCurrRestRating;
     private ImageView mivCurrRestImage;
     private ImageView mivCurrRestVegan;
     private FrameLayout mflCurrRestInfo;
-    private FrameLayout mflCurrRestRating;
-    private TextView tvCurrRestRecomendationCount;
 
-    private RealmComponent component;
+    private RestaurantRepository restRepo;
     private Restaurant restaurant;
 
     public CurrentRestaurantFragment() {
@@ -61,18 +64,19 @@ public class CurrentRestaurantFragment extends BaseFragment {
         int restID = bundle.getInt(ARG_RESTAURANT, -42);
         Log.d(TAG, "Start getting info from DB about restaurant with id " + restID);
 
-        component = ((DastarhanApp) getActivity().getApplication()).realmComponent();
+        restRepo = ((DastarhanApp) getActivity().getApplication()).realmComponent().restaurantRepository();
 
         mtvCurrRestName = (TextView) view.findViewById(R.id.tvCurrRestName);
         mCurrRestRating = (SimpleRatingBar) view.findViewById(R.id.сurrRestRating);
         mivCurrRestImage = (ImageView) view.findViewById(R.id.ivCurrRestImage);
         mivCurrRestVegan = (ImageView) view.findViewById(R.id.ivCurrRestVegan);
         mflCurrRestInfo = (FrameLayout) view.findViewById(R.id.flCurrRestInfo);
-        mflCurrRestRating = (FrameLayout) view.findViewById(R.id.flCurrRestRating);
-        tvCurrRestRecomendationCount = (TextView) view.findViewById(R.id.tvCurrRestRecomendationCount);
+        FrameLayout mflCurrRestRating = (FrameLayout) view.findViewById(R.id.flCurrRestRating);
+        TextView tvCurrRestRecommendationCount = (TextView) view.findViewById(R.id.tvCurrRestRecomendationCount);
 
+        prefs = getActivity().getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
-        restaurant = component.restaurantRepository().getById(restID);
+        restaurant = restRepo.getById(restID);
         if (restaurant != null) {
             String locale = getContext().getResources().getConfiguration().locale.getLanguage();
             TextView mtvCurrRestDesrc = (TextView) view.findViewById(R.id.tvCurrRestDesrc);
@@ -85,13 +89,26 @@ public class CurrentRestaurantFragment extends BaseFragment {
                 mtvCurrRestDesrc.setText(restaurant.getAdditional_en());
             }
 
-            tvCurrRestRecomendationCount.setText(String.valueOf(restaurant.getTotal_votes()));
+            tvCurrRestRecommendationCount.setText(String.valueOf(restaurant.getTotal_votes()));
 
-            mCurrRestRating.setRating(restaurant.getTotal_rating());
+            int rate = 0;
+            if (restaurant.getTotal_votes() > 0) {
+                rate = restaurant.getTotal_rating() / restaurant.getTotal_votes();
+            }
+            if (rate > 5) {
+                rate = 5;
+            }
+            mCurrRestRating.setRating(rate);
             mflCurrRestRating.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    showRateDialog();
+                    if (prefs.getString(Constants.PREF_SAVED_LOGIN, "").isEmpty()) {
+                        //authorize
+                        Intent intent = new Intent(getContext(), LoginActivity.class);
+                        startActivityForResult(intent, Constants.REQUEST_CODE_VOTE_REST);
+                    } else {
+                        showRateDialog();
+                    }
                 }
             });
 
@@ -183,14 +200,17 @@ public class CurrentRestaurantFragment extends BaseFragment {
         dialogBuilder.setTitle("Please rate the restaurant");
         dialogBuilder.setPositiveButton("Vote", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                //do something with edt.getText().toString();
-                Log.d(TAG, "Rating is " + rating.getRating());
+                //send rating
+                Log.d(TAG, "Sending vote to server. User rating is " + rating.getRating());
+                int rate = (int) rating.getRating();
+                //TODO store user id, create task send vote
+                //SendVote sendVoteTask = new SendVote(this, restaurant.getServer_id(),)
 
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                //pass
+                //close
             }
         });
         AlertDialog b = dialogBuilder.create();
@@ -208,5 +228,16 @@ public class CurrentRestaurantFragment extends BaseFragment {
         mivCurrRestImage.setVisibility(View.GONE);
         mivCurrRestVegan.setVisibility(View.GONE);
         mflCurrRestInfo.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "Login in vote for restaurant requestCode " + requestCode + " resultCode " + resultCode);
+        if (requestCode == Constants.REQUEST_CODE_VOTE_REST) {
+            if (resultCode == Activity.RESULT_OK) {
+                showRateDialog();
+            }
+        }
     }
 }

@@ -56,9 +56,9 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
 
             try {
                 if (aRestID == -42) {
-                    url = new URL(Constants.URL_FOOD + 0);
+                    url = new URL(Constants.URL_FOOD + "?resid=0");
                 } else {
-                    url = new URL(Constants.URL_FOOD + aRestID);
+                    url = new URL(Constants.URL_FOOD + "?resid=" + aRestID);
                 }
 
                 urlConnection = (HttpURLConnection) url.openConnection();
