@@ -7,7 +7,7 @@ public interface CallbackAuth {
 
     void onPrepared();
 
-    void onSuccessAuth(String authToken);
+    void onSuccessAuth(String authToken, int userID);
 
     void onSuccessSighUp(String email, String pass);
 

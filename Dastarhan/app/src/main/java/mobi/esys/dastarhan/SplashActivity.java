@@ -1,6 +1,5 @@
 package mobi.esys.dastarhan;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -9,7 +8,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +95,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void getPromo() {
         //initialize timed check food list for each restaurant
-        List<Restaurant> restaurants = dastarhanApp.component.restaurantRepository().getAll();
+        List<Restaurant> restaurants = dastarhanApp.appComponent().restaurantRepository().getAll();
         List<Integer> restIDs = new ArrayList<>();
         for (Restaurant restaurant : restaurants) {
             int res_id = restaurant.getServer_id();
@@ -119,6 +117,7 @@ public class SplashActivity extends AppCompatActivity {
             editor.putString(Constants.PREF_SAVED_LOGIN, "");
             editor.putString(Constants.PREF_SAVED_PASS, "");
             editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+            editor.putInt(Constants.PREF_SAVED_USER_ID, -1);
             editor.apply();
             Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
             startActivityForResult(intent, Constants.REQUEST_CODE_SPLASH);

@@ -100,5 +100,7 @@
     <string name="auth_error">Authorization error</string>
     <string name="signup_error">Sign up error</string>
     <string name="registration">Sigh up</string>
+    <string name="please_rate_restaurant">Please rate the restaurant</string>
+    <string name="vote">Vote</string>
 
 </resources>

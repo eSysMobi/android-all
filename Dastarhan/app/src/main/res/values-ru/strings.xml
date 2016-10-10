@@ -89,5 +89,7 @@
     <string name="auth_error">Ошибка авторизации</string>
     <string name="signup_error">Ошибка регистрации</string>
     <string name="registration">Регистрация</string>
+    <string name="please_rate_restaurant">Пожалуйста, оцените рестаран</string>
+    <string name="vote">Голосовать</string>
 
 </resources>

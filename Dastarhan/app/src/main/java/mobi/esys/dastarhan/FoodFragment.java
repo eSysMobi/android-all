@@ -162,7 +162,7 @@ public class FoodFragment extends BaseFragment {
 
     private void getFoodFromRestaurants() {
         //get restaurants ID from cuisines
-        RestaurantRepository restaurantRepo = dastarhanApp.component.restaurantRepository();
+        RestaurantRepository restaurantRepo = dastarhanApp.appComponent().restaurantRepository();
         List<Restaurant> restaurants;
         if (cuisineID == -42) {
             restaurants = restaurantRepo.getAll();

@@ -18,11 +18,13 @@ import mobi.esys.dastarhan.Constants;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
-public class Authorize extends AsyncTask<String, Void, String> {
+public class Authorize extends AsyncTask<String, Void, Boolean> {
     private final String TAG = "dtagAuthorization";
     private CallbackAuth callback;
 
     private int errorCode = 0;
+    private String apiKey;
+    private Integer userID;
 
     public Authorize(CallbackAuth callback) {
         this.callback = callback;
@@ -35,8 +37,8 @@ public class Authorize extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        String result = "";
+    protected Boolean doInBackground(String... params) {
+        Boolean result = false;
 
         URL url;
         HttpURLConnection urlConnection = null;
@@ -61,8 +63,10 @@ public class Authorize extends AsyncTask<String, Void, String> {
                 JSONObject authJson = new JSONObject(responseStrBuilder.toString());
 
                 // Getting apikey
-                if (authJson.has("apikey")) {
-                    result = authJson.getString("apikey");
+                if (authJson.has("apikey") && authJson.has("id")) {
+                    apiKey = authJson.getString("apikey");
+                    userID = authJson.getInt("id");
+                    result = true;
                 } else {
                     errorCode = Constants.RESULT_CODE_NO_USER_EXISTS;
                 }
@@ -86,11 +90,15 @@ public class Authorize extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected void onPostExecute(String result) {
-        if (result.isEmpty()) {
-            callback.onFail(errorCode);
+    protected void onPostExecute(Boolean result) {
+        if (result) {
+            if (apiKey!=null && !apiKey.isEmpty() && userID != null) {
+                callback.onSuccessAuth(apiKey, userID);
+            } else {
+                callback.onFail(errorCode);
+            }
         } else {
-            callback.onSuccessAuth(result);
+            callback.onFail(errorCode);
         }
     }
 

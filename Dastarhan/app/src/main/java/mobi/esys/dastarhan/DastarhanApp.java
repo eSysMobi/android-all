@@ -6,9 +6,8 @@ import android.content.res.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 
-import mobi.esys.dastarhan.database.DaggerRealmComponent;
-import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.RealmModule;
+import mobi.esys.dastarhan.net.NetModule;
 import mobi.esys.dastarhan.utils.FoodCheckElement;
 
 /**
@@ -16,7 +15,7 @@ import mobi.esys.dastarhan.utils.FoodCheckElement;
  */
 public class DastarhanApp extends Application {
 
-    RealmComponent component;
+    private AppComponent component;
     private long lastCheck = 0;
     private List<FoodCheckElement> foodCheck;
 
@@ -52,10 +51,11 @@ public class DastarhanApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        component = DaggerRealmComponent
+        component = DaggerAppComponent
                 .builder()
                 .application(this)
                 .realmModule(new RealmModule(0))
+                .netModule(new NetModule())
                 .build();
 
         foodCheck = new ArrayList<>();
@@ -63,7 +63,7 @@ public class DastarhanApp extends Application {
         foodCheck.add(new FoodCheckElement(-42,0));
     }
 
-    public RealmComponent realmComponent(){
+    public AppComponent appComponent(){
         return component;
     }
 

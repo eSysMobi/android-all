@@ -15,11 +15,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
-import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
@@ -29,13 +29,13 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetFood";
     private Handler handler;
     boolean result = false;
-    private RealmComponent component;
+    private AppComponent component;
     private Integer[] restID;
 
     public GetFood(DastarhanApp dastarhanApp, Handler incHandler, Integer[] incRestID) {
         //TODO
         handler = incHandler;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         restID = incRestID;
     }
 

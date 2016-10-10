@@ -19,7 +19,7 @@ import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.Promo;
-import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.database.Restaurant;
 
 /**
@@ -27,7 +27,7 @@ import mobi.esys.dastarhan.database.Restaurant;
  */
 public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoViewHolder> {
     private Context mContext;
-    private RealmComponent component;
+    private AppComponent component;
     private List<Promo> promos;
     private List<Restaurant> restaurants;
     private String locale;
@@ -39,7 +39,7 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
     public RVPromoAdapter(Context mContext, FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale) {
         this.mContext = mContext;
         this.navigation = navigation;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         promos = component.promoRepository().getAll();
         restaurants = component.restaurantRepository().getAll();
         this.locale = locale;

@@ -19,7 +19,7 @@ import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.database.Cuisine;
 import mobi.esys.dastarhan.database.CuisineRepository;
-import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
@@ -28,12 +28,12 @@ import mobi.esys.dastarhan.database.UnitOfWork;
 public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = "dtagGetCuisines";
     private Handler handler;
-    private RealmComponent component;
+    private AppComponent component;
 
 
     public GetCuisines(DastarhanApp dastarhanApp, Handler incHandler) {
         handler = incHandler;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
     }
 
     @Override

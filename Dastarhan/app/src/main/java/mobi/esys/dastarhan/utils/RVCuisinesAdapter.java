@@ -29,7 +29,7 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
     public RVCuisinesAdapter(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale) {
         this.navigation = navigation;
         this.locale = locale;
-        cuisines = dastarhanApp.realmComponent().cuisineRepository().getAll();
+        cuisines = dastarhanApp.appComponent().cuisineRepository().getAll();
     }
 
     //preparing ViewHolder

@@ -22,7 +22,7 @@ import mobi.esys.dastarhan.database.Cart;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
-import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.AppComponent;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
@@ -30,7 +30,7 @@ import mobi.esys.dastarhan.database.RealmComponent;
 public class RVFoodAdapterMain extends RecyclerView.Adapter<RVFoodAdapterMain.FoodViewHolder> {
     private static String TAG = "dtagRVAdapterMain";
     private FragmentNavigation navigation;
-    private RealmComponent component;
+    private AppComponent component;
     private String locale;
 
     private List<Food> foods;
@@ -41,7 +41,7 @@ public class RVFoodAdapterMain extends RecyclerView.Adapter<RVFoodAdapterMain.Fo
     //constructor
     public RVFoodAdapterMain(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Integer[] restIDs) {
         this.navigation = navigation;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         this.locale = locale;
         foods = new ArrayList<>();
 

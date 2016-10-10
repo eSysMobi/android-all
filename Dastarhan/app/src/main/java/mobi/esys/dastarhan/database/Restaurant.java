@@ -35,8 +35,10 @@ public class Restaurant extends RealmObject {
     //other
     private Integer min_order;
     private String payment_methods;
+    //technical
     private Integer total_rating;
     private Integer total_votes;
+    private Integer user_vote;
 
     /**
      * For Realm usage only
@@ -209,6 +211,21 @@ public class Restaurant extends RealmObject {
         return total_votes;
     }
 
+    public Integer getUser_vote() {
+        return user_vote;
+    }
+
+    public void setUser_vote(Integer vote) {
+        if (user_vote == null) {
+            user_vote = vote;
+            total_votes++;
+            total_rating = total_rating + user_vote;
+        } else {
+            total_rating = total_rating - user_vote + vote;
+            user_vote = vote;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -257,7 +274,9 @@ public class Restaurant extends RealmObject {
             return false;
         if (total_rating != null ? !total_rating.equals(that.total_rating) : that.total_rating != null)
             return false;
-        return !(total_votes != null ? !total_votes.equals(that.total_votes) : that.total_votes != null);
+        if (total_votes != null ? !total_votes.equals(that.total_votes) : that.total_votes != null)
+            return false;
+        return !(user_vote != null ? !user_vote.equals(that.user_vote) : that.user_vote != null);
 
     }
 
@@ -290,6 +309,7 @@ public class Restaurant extends RealmObject {
         result = 31 * result + (payment_methods != null ? payment_methods.hashCode() : 0);
         result = 31 * result + (total_rating != null ? total_rating.hashCode() : 0);
         result = 31 * result + (total_votes != null ? total_votes.hashCode() : 0);
+        result = 31 * result + (user_vote != null ? user_vote.hashCode() : 0);
         return result;
     }
 }

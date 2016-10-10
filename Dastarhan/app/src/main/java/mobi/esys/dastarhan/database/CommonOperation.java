@@ -2,12 +2,14 @@ package mobi.esys.dastarhan.database;
 
 import android.util.Log;
 
+import mobi.esys.dastarhan.AppComponent;
+
 /**
  * Created by ZeyUzh on 04.09.2016.
  */
 public class CommonOperation {
 
-    public static void createOrder(RealmComponent component, Food food) {
+    public static void createOrder(AppComponent component, Food food) {
         CartRepository repo = component.cartRepository();
         OrderRepository orderRepository = component.orderRepository();
         Cart cart = repo.get();

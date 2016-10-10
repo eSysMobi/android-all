@@ -1,7 +1,5 @@
 package mobi.esys.dastarhan.utils;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -27,14 +25,14 @@ import mobi.esys.dastarhan.database.Cart;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
-import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.AppComponent;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.FoodViewHolder> {
     private FragmentNavigation navigation;
-    private RealmComponent component;
+    private AppComponent component;
     private String locale;
     private Handler handler;
     boolean needRefreshTotalCostEveryTime = false;
@@ -47,7 +45,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     //constructor
     public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Handler handler) {
         this.navigation = navigation;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         this.locale = locale;
         this.handler = handler;
         foods = new ArrayList<>();

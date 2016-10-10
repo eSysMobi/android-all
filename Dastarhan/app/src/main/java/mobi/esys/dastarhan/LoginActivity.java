@@ -19,8 +19,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import mobi.esys.dastarhan.tasks.CallbackAuth;
 import mobi.esys.dastarhan.tasks.Authorize;
+import mobi.esys.dastarhan.tasks.CallbackAuth;
 import mobi.esys.dastarhan.tasks.SignUp;
 
 public class LoginActivity extends AppCompatActivity implements CallbackAuth {
@@ -250,11 +250,12 @@ public class LoginActivity extends AppCompatActivity implements CallbackAuth {
     }
 
     @Override
-    public void onSuccessAuth(String authToken) {
+    public void onSuccessAuth(String authToken, int userID) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(Constants.PREF_SAVED_LOGIN, metEmail.getText().toString());
         editor.putString(Constants.PREF_SAVED_PASS, metPass.getText().toString());
         editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, authToken);
+        editor.putInt(Constants.PREF_SAVED_USER_ID, userID);
         editor.apply();
 
         result = RESULT_OK;

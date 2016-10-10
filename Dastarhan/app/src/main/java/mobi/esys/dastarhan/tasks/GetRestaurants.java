@@ -15,9 +15,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.DastarhanApp;
-import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.database.UnitOfWork;
@@ -29,11 +29,11 @@ public class GetRestaurants extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetRestaurants";
     private Handler handler;
     boolean result = false;
-    private RealmComponent component;
+    private AppComponent component;
 
     public GetRestaurants(DastarhanApp dastarhanApp, Handler incHandler) {
         handler = incHandler;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
     }
 
     @Override

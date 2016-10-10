@@ -19,12 +19,11 @@ import mobi.esys.dastarhan.database.CommonOperation;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
-import mobi.esys.dastarhan.database.RealmComponent;
 
 public class CurrentFoodFragment extends BaseFragment {
 
     private final String TAG = "dtagCurrentFood";
-    private RealmComponent component;
+    private AppComponent component;
     private FoodRepository foodRepository;
     private Food food;
 
@@ -68,7 +67,7 @@ public class CurrentFoodFragment extends BaseFragment {
         int currentFoodID = bundle.getInt(ARG_FOOD, -42);
 
 
-        component = ((DastarhanApp) getActivity().getApplication()).realmComponent();
+        component = ((DastarhanApp) getActivity().getApplication()).appComponent();
         foodRepository = component.foodRepository();
 
         Log.d(TAG, "Choose FOOD ID from intent = " + currentFoodID);

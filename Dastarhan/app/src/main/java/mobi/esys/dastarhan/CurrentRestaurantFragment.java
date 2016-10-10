@@ -14,11 +14,22 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.JsonObject;
 import com.iarcuschin.simpleratingbar.SimpleRatingBar;
+
+import java.io.IOException;
+
+import javax.inject.Inject;
 
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
+import mobi.esys.dastarhan.net.APIVoteForRestaurant;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class CurrentRestaurantFragment extends BaseFragment {
 
@@ -32,8 +43,13 @@ public class CurrentRestaurantFragment extends BaseFragment {
     private ImageView mivCurrRestImage;
     private ImageView mivCurrRestVegan;
     private FrameLayout mflCurrRestInfo;
+    private TextView tvCurrRestRecommendationCount;
 
-    private RestaurantRepository restRepo;
+    @Inject
+    RestaurantRepository restRepo;
+    @Inject
+    Retrofit retrofit;
+    private APIVoteForRestaurant apiVote;
     private Restaurant restaurant;
 
     public CurrentRestaurantFragment() {
@@ -64,7 +80,9 @@ public class CurrentRestaurantFragment extends BaseFragment {
         int restID = bundle.getInt(ARG_RESTAURANT, -42);
         Log.d(TAG, "Start getting info from DB about restaurant with id " + restID);
 
-        restRepo = ((DastarhanApp) getActivity().getApplication()).realmComponent().restaurantRepository();
+        ((DastarhanApp) getActivity().getApplication()).appComponent().inject(this);
+
+        apiVote = retrofit.create(APIVoteForRestaurant.class);
 
         mtvCurrRestName = (TextView) view.findViewById(R.id.tvCurrRestName);
         mCurrRestRating = (SimpleRatingBar) view.findViewById(R.id.сurrRestRating);
@@ -72,7 +90,7 @@ public class CurrentRestaurantFragment extends BaseFragment {
         mivCurrRestVegan = (ImageView) view.findViewById(R.id.ivCurrRestVegan);
         mflCurrRestInfo = (FrameLayout) view.findViewById(R.id.flCurrRestInfo);
         FrameLayout mflCurrRestRating = (FrameLayout) view.findViewById(R.id.flCurrRestRating);
-        TextView tvCurrRestRecommendationCount = (TextView) view.findViewById(R.id.tvCurrRestRecomendationCount);
+        tvCurrRestRecommendationCount = (TextView) view.findViewById(R.id.tvCurrRestRecomendationCount);
 
         prefs = getActivity().getApplicationContext().getSharedPreferences(Constants.APP_PREF, Context.MODE_PRIVATE);
 
@@ -89,16 +107,7 @@ public class CurrentRestaurantFragment extends BaseFragment {
                 mtvCurrRestDesrc.setText(restaurant.getAdditional_en());
             }
 
-            tvCurrRestRecommendationCount.setText(String.valueOf(restaurant.getTotal_votes()));
-
-            int rate = 0;
-            if (restaurant.getTotal_votes() > 0) {
-                rate = restaurant.getTotal_rating() / restaurant.getTotal_votes();
-            }
-            if (rate > 5) {
-                rate = 5;
-            }
-            mCurrRestRating.setRating(rate);
+            updateRating();
             mflCurrRestRating.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -189,6 +198,19 @@ public class CurrentRestaurantFragment extends BaseFragment {
         return view;
     }
 
+    private void updateRating() {
+        tvCurrRestRecommendationCount.setText(String.valueOf(restaurant.getTotal_votes()));
+
+        int rate = 0;
+        if (restaurant.getTotal_votes() > 0) {
+            rate = restaurant.getTotal_rating() / restaurant.getTotal_votes();
+        }
+        if (rate > 5) {
+            rate = 5;
+        }
+        mCurrRestRating.setRating(rate);
+    }
+
     private void showRateDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -197,15 +219,38 @@ public class CurrentRestaurantFragment extends BaseFragment {
 
         final SimpleRatingBar rating = (SimpleRatingBar) dialogView.findViewById(R.id.сurrRestRatingAD);
 
-        dialogBuilder.setTitle("Please rate the restaurant");
-        dialogBuilder.setPositiveButton("Vote", new DialogInterface.OnClickListener() {
+        dialogBuilder.setTitle(R.string.please_rate_restaurant);
+        dialogBuilder.setPositiveButton(R.string.vote, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 //send rating
                 Log.d(TAG, "Sending vote to server. User rating is " + rating.getRating());
-                int rate = (int) rating.getRating();
-                //TODO store user id, create task send vote
-                //SendVote sendVoteTask = new SendVote(this, restaurant.getServer_id(),)
+                final int rate = (int) rating.getRating();
+                String apiKey = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+                int userID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
+                //send vote
+                Call<JsonObject> apiCall = apiVote.vote(userID, apiKey, restaurant.getServer_id(), rate);
+                apiCall.enqueue(new Callback<JsonObject>() {
+                    @Override
+                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                        if (response.code() == 200) {
+                            //all ok, store rating
+                            restaurant = restRepo.voteForRestaurant(restaurant.getServer_id(), rate);
+                            //update info on screen
+                            updateRating();
+                        }
+                        if (response.code() == 404 && response.body().toString().equals("{\"error\":\"No data\"}")) {
+                            //TODO need new token
+                        }
+                    }
 
+                    @Override
+                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                        //may be no inet
+                        if (t instanceof IOException) {
+                            Toast.makeText(CurrentRestaurantFragment.this.getContext(), R.string.no_inet, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

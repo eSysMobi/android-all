@@ -1,7 +1,5 @@
 package mobi.esys.dastarhan.utils;
 
-import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +14,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 import mobi.esys.dastarhan.CurrentFoodFragment;
 import mobi.esys.dastarhan.DastarhanApp;
@@ -24,14 +23,13 @@ import mobi.esys.dastarhan.database.Cart;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
-import mobi.esys.dastarhan.database.RealmComponent;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFavorite.FoodViewHolder> {
     private FragmentNavigation navigation;
-    private RealmComponent component;
+    private AppComponent component;
     private String locale;
 
     private List<Food> foods;
@@ -42,7 +40,7 @@ public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFav
     //constructor
     public RVFoodAdapterFavorite(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale) {
         this.navigation = navigation;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         this.locale = locale;
         foods = new ArrayList<>();
 

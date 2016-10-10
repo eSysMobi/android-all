@@ -10,24 +10,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import mobi.esys.dastarhan.database.Order;
 import mobi.esys.dastarhan.database.OrderUpdateEvent;
-import mobi.esys.dastarhan.database.RealmComponent;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, BaseFragment.FragmentNavigation {
@@ -37,7 +32,7 @@ public class MainActivity extends AppCompatActivity
     private Stack<String> titles = new Stack<>();
 
     private final EventBus bus = EventBus.getDefault();
-    private RealmComponent component;
+    private AppComponent component;
 
     private TextView title;
     private TextView cartCount;
@@ -81,7 +76,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        component = ((DastarhanApp) getApplication()).realmComponent();
+        component = ((DastarhanApp) getApplication()).appComponent();
 
         //set cart count
         updateCartCount();

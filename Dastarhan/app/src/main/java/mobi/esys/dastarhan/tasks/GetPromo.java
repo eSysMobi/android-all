@@ -15,11 +15,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.database.Promo;
 import mobi.esys.dastarhan.database.PromoRepository;
-import mobi.esys.dastarhan.database.RealmComponent;
 import mobi.esys.dastarhan.database.UnitOfWork;
 
 /**
@@ -29,12 +29,12 @@ public class GetPromo extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetPromo";
     private Handler handler;
     private boolean result = false;
-    private RealmComponent component;
+    private AppComponent component;
     private Integer[] restaurantsID;
 
     public GetPromo(DastarhanApp dastarhanApp, Handler incHandler, Integer[] restaurantsID) {
         handler = incHandler;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
         this.restaurantsID = restaurantsID;
     }
 

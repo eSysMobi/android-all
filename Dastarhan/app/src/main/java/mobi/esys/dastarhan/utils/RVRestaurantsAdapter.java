@@ -16,7 +16,7 @@ import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.FoodFragment;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Cuisine;
-import mobi.esys.dastarhan.database.RealmComponent;
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 
@@ -29,13 +29,13 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
     private FragmentNavigation navigation;
     private String locale;
     private List<Restaurant> restaurants;
-    private RealmComponent component;
+    private AppComponent component;
 
     //constructor
     public RVRestaurantsAdapter(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, int cuisineID) {
         this.navigation = navigation;
         this.locale = locale;
-        component = dastarhanApp.realmComponent();
+        component = dastarhanApp.appComponent();
 
         Log.d("dtagRecyclerView", "cuisineID = " + String.valueOf(cuisineID));
 

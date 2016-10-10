@@ -39,6 +39,18 @@ class RestaurantRealmRepository implements RestaurantRepository {
     }
 
     @Override
+    public Restaurant voteForRestaurant(final Integer id, final int rate) {
+        return realmTemplate.executeInRealm(new RealmTransactionCallback<Restaurant>() {
+            @Override
+            public Restaurant execute(Realm realm) {
+                Restaurant restFromDB = realm.where(Restaurant.class).equalTo("server_id", id).findFirst();
+                restFromDB.setUser_vote(rate);
+                return realm.copyFromRealm(restFromDB);
+            }
+        });
+    }
+
+    @Override
     public Restaurant getById(final int id) {
         return realmTemplate.findInRealm(new RealmTransactionCallback<Restaurant>() {
             @Override
