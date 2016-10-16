@@ -6,7 +6,7 @@ public interface RestaurantRepository {
 
     void addOrUpdate(Restaurant restaurant);
 
-    Restaurant voteForRestaurant(Integer id, int rate);
+    Restaurant voteForRestaurant(final Integer id, final int rateNew, final int rateOld);
 
     Restaurant getById(int id);
 

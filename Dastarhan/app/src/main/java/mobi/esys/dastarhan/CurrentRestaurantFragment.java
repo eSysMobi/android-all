@@ -218,6 +218,10 @@ public class CurrentRestaurantFragment extends BaseFragment {
         dialogBuilder.setView(dialogView);
 
         final SimpleRatingBar rating = (SimpleRatingBar) dialogView.findViewById(R.id.сurrRestRatingAD);
+        Integer oldVote = restaurant.getUserVote();
+        if (oldVote != null) {
+            rating.setRating(oldVote);
+        }
 
         dialogBuilder.setTitle(R.string.please_rate_restaurant);
         dialogBuilder.setPositiveButton(R.string.vote, new DialogInterface.OnClickListener() {
@@ -233,10 +237,18 @@ public class CurrentRestaurantFragment extends BaseFragment {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (response.code() == 200) {
-                            //all ok, store rating
-                            restaurant = restRepo.voteForRestaurant(restaurant.getServer_id(), rate);
-                            //update info on screen
-                            updateRating();
+                            //get old rating
+                            JsonObject body = response.body();
+                            if (body.has("success") && body.has("data")) {
+                                JsonObject data = body.getAsJsonObject("data");
+                                if (data.has("old_rate")) {
+                                    int oldRating = data.getAsJsonPrimitive("old_rate").getAsInt();
+                                    //store rating
+                                    restaurant = restRepo.voteForRestaurant(restaurant.getServer_id(), rate, oldRating);
+                                    //update info on screen
+                                    updateRating();
+                                }
+                            }
                         }
                         if (response.code() == 404 && response.body().toString().equals("{\"error\":\"No data\"}")) {
                             //TODO need new token

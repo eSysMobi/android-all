@@ -211,11 +211,17 @@ public class Restaurant extends RealmObject {
         return total_votes;
     }
 
-    public Integer getUser_vote() {
+    public Integer getUserVote() {
         return user_vote;
     }
 
-    public void setUser_vote(Integer vote) {
+    public void setUserVoteIfNotExists(int vote) {
+        if (user_vote == null) {
+            user_vote = vote;
+        }
+    }
+
+    public int updateUserVote(int vote) {
         if (user_vote == null) {
             user_vote = vote;
             total_votes++;
@@ -224,6 +230,8 @@ public class Restaurant extends RealmObject {
             total_rating = total_rating - user_vote + vote;
             user_vote = vote;
         }
+        return total_rating;
+
     }
 
     @Override
