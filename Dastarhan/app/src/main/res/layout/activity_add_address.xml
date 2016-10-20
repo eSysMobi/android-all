@@ -1,233 +1,255 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#eeeeee"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#c8c8c8"
     tools:context="mobi.esys.dastarhan.AddAddressActivity">
 
-    <RelativeLayout
+    <ScrollView
+        android:id="@+id/svAddressContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <FrameLayout
-            android:id="@+id/flAddAddressCity"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:visibility="visible">
+            <TextView
+                android:id="@+id/tvContactInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginLeft="24dp"
+                android:layout_marginRight="24dp"
+                android:layout_marginStart="24dp"
+                android:text="@string/enter_your_contact_info"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ac000000" />
 
             <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:id="@+id/rlAddressName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/tvContactInfo"
+                android:layout_marginBottom="1dp">
 
                 <ImageView
-                    android:id="@+id/ivAddrCity"
+                    android:id="@+id/ivAddressName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:background="@drawable/background_shape_input_top"/>
+                    android:background="@drawable/background_shape_input_top" />
 
                 <TextView
-                    android:id="@+id/tvAddAddressCity"
+                    android:id="@+id/tvLabelName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/city"
-                    android:textColor="#9e9e9e"
+                    android:layout_alignBottom="@+id/ivAddressName"
+                    android:layout_alignLeft="@+id/ivAddressName"
+                    android:layout_alignStart="@+id/ivAddressName"
+                    android:layout_alignTop="@+id/ivAddressName"
                     android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
                     android:layout_marginTop="1dp"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
                     android:gravity="center"
-                    android:layout_alignBottom="@+id/ivAddrCity"
-                    android:layout_alignTop="@+id/ivAddrCity"
-                    android:layout_alignLeft="@+id/ivAddrCity"/>
+                    android:text="@string/label_username"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
 
                 <EditText
-                    android:id="@+id/etAddAddressCity"
+                    android:id="@+id/etAddressName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressName"
+                    android:layout_alignEnd="@+id/ivAddressName"
+                    android:layout_alignRight="@+id/ivAddressName"
+                    android:layout_alignTop="@+id/ivAddressName"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelName"
+                    android:layout_toLeftOf="@+id/tvLabelName"
+                    android:layout_toRightOf="@+id/tvLabelName"
+                    android:layout_toStartOf="@+id/tvLabelName"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:gravity="center_vertical"
-                    android:hint="@string/city"
                     android:imeOptions="actionNext"
                     android:maxLength="40"
                     android:singleLine="true"
-                    android:textColorHint="#c8c8c8"
                     android:textCursorDrawable="@null"
                     android:textSize="18sp"
-                    android:theme="@style/LoginEditText"
-                    android:layout_toRightOf="@+id/tvAddAddressCity"
-                    android:layout_alignBottom="@+id/ivAddrCity"
-                    android:layout_alignTop="@+id/ivAddrCity"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true" />
+                    android:theme="@style/LoginEditText" />
             </RelativeLayout>
-        </FrameLayout>
 
-
-        <FrameLayout
-            android:id="@+id/flAddAddressDistrict"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/flAddAddressCity"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-            android:visibility="visible">
 
             <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:id="@+id/rlAddressPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressName"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp">
 
                 <ImageView
-                    android:id="@+id/ivAddrDistr"
+                    android:id="@+id/ivAddressPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:background="@drawable/background_shape_input_bottom" />
 
-                <EditText
-                    android:id="@+id/etAddAddressDistrict"
+                <TextView
+                    android:id="@+id/tvLabelPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/ivAddrDistr"
-                    android:layout_alignLeft="@+id/ivAddrDistr"
-                    android:layout_alignRight="@+id/ivAddrDistr"
-                    android:layout_alignTop="@+id/ivAddrDistr"
+                    android:layout_alignBottom="@+id/ivAddressPhone"
+                    android:layout_alignLeft="@+id/ivAddressPhone"
+                    android:layout_alignStart="@+id/ivAddressPhone"
+                    android:layout_alignTop="@+id/ivAddressPhone"
                     android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/label_user_phone"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressPhone"
+                    android:layout_alignEnd="@+id/ivAddressPhone"
+                    android:layout_alignRight="@+id/ivAddressPhone"
+                    android:layout_alignTop="@+id/ivAddressPhone"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelPhone"
+                    android:layout_toLeftOf="@+id/tvLabelPhone"
+                    android:layout_toRightOf="@+id/tvLabelPhone"
+                    android:layout_toStartOf="@+id/tvLabelPhone"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:gravity="center_vertical"
-                    android:hint="@string/distr"
                     android:imeOptions="actionNext"
+                    android:inputType="phone"
                     android:maxLength="40"
                     android:singleLine="true"
-                    android:textColorHint="#c8c8c8"
                     android:textCursorDrawable="@null"
                     android:textSize="18sp"
                     android:theme="@style/LoginEditText" />
             </RelativeLayout>
-        </FrameLayout>
 
-        <FrameLayout
-            android:id="@+id/flAddAddrNav"
-            android:layout_width="40dp"
-            android:layout_height="50dp"
-            android:layout_below="@+id/flAddAddressDistrict"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp" />
+            <TextView
+                android:id="@+id/tvAddressInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressPhone"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/enter_your_contact_info"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ac000000" />
 
-        <FrameLayout
-            android:id="@+id/flAddAddressHouse"
-            android:layout_width="124dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/flAddAddrNav"
-            android:layout_toLeftOf="@+id/flAddAddrNav"
-            android:visibility="visible">
 
             <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:id="@+id/rlAddressCity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/tvAddressInfo"
+                android:layout_marginBottom="1dp">
 
                 <ImageView
-                    android:id="@+id/ivAddrHouse"
+                    android:id="@+id/ivAddressCity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:background="@drawable/background_shape_input_bottom" />
+                    android:background="@drawable/background_shape_input_top" />
 
-                <EditText
-                    android:id="@+id/etAddAddressHouse"
+                <TextView
+                    android:id="@+id/tvLabelCity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/ivAddrHouse"
-                    android:layout_alignLeft="@+id/ivAddrHouse"
-                    android:layout_alignRight="@+id/ivAddrHouse"
-                    android:layout_alignTop="@+id/ivAddrHouse"
+                    android:layout_alignBottom="@+id/ivAddressCity"
+                    android:layout_alignLeft="@+id/ivAddressCity"
+                    android:layout_alignStart="@+id/ivAddressCity"
+                    android:layout_alignTop="@+id/ivAddressCity"
                     android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/label_user_city"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <TextView
+                    android:id="@+id/tvAddressCity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressCity"
+                    android:layout_alignEnd="@+id/ivAddressCity"
+                    android:layout_alignRight="@+id/ivAddressCity"
+                    android:layout_alignTop="@+id/ivAddressCity"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelCity"
+                    android:layout_toLeftOf="@+id/tvLabelCity"
+                    android:layout_toRightOf="@+id/tvLabelCity"
+                    android:layout_toStartOf="@+id/tvLabelCity"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:gravity="center_vertical"
-                    android:hint="@string/house_num"
-                    android:imeOptions="actionNext"
-                    android:maxLength="8"
+                    android:maxLength="40"
                     android:singleLine="true"
-                    android:textColorHint="#c8c8c8"
-                    android:textCursorDrawable="@null"
-                    android:textSize="18sp"
-                    android:theme="@style/LoginEditText" />
+                    android:textSize="18sp" />
             </RelativeLayout>
-        </FrameLayout>
 
-        <FrameLayout
-            android:id="@+id/flAddAddressApartment"
-            android:layout_width="124dp"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/flAddAddrNav"
-            android:layout_toRightOf="@+id/flAddAddrNav">
 
             <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <ImageView
-                    android:id="@+id/ivAddrApartment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:background="@drawable/background_shape_input_bottom" />
-
-                <EditText
-                    android:id="@+id/etAddAddressApartment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/ivAddrApartment"
-                    android:layout_alignLeft="@+id/ivAddrApartment"
-                    android:layout_alignRight="@+id/ivAddrApartment"
-                    android:layout_alignTop="@+id/ivAddrApartment"
-                    android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginTop="1dp"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:gravity="center_vertical"
-                    android:hint="@string/apartment"
-                    android:imeOptions="actionNext"
-                    android:maxLength="8"
-                    android:singleLine="true"
-                    android:textColorHint="#c8c8c8"
-                    android:textCursorDrawable="@null"
-                    android:textSize="18sp"
-                    android:theme="@style/LoginEditText" />
-            </RelativeLayout>
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/flAddAddressNotice"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/flAddAddrNav"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:id="@+id/flAddAddressNotice"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressCity"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp">
 
                 <ImageView
                     android:id="@+id/ivAddrNotice"
@@ -260,26 +282,53 @@
                     android:textSize="18sp"
                     android:theme="@style/LoginEditText" />
             </RelativeLayout>
-        </FrameLayout>
 
-        <Button
-            android:id="@+id/bAddAddress"
+            <Button
+                android:id="@+id/bAddAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/flAddAddressNotice"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/button_selector"
+                android:text="@string/submit" />
+
+            <ProgressBar
+                android:id="@+id/pbAddAddress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_below="@+id/flAddAddressNotice"
+                android:layout_centerHorizontal="true"
+                android:indeterminate="false" />
+
+
+        </RelativeLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/llAddressLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textView6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/flAddAddressNotice"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/button_selector"
-            android:text="@string/submit" />
+            android:layout_marginBottom="8dp"
+            android:text="@string/address_book_is_loading"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#000000" />
 
         <ProgressBar
-            android:id="@+id/pbAddAddress"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@+id/flAddAddressNotice"
-            android:layout_centerHorizontal="true"
-            android:indeterminate="false" />
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+    </LinearLayout>
 
-
-    </RelativeLayout>
-</ScrollView>
+</RelativeLayout>

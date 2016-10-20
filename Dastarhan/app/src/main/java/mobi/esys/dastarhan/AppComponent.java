@@ -7,7 +7,9 @@ import javax.inject.Singleton;
 import dagger.Component;
 import io.realm.RealmConfiguration;
 import mobi.esys.dastarhan.database.CartRepository;
+import mobi.esys.dastarhan.database.CityRepository;
 import mobi.esys.dastarhan.database.CuisineRepository;
+import mobi.esys.dastarhan.database.DistrictRepository;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.OrderRepository;
 import mobi.esys.dastarhan.database.PromoRepository;
@@ -36,9 +38,15 @@ public interface AppComponent {
 
     UserInfoRepository userInfoRepository();
 
+    CityRepository cityRepository();
+
+    DistrictRepository districtRepository();
+
     UnitOfWork getUow();
 
     void inject(CurrentRestaurantFragment fragment);
 
     void inject(AddAddressActivity fragment);
+
+    void inject(SplashActivity activity);
 }

@@ -3,7 +3,6 @@ package mobi.esys.dastarhan;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Handler;
@@ -17,12 +16,16 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import javax.inject.Inject;
 
+import mobi.esys.dastarhan.database.CityRepository;
+import mobi.esys.dastarhan.database.DistrictRepository;
 import mobi.esys.dastarhan.database.UserInfo;
 import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.utils.AppLocationService;
@@ -36,6 +39,14 @@ public class AddAddressActivity extends AppCompatActivity {
     @Inject
     UserInfoRepository userInfoRepo;
     private UserInfo userInfo;
+    @Inject
+    CityRepository cityRepository;
+    @Inject
+    DistrictRepository districtRepository;
+
+    //layers
+    private LinearLayout llAddressLoading;
+    private ScrollView svAddressContent;
 
     private EditText metAddAddressCity;
     private EditText metAddAddressDistrict;
@@ -56,8 +67,14 @@ public class AddAddressActivity extends AppCompatActivity {
 
         userInfo = userInfoRepo.get();
 
-        metAddAddressCity = (EditText) findViewById(R.id.etAddAddressCity);
-        metAddAddressDistrict = (EditText) findViewById(R.id.etAddAddressDistrict);
+        llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
+        svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
+        llAddressLoading.setVisibility(View.VISIBLE);
+        svAddressContent.setVisibility(View.GONE);
+
+        //TODO rewrite to new UI
+        metAddAddressCity = (EditText) findViewById(R.id.etAddressName);
+        metAddAddressDistrict = (EditText) findViewById(R.id.etAddressPhone);
         metAddAddressHouse = (EditText) findViewById(R.id.etAddAddressHouse);
         metAddAddressApartment = (EditText) findViewById(R.id.etAddAddressApartment);
         metAddAddressNotice = (EditText) findViewById(R.id.etAddAddressNotice);

@@ -67,4 +67,14 @@ public class RealmModule {
     public final UserInfoRepository provideUserInfoRepository(RealmConfiguration realmConfiguration, UnitOfWork uow) {
         return new UserInfoRealmRepository(realmConfiguration, uow);
     }
+
+    @Provides
+    public final CityRepository provideCityRepository(RealmConfiguration realmConfiguration, UnitOfWork uow) {
+        return new CityRealmRepository(realmConfiguration, uow);
+    }
+
+    @Provides
+    public final DistrictRepository provideDistrictRepository(RealmConfiguration realmConfiguration, UnitOfWork uow) {
+        return new DistrictRealmRepository(realmConfiguration, uow);
+    }
 }

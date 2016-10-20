@@ -92,4 +92,10 @@
     <string name="please_rate_restaurant">Пожалуйста, оцените рестаран</string>
     <string name="vote">Голосовать</string>
 
+    <string name="address_book_is_loading">Загружается адресная книга…</string>
+    <string name="enter_your_contact_info">Введите ваши контактные данные:</string>
+    <string name="label_username">имя</string>
+    <string name="label_user_phone">телефон</string>
+    <string name="label_user_city">город</string>
+
 </resources>

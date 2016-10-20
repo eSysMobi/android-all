@@ -103,4 +103,10 @@
     <string name="please_rate_restaurant">Please rate the restaurant</string>
     <string name="vote">Vote</string>
 
+    <string name="address_book_is_loading">Address book is loading…</string>
+    <string name="enter_your_contact_info">Enter your contact information:</string>
+    <string name="label_username">name</string>
+    <string name="label_user_phone">phone</string>
+    <string name="label_user_city">city</string>
+
 </resources>
