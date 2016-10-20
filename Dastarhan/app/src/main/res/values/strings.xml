@@ -49,7 +49,7 @@
     <string name="currency">rub</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="add_address">Add address</string>
+    <string name="check_address">Check address</string>
     <string name="send_order">Send order</string>
     <string name="title_activity_setting">SettingActivity</string>
     <string name="city">City</string>

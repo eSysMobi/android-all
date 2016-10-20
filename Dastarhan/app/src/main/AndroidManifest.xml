@@ -36,7 +36,7 @@
             android:name=".AddAddressActivity"
             android:label="@string/adding_address"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Dialog" />
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

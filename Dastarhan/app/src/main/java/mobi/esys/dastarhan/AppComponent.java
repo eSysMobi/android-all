@@ -14,6 +14,7 @@ import mobi.esys.dastarhan.database.PromoRepository;
 import mobi.esys.dastarhan.database.RealmModule;
 import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.database.UnitOfWork;
+import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.net.NetModule;
 
 @Singleton
@@ -33,7 +34,11 @@ public interface AppComponent {
 
     PromoRepository promoRepository();
 
+    UserInfoRepository userInfoRepository();
+
     UnitOfWork getUow();
 
     void inject(CurrentRestaurantFragment fragment);
+
+    void inject(AddAddressActivity fragment);
 }

@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
+import mobi.esys.dastarhan.net.APIAuthorize;
 import mobi.esys.dastarhan.net.APIVoteForRestaurant;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,7 +51,9 @@ public class CurrentRestaurantFragment extends BaseFragment {
     @Inject
     Retrofit retrofit;
     private APIVoteForRestaurant apiVote;
+    private APIAuthorize apiAuth;
     private Restaurant restaurant;
+    private boolean haveNotReauthorize = true;
 
     public CurrentRestaurantFragment() {
         // Required empty public constructor
@@ -83,6 +86,7 @@ public class CurrentRestaurantFragment extends BaseFragment {
         ((DastarhanApp) getActivity().getApplication()).appComponent().inject(this);
 
         apiVote = retrofit.create(APIVoteForRestaurant.class);
+        apiAuth = retrofit.create(APIAuthorize.class);
 
         mtvCurrRestName = (TextView) view.findViewById(R.id.tvCurrRestName);
         mCurrRestRating = (SimpleRatingBar) view.findViewById(R.id.сurrRestRating);
@@ -229,40 +233,7 @@ public class CurrentRestaurantFragment extends BaseFragment {
                 //send rating
                 Log.d(TAG, "Sending vote to server. User rating is " + rating.getRating());
                 final int rate = (int) rating.getRating();
-                String apiKey = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
-                int userID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
-                //send vote
-                Call<JsonObject> apiCall = apiVote.vote(userID, apiKey, restaurant.getServer_id(), rate);
-                apiCall.enqueue(new Callback<JsonObject>() {
-                    @Override
-                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                        if (response.code() == 200) {
-                            //get old rating
-                            JsonObject body = response.body();
-                            if (body.has("success") && body.has("data")) {
-                                JsonObject data = body.getAsJsonObject("data");
-                                if (data.has("old_rate")) {
-                                    int oldRating = data.getAsJsonPrimitive("old_rate").getAsInt();
-                                    //store rating
-                                    restaurant = restRepo.voteForRestaurant(restaurant.getServer_id(), rate, oldRating);
-                                    //update info on screen
-                                    updateRating();
-                                }
-                            }
-                        }
-                        if (response.code() == 404 && response.body().toString().equals("{\"error\":\"No data\"}")) {
-                            //TODO need new token
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<JsonObject> call, Throwable t) {
-                        //may be no inet
-                        if (t instanceof IOException) {
-                            Toast.makeText(CurrentRestaurantFragment.this.getContext(), R.string.no_inet, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                sendingVoteToServer(rate);
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -272,6 +243,76 @@ public class CurrentRestaurantFragment extends BaseFragment {
         });
         AlertDialog b = dialogBuilder.create();
         b.show();
+    }
+
+    private void sendingVoteToServer(final int rate) {
+        String apiKey = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+        int userID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
+        //send vote
+        Call<JsonObject> apiCall = apiVote.vote(userID, apiKey, restaurant.getServer_id(), rate);
+        apiCall.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                if (response.code() == 200 && !response.body().toString().toLowerCase().contains("error")) {
+                    //get old rating
+                    JsonObject body = response.body();
+                    if (body.has("success") && body.has("data")) {
+                        JsonObject data = body.getAsJsonObject("data");
+                        if (data.has("old_rate")) {
+                            int oldRating = data.getAsJsonPrimitive("old_rate").getAsInt();
+                            //store rating
+                            restaurant = restRepo.voteForRestaurant(restaurant.getServer_id(), rate, oldRating);
+                            //update info on screen
+                            updateRating();
+                        }
+                    }
+                } else {
+                    if (haveNotReauthorize) {
+                        haveNotReauthorize = false;
+                        reAuthorizeAnsSendVote(rate);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                //may be no inet or wrong token
+                if (haveNotReauthorize) {
+                    haveNotReauthorize = false;
+                    reAuthorizeAnsSendVote(rate);
+                } else if (t instanceof IOException) {
+                    Toast.makeText(CurrentRestaurantFragment.this.getContext(), R.string.no_inet, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void reAuthorizeAnsSendVote(final int rate) {
+        String email = prefs.getString(Constants.PREF_SAVED_LOGIN, "");
+        String pass = prefs.getString(Constants.PREF_SAVED_PASS, "");
+        if (!email.isEmpty() && !pass.isEmpty()) {
+            Call<JsonObject> apiCall = apiAuth.auth(email, pass);
+            apiCall.enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    if (response.body().has("apikey")) {
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, response.body().get("apikey").getAsString());
+                        editor.apply();
+                        sendingVoteToServer(rate);
+                    } else {
+                        Toast.makeText(CurrentRestaurantFragment.this.getContext(), "Server error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    if (t instanceof IOException) {
+                        Toast.makeText(CurrentRestaurantFragment.this.getContext(), R.string.no_inet, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 
 

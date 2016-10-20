@@ -39,7 +39,7 @@
     <string name="currency">руб</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
-    <string name="add_address">Ввести адрес</string>
+    <string name="check_address">Проверьте адрес</string>
     <string name="send_order">Заказать</string>
     <string name="city">Город</string>
     <string name="distr">Район/улица</string>

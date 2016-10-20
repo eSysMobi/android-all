@@ -25,6 +25,7 @@ import mobi.esys.dastarhan.database.UnitOfWork;
 /**
  * Created by ZeyUzh on 08.06.2016.
  */
+@Deprecated //need use retrofit
 public class GetPromo extends AsyncTask<Void, Void, Void> {
     private final String TAG = "dtagGetPromo";
     private Handler handler;

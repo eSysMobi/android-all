@@ -21,13 +21,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import javax.inject.Inject;
+
+import mobi.esys.dastarhan.database.UserInfo;
+import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.utils.AppLocationService;
 import mobi.esys.dastarhan.utils.LocationAddress;
 
 public class AddAddressActivity extends AppCompatActivity {
 
+
     private final String TAG = "dtagAddAddress";
-    SharedPreferences prefs;
+
+    @Inject
+    UserInfoRepository userInfoRepo;
+    private UserInfo userInfo;
 
     private EditText metAddAddressCity;
     private EditText metAddAddressDistrict;
@@ -45,6 +53,8 @@ public class AddAddressActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_address);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
+        userInfo = userInfoRepo.get();
 
         metAddAddressCity = (EditText) findViewById(R.id.etAddAddressCity);
         metAddAddressDistrict = (EditText) findViewById(R.id.etAddAddressDistrict);
@@ -105,8 +115,6 @@ public class AddAddressActivity extends AppCompatActivity {
             }
         });
 
-        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
-
         appLocationService = new AppLocationService(AddAddressActivity.this);
         Location location = appLocationService.getLocation(LocationManager.NETWORK_PROVIDER);
 
@@ -126,13 +134,18 @@ public class AddAddressActivity extends AppCompatActivity {
                 if (!metAddAddressCity.getText().toString().isEmpty()) {
                     if (!metAddAddressDistrict.getText().toString().isEmpty()) {
                         if (!metAddAddressHouse.getText().toString().isEmpty()) {
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("city", metAddAddressCity.getText().toString());
-                            editor.putString("street", metAddAddressDistrict.getText().toString());
-                            editor.putString("house", metAddAddressHouse.getText().toString());
-                            editor.putString("apartment", metAddAddressApartment.getText().toString());
-                            editor.putString("notice_addr", metAddAddressNotice.getText().toString());
-                            editor.apply();
+
+//                            SharedPreferences.Editor editor = prefs.edit();
+//                            editor.putString("city", metAddAddressCity.getText().toString());
+//                            editor.putString("street", metAddAddressDistrict.getText().toString());
+//                            editor.putString("house", metAddAddressHouse.getText().toString());
+//                            editor.putString("apartment", metAddAddressApartment.getText().toString());
+//                            editor.putString("notice_addr", metAddAddressNotice.getText().toString());
+//                            editor.apply();
+                            //TODO save user info from view to DB
+                            //userInfo.update();
+                            userInfoRepo.update(userInfo);
+
                             Intent intent = new Intent();
                             setResult(RESULT_OK, intent);
                             finish();
@@ -187,18 +200,18 @@ public class AddAddressActivity extends AppCompatActivity {
                     Log.d(TAG, "Get address bundle");
 
                     if (locationAddress == null || locationAddress.isEmpty()) {
-                        metAddAddressCity.setText(prefs.getString("city", ""));
-                        metAddAddressDistrict.setText(prefs.getString("street", ""));
-                        metAddAddressHouse.setText(prefs.getString("house", ""));
-                        metAddAddressApartment.setText(prefs.getString("apartment", ""));
-                        metAddAddressNotice.setText(prefs.getString("notice_addr", ""));
+                        //TODO get from DB
+//                        metAddAddressCity.setText(prefs.getString("city", ""));
+//                        metAddAddressDistrict.setText(prefs.getString("street", ""));
                     } else {
                         metAddAddressCity.setText(city);
                         metAddAddressDistrict.setText(street);
-                        metAddAddressHouse.setText(prefs.getString("house", ""));
-                        metAddAddressApartment.setText(prefs.getString("apartment", ""));
-                        metAddAddressNotice.setText(prefs.getString("notice_addr", ""));
+
                     }
+                    //TODO get from DB
+//                        metAddAddressHouse.setText(prefs.getString("house", ""));
+//                        metAddAddressApartment.setText(prefs.getString("apartment", ""));
+//                        metAddAddressNotice.setText(prefs.getString("notice_addr", ""));
                     mpbAddAddress.setVisibility(View.GONE);
                     mbAddAddress.setVisibility(View.VISIBLE);
                     break;

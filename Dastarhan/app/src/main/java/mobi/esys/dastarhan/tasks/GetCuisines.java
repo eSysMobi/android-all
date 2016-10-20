@@ -25,6 +25,7 @@ import mobi.esys.dastarhan.database.UnitOfWork;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
+@Deprecated //need use retrofit
 public class GetCuisines extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = "dtagGetCuisines";
     private Handler handler;

@@ -33,18 +33,18 @@ class RealmUnitOfWork implements UnitOfWork {
             realmThreadLocal.remove();
         }
 
-        for(String event: eventsForBroadcasts.get()){
-            if(event.equals(CartUpdateEvent.class.getName())){
+        for (String event : eventsForBroadcasts.get()) {
+            if (event.equals(CartUpdateEvent.class.getName())) {
                 bus.post(new CartUpdateEvent());
-            }else if(event.equals(CuisineUpdateEvent.class.getName())){
+            } else if (event.equals(CuisineUpdateEvent.class.getName())) {
                 bus.post(new CuisineUpdateEvent());
-            }else if(event.equals(FoodUpdateEvent.class.getName())){
+            } else if (event.equals(FoodUpdateEvent.class.getName())) {
                 bus.post(new FoodUpdateEvent());
-            }else if(event.equals(OrderUpdateEvent.class.getName())){
+            } else if (event.equals(OrderUpdateEvent.class.getName())) {
                 bus.post(new OrderUpdateEvent());
-            }else if(event.equals(PromoUpdateEvent.class.getName())){
+            } else if (event.equals(PromoUpdateEvent.class.getName())) {
                 bus.post(new PromoUpdateEvent());
-            }else if(event.equals(RestaurantUpdateEvent.class.getName())){
+            } else if (event.equals(RestaurantUpdateEvent.class.getName())) {
                 bus.post(new RestaurantUpdateEvent());
             }
         }

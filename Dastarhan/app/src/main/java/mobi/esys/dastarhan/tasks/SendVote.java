@@ -18,6 +18,7 @@ import mobi.esys.dastarhan.Constants;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
+@Deprecated //need use retrofit APIVoteForRestaurant
 public class SendVote extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = "dtagSendVote";
 

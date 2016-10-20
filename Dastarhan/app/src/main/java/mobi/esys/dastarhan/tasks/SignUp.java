@@ -18,6 +18,7 @@ import mobi.esys.dastarhan.Constants;
 /**
  * Created by ZeyUzh on 18.05.2016.
  */
+@Deprecated //need use retrofit
 public class SignUp extends AsyncTask<String, Void, Void> {
     private final String TAG = "dtagSignUp";
     private CallbackAuth callback;

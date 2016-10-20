@@ -62,4 +62,9 @@ public class RealmModule {
     public final PromoRepository providePromoRepository(RealmConfiguration realmConfiguration, UnitOfWork uow) {
         return new PromoRealmRepository(realmConfiguration, uow);
     }
+
+    @Provides
+    public final UserInfoRepository provideUserInfoRepository(RealmConfiguration realmConfiguration, UnitOfWork uow) {
+        return new UserInfoRealmRepository(realmConfiguration, uow);
+    }
 }

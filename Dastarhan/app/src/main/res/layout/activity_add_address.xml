@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,263 +7,279 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#c8c8c8"
     tools:context="mobi.esys.dastarhan.AddAddressActivity">
 
-    <FrameLayout
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/flAddAddressCity"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:visibility="visible">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
-            <ImageView
+        <FrameLayout
+            android:id="@+id/flAddAddressCity"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:visibility="visible">
+
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivAddrCity"
-                android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input_bottom" />
+                android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/etAddAddressCity"
-                android:theme="@style/LoginEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivAddrCity"
-                android:layout_alignTop="@+id/ivAddrCity"
-                android:layout_alignRight="@+id/ivAddrCity"
-                android:layout_alignBottom="@+id/ivAddrCity"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/city"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionNext"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:maxLength="40"
-                android:textCursorDrawable="@null"/>
-        </RelativeLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/ivAddrCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_top"/>
+
+                <TextView
+                    android:id="@+id/tvAddAddressCity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/city"
+                    android:textColor="#9e9e9e"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="1dp"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:gravity="center"
+                    android:layout_alignBottom="@+id/ivAddrCity"
+                    android:layout_alignTop="@+id/ivAddrCity"
+                    android:layout_alignLeft="@+id/ivAddrCity"/>
+
+                <EditText
+                    android:id="@+id/etAddAddressCity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="@string/city"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textColorHint="#c8c8c8"
+                    android:textCursorDrawable="@null"
+                    android:textSize="18sp"
+                    android:theme="@style/LoginEditText"
+                    android:layout_toRightOf="@+id/tvAddAddressCity"
+                    android:layout_alignBottom="@+id/ivAddrCity"
+                    android:layout_alignTop="@+id/ivAddrCity"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true" />
+            </RelativeLayout>
+        </FrameLayout>
 
 
-    <FrameLayout
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/flAddAddressDistrict"
-        android:layout_below="@+id/flAddAddressCity"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:visibility="visible">
+        <FrameLayout
+            android:id="@+id/flAddAddressDistrict"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flAddAddressCity"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:visibility="visible">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivAddrDistr"
-                android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input_bottom" />
+                android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/etAddAddressDistrict"
-                android:theme="@style/LoginEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivAddrDistr"
-                android:layout_alignTop="@+id/ivAddrDistr"
-                android:layout_alignRight="@+id/ivAddrDistr"
-                android:layout_alignBottom="@+id/ivAddrDistr"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/distr"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionNext"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:maxLength="40"
-                android:textCursorDrawable="@null"/>
-        </RelativeLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/ivAddrDistr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_bottom" />
 
-    <FrameLayout
-        android:layout_width="40dp"
-        android:layout_height="50dp"
-        android:layout_below="@+id/flAddAddressDistrict"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:id="@+id/flAddAddrNav"/>
+                <EditText
+                    android:id="@+id/etAddAddressDistrict"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddrDistr"
+                    android:layout_alignLeft="@+id/ivAddrDistr"
+                    android:layout_alignRight="@+id/ivAddrDistr"
+                    android:layout_alignTop="@+id/ivAddrDistr"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="1dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="@string/distr"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textColorHint="#c8c8c8"
+                    android:textCursorDrawable="@null"
+                    android:textSize="18sp"
+                    android:theme="@style/LoginEditText" />
+            </RelativeLayout>
+        </FrameLayout>
 
-    <FrameLayout
-        android:layout_width="124dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/flAddAddressHouse"
-        android:visibility="visible"
-        android:layout_alignTop="@+id/flAddAddrNav"
-        android:layout_toLeftOf="@+id/flAddAddrNav"
-        android:layout_alignStart="@+id/flAddAddressDistrict">
+        <FrameLayout
+            android:id="@+id/flAddAddrNav"
+            android:layout_width="40dp"
+            android:layout_height="50dp"
+            android:layout_below="@+id/flAddAddressDistrict"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <FrameLayout
+            android:id="@+id/flAddAddressHouse"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/flAddAddrNav"
+            android:layout_toLeftOf="@+id/flAddAddrNav"
+            android:visibility="visible">
 
-            <ImageView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivAddrHouse"
-                android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input_bottom" />
+                android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/etAddAddressHouse"
-                android:theme="@style/LoginEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivAddrHouse"
-                android:layout_alignTop="@+id/ivAddrHouse"
-                android:layout_alignRight="@+id/ivAddrHouse"
-                android:layout_alignBottom="@+id/ivAddrHouse"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/house_num"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionNext"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:maxLength="8"
-                android:textCursorDrawable="@null"/>
-        </RelativeLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/ivAddrHouse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_bottom" />
 
-    <FrameLayout
-        android:layout_width="124dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/flAddAddressApartment"
-        android:layout_alignTop="@+id/flAddAddrNav"
-        android:layout_toRightOf="@+id/flAddAddrNav"
-        android:layout_alignEnd="@+id/flAddAddressDistrict">
+                <EditText
+                    android:id="@+id/etAddAddressHouse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddrHouse"
+                    android:layout_alignLeft="@+id/ivAddrHouse"
+                    android:layout_alignRight="@+id/ivAddrHouse"
+                    android:layout_alignTop="@+id/ivAddrHouse"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="1dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="@string/house_num"
+                    android:imeOptions="actionNext"
+                    android:maxLength="8"
+                    android:singleLine="true"
+                    android:textColorHint="#c8c8c8"
+                    android:textCursorDrawable="@null"
+                    android:textSize="18sp"
+                    android:theme="@style/LoginEditText" />
+            </RelativeLayout>
+        </FrameLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <FrameLayout
+            android:id="@+id/flAddAddressApartment"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/flAddAddrNav"
+            android:layout_toRightOf="@+id/flAddAddrNav">
 
-            <ImageView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivAddrApartment"
-                android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input_bottom" />
+                android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/etAddAddressApartment"
-                android:theme="@style/LoginEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivAddrApartment"
-                android:layout_alignTop="@+id/ivAddrApartment"
-                android:layout_alignRight="@+id/ivAddrApartment"
-                android:layout_alignBottom="@+id/ivAddrApartment"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/apartment"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionNext"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:maxLength="8"
-                android:textCursorDrawable="@null"/>
-        </RelativeLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/ivAddrApartment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_bottom" />
 
-    <FrameLayout
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/flAddAddressNotice"
-        android:layout_below="@+id/flAddAddrNav"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp">
+                <EditText
+                    android:id="@+id/etAddAddressApartment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddrApartment"
+                    android:layout_alignLeft="@+id/ivAddrApartment"
+                    android:layout_alignRight="@+id/ivAddrApartment"
+                    android:layout_alignTop="@+id/ivAddrApartment"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="1dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="@string/apartment"
+                    android:imeOptions="actionNext"
+                    android:maxLength="8"
+                    android:singleLine="true"
+                    android:textColorHint="#c8c8c8"
+                    android:textCursorDrawable="@null"
+                    android:textSize="18sp"
+                    android:theme="@style/LoginEditText" />
+            </RelativeLayout>
+        </FrameLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <FrameLayout
+            android:id="@+id/flAddAddressNotice"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flAddAddrNav"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp">
 
-            <ImageView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/ivAddrNotice"
-                android:layout_centerVertical="true"
-                android:background="@drawable/background_shape_input_bottom" />
+                android:layout_height="match_parent">
 
-            <EditText
-                android:id="@+id/etAddAddressNotice"
-                android:theme="@style/LoginEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/ivAddrNotice"
-                android:layout_alignTop="@+id/ivAddrNotice"
-                android:layout_alignRight="@+id/ivAddrNotice"
-                android:layout_alignBottom="@+id/ivAddrNotice"
-                android:gravity="center_vertical"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="1dp"
-                android:textSize="18sp"
-                android:singleLine="true"
-                android:hint="@string/notice_addr"
-                android:textColorHint="#c8c8c8"
-                android:imeOptions="actionDone"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:maxLength="100"
-                android:textCursorDrawable="@null"/>
-        </RelativeLayout>
-    </FrameLayout>
+                <ImageView
+                    android:id="@+id/ivAddrNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_bottom" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/submit"
-        android:id="@+id/bAddAddress"
-        android:background="@drawable/button_selector"
-        android:layout_below="@+id/flAddAddressNotice"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone" />
+                <EditText
+                    android:id="@+id/etAddAddressNotice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddrNotice"
+                    android:layout_alignLeft="@+id/ivAddrNotice"
+                    android:layout_alignRight="@+id/ivAddrNotice"
+                    android:layout_alignTop="@+id/ivAddrNotice"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="1dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:hint="@string/notice_addr"
+                    android:imeOptions="actionDone"
+                    android:maxLength="100"
+                    android:singleLine="true"
+                    android:textColorHint="#c8c8c8"
+                    android:textCursorDrawable="@null"
+                    android:textSize="18sp"
+                    android:theme="@style/LoginEditText" />
+            </RelativeLayout>
+        </FrameLayout>
 
-    <ProgressBar
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/pbAddAddress"
-        android:layout_below="@+id/flAddAddressNotice"
-        android:layout_centerHorizontal="true"
-        android:indeterminate="false"/>
+        <Button
+            android:id="@+id/bAddAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/flAddAddressNotice"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/button_selector"
+            android:text="@string/submit" />
+
+        <ProgressBar
+            android:id="@+id/pbAddAddress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@+id/flAddAddressNotice"
+            android:layout_centerHorizontal="true"
+            android:indeterminate="false" />
 
 
-
-</RelativeLayout>
+    </RelativeLayout>
+</ScrollView>
