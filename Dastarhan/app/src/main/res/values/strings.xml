@@ -24,7 +24,7 @@
     <string name="price">Price:</string>
     <string name="food_not_found">Sorry, but this food not found in Database</string>
     <string name="rest_not_found">Sorry, but this restaurant not found in Database</string>
-    <string name="to_order">Add to shopping cart</string>
+    <string name="to_order">To order</string>
     <string name="open_hours">Open hours:</string>
     <string name="schedule">Schedule:</string>
     <string name="tel">Phone number:</string>
@@ -57,7 +57,6 @@
     <string name="exact_addr">The exact address</string>
     <string name="submit">Submit</string>
     <string name="notice_addr">Notice (e.g. phone number)</string>
-    <string name="notice">Notice</string>
     <string name="apartment">Apartment</string>
     <string name="house_num">House</string>
     <string name="need_enter_house_num">Enter house number</string>
@@ -108,5 +107,16 @@
     <string name="label_username">name</string>
     <string name="label_user_phone">phone</string>
     <string name="label_user_city">city</string>
+    <string name="district">district</string>
+    <string name="street">street</string>
+    <string name="house">house</string>
+    <string name="building">building</string>
+    <string name="apartment_office">apartment/office</string>
+    <string name="porch">porch</string>
+    <string name="floor">floor</string>
+    <string name="intercom_code">intercom code</string>
+    <string name="additionally">Additionally</string>
+    <string name="need_change_from">need change from</string>
+    <string name="notice">notice</string>
 
 </resources>

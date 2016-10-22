@@ -46,7 +46,6 @@
     <string name="exact_addr">Точный адрес</string>
     <string name="submit">Подтвердить</string>
     <string name="notice_addr">Примечания (напр. телефон)</string>
-    <string name="notice">Примечания</string>
     <string name="apartment">Офис/кв.</string>
     <string name="house_num">Дом</string>
     <string name="need_enter_house_num">Введите номер дома</string>
@@ -97,5 +96,16 @@
     <string name="label_username">имя</string>
     <string name="label_user_phone">телефон</string>
     <string name="label_user_city">город</string>
+    <string name="district">район</string>
+    <string name="street">улица</string>
+    <string name="house">дом</string>
+    <string name="building">строение/корпус</string>
+    <string name="apartment_office">кв./офис</string>
+    <string name="porch">подъезд</string>
+    <string name="floor">этаж</string>
+    <string name="intercom_code">код домофона</string>
+    <string name="additionally">Дополнительно</string>
+    <string name="need_change_from">нужна сдача с</string>
+    <string name="notice">комментарий</string>
 
 </resources>

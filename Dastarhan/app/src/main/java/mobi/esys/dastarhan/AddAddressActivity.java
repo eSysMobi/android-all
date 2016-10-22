@@ -48,13 +48,22 @@ public class AddAddressActivity extends AppCompatActivity {
     private LinearLayout llAddressLoading;
     private ScrollView svAddressContent;
 
-    private EditText metAddAddressCity;
-    private EditText metAddAddressDistrict;
-    private EditText metAddAddressHouse;
-    private EditText metAddAddressApartment;
-    private EditText metAddAddressNotice;
-    private Button mbAddAddress;
-    private ProgressBar mpbAddAddress;
+    private EditText metAddressName;
+    private EditText metAddressPhone;
+
+    private TextView mtvAddressCity;
+    private TextView mtvAddressDistrict;
+    private EditText metAddressStreet;
+    private EditText metAddressHouse;
+    private EditText metAddressBuilding;
+    private EditText metAddressApartment;
+    private EditText metAddressPorch;
+    private EditText metAddressFloor;
+    private EditText metAddressIntercom;
+    private EditText metAddressNeedChange;
+    private EditText metAddressNotice;
+    private Button bAddressToOrder;
+    private ProgressBar pbAddressToOrder;
 
     AppLocationService appLocationService;
 
@@ -73,59 +82,109 @@ public class AddAddressActivity extends AppCompatActivity {
         svAddressContent.setVisibility(View.GONE);
 
         //TODO rewrite to new UI
-        metAddAddressCity = (EditText) findViewById(R.id.etAddressName);
-        metAddAddressDistrict = (EditText) findViewById(R.id.etAddressPhone);
-        metAddAddressHouse = (EditText) findViewById(R.id.etAddAddressHouse);
-        metAddAddressApartment = (EditText) findViewById(R.id.etAddAddressApartment);
-        metAddAddressNotice = (EditText) findViewById(R.id.etAddAddressNotice);
-        mbAddAddress = (Button) findViewById(R.id.bAddAddress);
-        mpbAddAddress = (ProgressBar) findViewById(R.id.pbAddAddress);
+        mtvAddressCity = (TextView) findViewById(R.id.tvAddressCity);
+        mtvAddressDistrict = (TextView) findViewById(R.id.tvAddressDistrict);
+        metAddressStreet = (EditText) findViewById(R.id.etAddressStreet);
+        metAddressHouse = (EditText) findViewById(R.id.etAddressHouse);
+        metAddressBuilding = (EditText) findViewById(R.id.etAddressBuilding);
+        metAddressApartment = (EditText) findViewById(R.id.etAddressApartment);
+        metAddressPorch = (EditText) findViewById(R.id.etAddressPorch);
+        metAddressFloor = (EditText) findViewById(R.id.etAddressFloor);
+        metAddressIntercom = (EditText) findViewById(R.id.etAddressIntercom);
+        metAddressNeedChange = (EditText) findViewById(R.id.etAddressNeedChange);
+        metAddressNotice = (EditText) findViewById(R.id.etAddressNotice);
+        bAddressToOrder = (Button) findViewById(R.id.bAddressToOrder);;
+        pbAddressToOrder = (ProgressBar) findViewById(R.id.pbAddressToOrder);
 
-        metAddAddressCity.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        metAddressStreet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddAddressDistrict.requestFocus();
+                    metAddressHouse.requestFocus();
                     return true;
                 }
                 return false;
             }
         });
 
-        metAddAddressDistrict.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        metAddressHouse.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddAddressHouse.requestFocus();
+                    metAddressBuilding.requestFocus();
                     return true;
                 }
                 return false;
             }
         });
 
-        metAddAddressHouse.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        metAddressBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddAddressApartment.requestFocus();
+                    metAddressApartment.requestFocus();
                     return true;
                 }
                 return false;
             }
         });
 
-        metAddAddressApartment.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        metAddressApartment.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddAddressNotice.requestFocus();
+                    metAddressPorch.requestFocus();
                     return true;
                 }
                 return false;
             }
         });
 
-        metAddAddressNotice.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        metAddressPorch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddressFloor.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddressFloor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddressIntercom.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddressIntercom.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddressNeedChange.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddressNeedChange.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddressNotice.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddressNotice.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 return false;
@@ -145,7 +204,7 @@ public class AddAddressActivity extends AppCompatActivity {
             showSettingsAlert();
         }
 
-        mbAddAddress.setOnClickListener(new View.OnClickListener() {
+        bAddressToOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!metAddAddressCity.getText().toString().isEmpty()) {

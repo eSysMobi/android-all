@@ -26,11 +26,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginLeft="24dp"
                 android:layout_marginRight="24dp"
                 android:layout_marginStart="24dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/enter_your_contact_info"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#ac000000" />
@@ -107,8 +108,7 @@
                 android:layout_alignRight="@+id/tvContactInfo"
                 android:layout_alignStart="@+id/tvContactInfo"
                 android:layout_below="@+id/rlAddressName"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="10dp">
+                android:layout_centerHorizontal="true">
 
                 <ImageView
                     android:id="@+id/ivAddressPhone"
@@ -172,12 +172,11 @@
                 android:layout_alignStart="@+id/tvContactInfo"
                 android:layout_below="@+id/rlAddressPhone"
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/enter_your_contact_info"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#ac000000" />
-
 
             <RelativeLayout
                 android:id="@+id/rlAddressCity"
@@ -238,67 +237,639 @@
                     android:textSize="18sp" />
             </RelativeLayout>
 
-
             <RelativeLayout
-                android:id="@+id/flAddAddressNotice"
-                android:layout_width="300dp"
+                android:id="@+id/rlAddressDistrict"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignEnd="@+id/tvContactInfo"
                 android:layout_alignLeft="@+id/tvContactInfo"
                 android:layout_alignRight="@+id/tvContactInfo"
                 android:layout_alignStart="@+id/tvContactInfo"
                 android:layout_below="@+id/rlAddressCity"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="1dp">
 
                 <ImageView
-                    android:id="@+id/ivAddrNotice"
+                    android:id="@+id/ivAddressDistrict"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelDistrict"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressDistrict"
+                    android:layout_alignLeft="@+id/ivAddressDistrict"
+                    android:layout_alignStart="@+id/ivAddressDistrict"
+                    android:layout_alignTop="@+id/ivAddressDistrict"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/district"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <TextView
+                    android:id="@+id/tvAddressDistrict"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressDistrict"
+                    android:layout_alignEnd="@+id/ivAddressDistrict"
+                    android:layout_alignRight="@+id/ivAddressDistrict"
+                    android:layout_alignTop="@+id/ivAddressDistrict"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelDistrict"
+                    android:layout_toLeftOf="@+id/tvLabelDistrict"
+                    android:layout_toRightOf="@+id/tvLabelDistrict"
+                    android:layout_toStartOf="@+id/tvLabelDistrict"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressStreet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressDistrict"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressStreet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelStreet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressStreet"
+                    android:layout_alignLeft="@+id/ivAddressStreet"
+                    android:layout_alignStart="@+id/ivAddressStreet"
+                    android:layout_alignTop="@+id/ivAddressStreet"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/street"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressStreet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressStreet"
+                    android:layout_alignEnd="@+id/ivAddressStreet"
+                    android:layout_alignRight="@+id/ivAddressStreet"
+                    android:layout_alignTop="@+id/ivAddressStreet"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelStreet"
+                    android:layout_toLeftOf="@+id/tvLabelStreet"
+                    android:layout_toRightOf="@+id/tvLabelStreet"
+                    android:layout_toStartOf="@+id/tvLabelStreet"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressHouse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressStreet"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressHouse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelHouse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressHouse"
+                    android:layout_alignLeft="@+id/ivAddressHouse"
+                    android:layout_alignStart="@+id/ivAddressHouse"
+                    android:layout_alignTop="@+id/ivAddressHouse"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/house"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressHouse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressHouse"
+                    android:layout_alignEnd="@+id/ivAddressHouse"
+                    android:layout_alignRight="@+id/ivAddressHouse"
+                    android:layout_alignTop="@+id/ivAddressHouse"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelHouse"
+                    android:layout_toLeftOf="@+id/tvLabelHouse"
+                    android:layout_toRightOf="@+id/tvLabelHouse"
+                    android:layout_toStartOf="@+id/tvLabelHouse"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressBuilding"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressHouse"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressBuilding"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelBuilding"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressBuilding"
+                    android:layout_alignLeft="@+id/ivAddressBuilding"
+                    android:layout_alignStart="@+id/ivAddressBuilding"
+                    android:layout_alignTop="@+id/ivAddressBuilding"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/building"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressBuilding"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressBuilding"
+                    android:layout_alignEnd="@+id/ivAddressBuilding"
+                    android:layout_alignRight="@+id/ivAddressBuilding"
+                    android:layout_alignTop="@+id/ivAddressBuilding"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelBuilding"
+                    android:layout_toLeftOf="@+id/tvLabelBuilding"
+                    android:layout_toRightOf="@+id/tvLabelBuilding"
+                    android:layout_toStartOf="@+id/tvLabelBuilding"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressApartment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressBuilding"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressApartment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelApartment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressApartment"
+                    android:layout_alignLeft="@+id/ivAddressApartment"
+                    android:layout_alignStart="@+id/ivAddressApartment"
+                    android:layout_alignTop="@+id/ivAddressApartment"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/apartment_office"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressApartment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressApartment"
+                    android:layout_alignEnd="@+id/ivAddressApartment"
+                    android:layout_alignRight="@+id/ivAddressApartment"
+                    android:layout_alignTop="@+id/ivAddressApartment"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelApartment"
+                    android:layout_toLeftOf="@+id/tvLabelApartment"
+                    android:layout_toRightOf="@+id/tvLabelApartment"
+                    android:layout_toStartOf="@+id/tvLabelApartment"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressPorch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressApartment"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressPorch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelPorch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressPorch"
+                    android:layout_alignLeft="@+id/ivAddressPorch"
+                    android:layout_alignStart="@+id/ivAddressPorch"
+                    android:layout_alignTop="@+id/ivAddressPorch"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/porch"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressPorch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressPorch"
+                    android:layout_alignEnd="@+id/ivAddressPorch"
+                    android:layout_alignRight="@+id/ivAddressPorch"
+                    android:layout_alignTop="@+id/ivAddressPorch"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelPorch"
+                    android:layout_toLeftOf="@+id/tvLabelPorch"
+                    android:layout_toRightOf="@+id/tvLabelPorch"
+                    android:layout_toStartOf="@+id/tvLabelPorch"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressFloor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressPorch"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressFloor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_middle" />
+
+                <TextView
+                    android:id="@+id/tvLabelFloor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressFloor"
+                    android:layout_alignLeft="@+id/ivAddressFloor"
+                    android:layout_alignStart="@+id/ivAddressFloor"
+                    android:layout_alignTop="@+id/ivAddressFloor"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/floor"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressFloor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressFloor"
+                    android:layout_alignEnd="@+id/ivAddressFloor"
+                    android:layout_alignRight="@+id/ivAddressFloor"
+                    android:layout_alignTop="@+id/ivAddressFloor"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelFloor"
+                    android:layout_toLeftOf="@+id/tvLabelFloor"
+                    android:layout_toRightOf="@+id/tvLabelFloor"
+                    android:layout_toStartOf="@+id/tvLabelFloor"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressIntercom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressFloor"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressIntercom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:background="@drawable/background_shape_input_bottom" />
 
-                <EditText
-                    android:id="@+id/etAddAddressNotice"
+                <TextView
+                    android:id="@+id/tvLabelIntercom"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/ivAddrNotice"
-                    android:layout_alignLeft="@+id/ivAddrNotice"
-                    android:layout_alignRight="@+id/ivAddrNotice"
-                    android:layout_alignTop="@+id/ivAddrNotice"
+                    android:layout_alignBottom="@+id/ivAddressIntercom"
+                    android:layout_alignLeft="@+id/ivAddressIntercom"
+                    android:layout_alignStart="@+id/ivAddressIntercom"
+                    android:layout_alignTop="@+id/ivAddressIntercom"
                     android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
                     android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/intercom_code"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressIntercom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressIntercom"
+                    android:layout_alignEnd="@+id/ivAddressIntercom"
+                    android:layout_alignRight="@+id/ivAddressIntercom"
+                    android:layout_alignTop="@+id/ivAddressIntercom"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelIntercom"
+                    android:layout_toLeftOf="@+id/tvLabelIntercom"
+                    android:layout_toRightOf="@+id/tvLabelIntercom"
+                    android:layout_toStartOf="@+id/tvLabelIntercom"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:gravity="center_vertical"
-                    android:hint="@string/notice_addr"
-                    android:imeOptions="actionDone"
-                    android:maxLength="100"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
                     android:singleLine="true"
-                    android:textColorHint="#c8c8c8"
-                    android:textCursorDrawable="@null"
-                    android:textSize="18sp"
-                    android:theme="@style/LoginEditText" />
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tvAddressAdditionally"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressIntercom"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/additionally"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ac000000" />
+
+            <RelativeLayout
+                android:id="@+id/rlAddressNeedChange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/tvAddressAdditionally"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressNeedChange"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_top" />
+
+                <TextView
+                    android:id="@+id/tvLabelNeedChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressNeedChange"
+                    android:layout_alignLeft="@+id/ivAddressNeedChange"
+                    android:layout_alignStart="@+id/ivAddressNeedChange"
+                    android:layout_alignTop="@+id/ivAddressNeedChange"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/need_change_from"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressNeedChange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressNeedChange"
+                    android:layout_alignEnd="@+id/ivAddressNeedChange"
+                    android:layout_alignRight="@+id/ivAddressNeedChange"
+                    android:layout_alignTop="@+id/ivAddressNeedChange"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelNeedChange"
+                    android:layout_toLeftOf="@+id/tvLabelNeedChange"
+                    android:layout_toRightOf="@+id/tvLabelNeedChange"
+                    android:layout_toStartOf="@+id/tvLabelNeedChange"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionNext"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlAddressNotice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/tvContactInfo"
+                android:layout_alignLeft="@+id/tvContactInfo"
+                android:layout_alignRight="@+id/tvContactInfo"
+                android:layout_alignStart="@+id/tvContactInfo"
+                android:layout_below="@+id/rlAddressNeedChange"
+                android:layout_marginBottom="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAddressNotice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/background_shape_input_bottom" />
+
+                <TextView
+                    android:id="@+id/tvLabelNotice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressNotice"
+                    android:layout_alignLeft="@+id/ivAddressNotice"
+                    android:layout_alignStart="@+id/ivAddressNotice"
+                    android:layout_alignTop="@+id/ivAddressNotice"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:gravity="center"
+                    android:text="@string/notice"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#9e9e9e" />
+
+                <EditText
+                    android:id="@+id/etAddressNotice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/ivAddressNotice"
+                    android:layout_alignEnd="@+id/ivAddressNotice"
+                    android:layout_alignRight="@+id/ivAddressNotice"
+                    android:layout_alignTop="@+id/ivAddressNotice"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_toEndOf="@+id/tvLabelNotice"
+                    android:layout_toLeftOf="@+id/tvLabelNotice"
+                    android:layout_toRightOf="@+id/tvLabelNotice"
+                    android:layout_toStartOf="@+id/tvLabelNotice"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center_vertical"
+                    android:imeOptions="actionDone"
+                    android:maxLength="40"
+                    android:singleLine="true"
+                    android:textSize="18sp" />
             </RelativeLayout>
 
             <Button
-                android:id="@+id/bAddAddress"
+                android:id="@+id/bAddressToOrder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/flAddAddressNotice"
+                android:layout_below="@+id/rlAddressNotice"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/button_selector"
-                android:text="@string/submit" />
+                android:text="@string/to_order" />
 
             <ProgressBar
-                android:id="@+id/pbAddAddress"
+                android:id="@+id/pbAddressToOrder"
                 style="?android:attr/progressBarStyleSmall"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_below="@+id/flAddAddressNotice"
+                android:layout_below="@+id/rlAddressNotice"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
                 android:indeterminate="false" />
 
 
