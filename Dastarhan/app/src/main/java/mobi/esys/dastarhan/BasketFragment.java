@@ -27,13 +27,11 @@ import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 public class BasketFragment extends BaseFragment {
 
     private final String TAG = "dtagBasketActivity";
-    private final static int PERMISSION_REQUEST_CODE = 334;
 
     private Handler handler;
 
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
-    private Button mbBasketSendOrder;
     private TextView mtvBasketTotalCost;
 
     public BasketFragment() {
@@ -63,35 +61,18 @@ public class BasketFragment extends BaseFragment {
 
         mrvOrders = (RecyclerView) view.findViewById(R.id.rvOrders);
         mbBasketAddAddress = (Button) view.findViewById(R.id.bBasketAddAddress);
-        mbBasketSendOrder = (Button) view.findViewById(R.id.bBasketSendOrder);
         mtvBasketTotalCost = (TextView) view.findViewById(R.id.tvBasketTotalCost);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mrvOrders.setLayoutManager(llm);
 
-        //TODO set notice
-
         mbBasketAddAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Add address");
-                Intent intent = new Intent(getContext(), AddAddressActivity.class);
-                startActivityForResult(intent, 88);
+                Log.d(TAG, "User check address");
+                startActivity(new Intent(getContext(), AddAddressActivity.class));
             }
         });
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && getActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        PERMISSION_REQUEST_CODE);
-            } else {
-                mbBasketAddAddress.setEnabled(true);
-            }
-        } else {
-            mbBasketAddAddress.setEnabled(true);
-        }
-
         return view;
     }
 
@@ -99,28 +80,6 @@ public class BasketFragment extends BaseFragment {
     public void onResume() {
         updateList();
         super.onResume();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult requestCode " + requestCode + " resultCode " + resultCode);
-        if (requestCode == 88 && resultCode == Activity.RESULT_OK) {
-            Log.d(TAG, "all ok");
-            mbBasketSendOrder.setEnabled(true);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mbBasketAddAddress.setEnabled(true);
-                }
-                break;
-            }
-        }
     }
 
     protected void updateList() {

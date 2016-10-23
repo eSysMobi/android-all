@@ -186,7 +186,6 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     }
 
     private void updateTotalCost() {
-        //TODO set total cost
         double totalCost = 0;
         for (Order order : currOrders) {
             totalCost = totalCost + (order.getPrice() * order.getCount());

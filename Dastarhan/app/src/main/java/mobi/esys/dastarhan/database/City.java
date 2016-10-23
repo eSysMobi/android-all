@@ -18,7 +18,7 @@ public class City extends RealmObject {
         //For Realm usage only
     }
 
-    public City(int districtID, int cityID, String cityRuName, String cityEnName) {
+    public City(int cityID, String cityRuName, String cityEnName) {
         this.cityID = cityID;
         this.cityRuName = cityRuName;
         this.cityEnName = cityEnName;

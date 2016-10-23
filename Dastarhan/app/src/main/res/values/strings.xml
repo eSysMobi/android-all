@@ -52,16 +52,6 @@
     <string name="check_address">Check address</string>
     <string name="send_order">Send order</string>
     <string name="title_activity_setting">SettingActivity</string>
-    <string name="city">City</string>
-    <string name="distr">District/Street</string>
-    <string name="exact_addr">The exact address</string>
-    <string name="submit">Submit</string>
-    <string name="notice_addr">Notice (e.g. phone number)</string>
-    <string name="apartment">Apartment</string>
-    <string name="house_num">House</string>
-    <string name="need_enter_house_num">Enter house number</string>
-    <string name="need_enter_district">Enter district/street</string>
-    <string name="need_enter_city">Enter city name</string>
 
     <!--promo-->
     <string name="discount_all">%1$s discount on all meals of the restaurant</string>
@@ -102,6 +92,18 @@
     <string name="please_rate_restaurant">Please rate the restaurant</string>
     <string name="vote">Vote</string>
 
+    <string name="city">City</string>
+    <string name="distr">District/Street</string>
+    <string name="exact_addr">The exact address</string>
+    <string name="submit">Submit</string>
+    <string name="notice_addr">Notice (e.g. phone number)</string>
+    <string name="apartment">Apartment</string>
+    <string name="house_num">House</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="need_enter_phone_number">Enter your phone number</string>
+    <string name="need_choose_city">Choose your city</string>
+    <string name="need_choose_district">Choose your district/street</string>
+    <string name="need_enter_house_num">Enter house number</string>
     <string name="address_book_is_loading">Address book is loading…</string>
     <string name="enter_your_contact_info">Enter your contact information:</string>
     <string name="label_username">name</string>
@@ -118,5 +120,8 @@
     <string name="additionally">Additionally</string>
     <string name="need_change_from">need change from</string>
     <string name="notice">notice</string>
+    <string name="delivery_address">Delivery address:</string>
+    <string name="Geolocation_is_unavailable">Geolocation is unavailable</string>
+    <string name="can_not_load_adress_book">Can\'t load address book</string>
 
 </resources>
