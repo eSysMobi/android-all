@@ -36,7 +36,7 @@ class UserInfoRealmRepository implements UserInfoRepository {
 
     @Override
     public UserInfo get() {
-        return realmTemplate.findInRealm(new RealmTransactionCallback<UserInfo>() {
+        return realmTemplate.executeInRealm(new RealmTransactionCallback<UserInfo>() {
             @Override
             public UserInfo execute(Realm realm) {
                 UserInfo searched = realm.where(UserInfo.class).findFirst();

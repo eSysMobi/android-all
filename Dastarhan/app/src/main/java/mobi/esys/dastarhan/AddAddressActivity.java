@@ -31,6 +31,8 @@ import android.widget.Toast;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import mobi.esys.dastarhan.database.City;
@@ -41,13 +43,16 @@ import mobi.esys.dastarhan.database.UserInfo;
 import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.net.APIAddress;
 import mobi.esys.dastarhan.utils.AppLocationService;
+import mobi.esys.dastarhan.utils.CityOrDistrictChooser;
 import mobi.esys.dastarhan.utils.LocationAddress;
+import mobi.esys.dastarhan.utils.RVChoseCityAdapter;
+import mobi.esys.dastarhan.utils.RVChoseDistrictAdapter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class AddAddressActivity extends AppCompatActivity {
+public class AddAddressActivity extends AppCompatActivity implements CityOrDistrictChooser {
 
     private final String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
@@ -87,6 +92,9 @@ public class AddAddressActivity extends AppCompatActivity {
     private RecyclerView mrvAddressChooseDistrict;
     private ImageButton mibAddressAutoLocation;
 
+    private City chosenCity;
+    private District chosenDistrict;
+
     AppLocationService appLocationService;
 
     @Override
@@ -95,6 +103,7 @@ public class AddAddressActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_address);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        ((DastarhanApp)getApplication()).appComponent().inject(this);
 
         userInfo = userInfoRepo.get();
 
@@ -121,7 +130,52 @@ public class AddAddressActivity extends AppCompatActivity {
 
         apiAddress = retrofit.create(APIAddress.class);
 
-        //TODO lists for mtvAddressCity and mtvAddressDistrict
+        mtvAddressCity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mrvAddressChooseCity.getAdapter() == null) {
+                    String locale = getResources().getConfiguration().locale.getLanguage();
+                    RVChoseCityAdapter adapter = new RVChoseCityAdapter(AddAddressActivity.this, cityRepository.getCities(), locale);
+                    mrvAddressChooseCity.setAdapter(adapter);
+                }
+                mrvAddressChooseCity.setVisibility(View.VISIBLE);
+            }
+        });
+
+        mrvAddressChooseCity.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    mrvAddressChooseCity.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        mtvAddressDistrict.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(chosenCity==null){
+                    Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                } else {
+                    if (mrvAddressChooseDistrict.getAdapter() == null) {
+                        String locale = getResources().getConfiguration().locale.getLanguage();
+                        List<District> districts = districtRepository.getDistrictsOfCity(chosenCity.getCityID());
+                        RVChoseDistrictAdapter adapter = new RVChoseDistrictAdapter(AddAddressActivity.this, districts, locale);
+                        mrvAddressChooseDistrict.setAdapter(adapter);
+                    }
+                    mrvAddressChooseDistrict.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        mrvAddressChooseDistrict.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    mrvAddressChooseDistrict.setVisibility(View.GONE);
+                }
+            }
+        });
 
         metAddressStreet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -282,6 +336,7 @@ public class AddAddressActivity extends AppCompatActivity {
         mrvAddressChooseDistrict.setOnFocusChangeListener(chooserHidingListener);
 
         //download and save cities
+        //TODO check this (endless cycle here)
         apiAddress.getCities().enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -340,6 +395,27 @@ public class AddAddressActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void chooseCity(City city, String localizedName) {
+        chosenCity = city;
+        mtvAddressCity.setText(localizedName);
+        mtvAddressDistrict.setClickable(true);
+        mrvAddressChooseCity.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void chooseDistrict(District district, String localizedName) {
+        chosenDistrict = district;
+        mrvAddressChooseDistrict.setVisibility(View.GONE);
+        metAddressStreet.setEnabled(true);
+        metAddressHouse.setEnabled(true);
+        metAddressBuilding.setEnabled(true);
+        metAddressApartment.setEnabled(true);
+        metAddressPorch.setEnabled(true);
+        metAddressFloor.setEnabled(true);
+        metAddressIntercom.setEnabled(true);
     }
 
     private void setUILoading(boolean isLoading) {

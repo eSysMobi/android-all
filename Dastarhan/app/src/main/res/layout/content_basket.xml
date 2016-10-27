@@ -26,7 +26,6 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/total_cost_full"
         android:id="@+id/tvBasketTotalCost"
-        android:textColor="#ffffff"
         android:visibility="visible"
         android:layout_above="@+id/bBasketSendOrder"
         android:layout_alignParentRight="true"

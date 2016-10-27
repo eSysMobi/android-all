@@ -52,4 +52,23 @@ class CityRealmRepository implements CityRepository {
             }
         });
     }
+
+    @Override
+    public City getCityByName(final String name) {
+        return realmTemplate.findInRealm(new RealmTransactionCallback<City>() {
+            @Override
+            public City execute(Realm realm) {
+                City searched = realm.where(City.class)
+                        .equalTo("cityRuName", name)
+                        .or()
+                        .equalTo("cityEnName", name)
+                        .findFirst();
+                if (searched == null) {
+                    return null;
+                } else {
+                    return realm.copyFromRealm(searched);
+                }
+            }
+        });
+    }
 }

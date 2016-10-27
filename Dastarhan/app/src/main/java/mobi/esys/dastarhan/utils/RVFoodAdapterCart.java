@@ -43,11 +43,11 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
 
 
     //constructor
-    public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Handler handler) {
+    public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Handler incHandler) {
         this.navigation = navigation;
         component = dastarhanApp.appComponent();
         this.locale = locale;
-        this.handler = handler;
+        handler = incHandler;
         foods = new ArrayList<>();
 
         cart = component.cartRepository().get();
@@ -62,6 +62,10 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             for (int i = 0; i < currOrders.size(); i++)
                 orderIDs[i] = currOrders.get(i).getId_food();
             foods = foodRepo.getByIds(orderIDs);
+            if(!foods.isEmpty()){
+                //we have items in basket, enable AddAddress button
+                handler.sendEmptyMessage(41);
+            }
         }
     }
 

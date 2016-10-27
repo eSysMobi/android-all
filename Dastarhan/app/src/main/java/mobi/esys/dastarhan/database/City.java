@@ -32,6 +32,10 @@ public class City extends RealmObject {
         return cityEnName;
     }
 
+    public int getCityID() {
+        return cityID;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -7,4 +7,6 @@ public interface CityRepository {
     void createOrUpdate(City district);
 
     List<City> getCities();
+
+    City getCityByName(String name);
 }

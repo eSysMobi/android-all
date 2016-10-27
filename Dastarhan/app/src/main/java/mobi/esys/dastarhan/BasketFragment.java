@@ -99,6 +99,9 @@ public class BasketFragment extends BaseFragment {
         @Override
         public void handleMessage(Message message) {
             switch (message.what) {
+                case 41:
+                    //we have items in basket, enable AddAddress button
+                    mbBasketAddAddress.setEnabled(true);
                 case 42:
                     //refresh list
                     updateList();
