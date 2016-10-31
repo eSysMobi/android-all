@@ -1,8 +1,5 @@
 package mobi.esys.dastarhan.utils;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,7 +35,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     private FragmentNavigation navigation;
     private AppComponent component;
     private String locale;
-    private Handler handler;
+    private RVFoodAdapterCart.Callback callback;
     boolean needRefreshTotalCostEveryTime = false;
 
     private List<Food> foods;
@@ -47,11 +44,11 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
 
 
     //constructor
-    public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, Handler incHandler) {
+    public RVFoodAdapterCart(FragmentNavigation navigation, DastarhanApp dastarhanApp, String locale, RVFoodAdapterCart.Callback callback) {
         this.navigation = navigation;
         component = dastarhanApp.appComponent();
         this.locale = locale;
-        handler = incHandler;
+        this.callback = callback;
         foods = new ArrayList<>();
 
         cart = component.cartRepository().get();
@@ -68,7 +65,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             foods = foodRepo.getByIds(orderIDs);
             if (!foods.isEmpty()) {
                 //we have items in basket, enable AddAddress button
-                handler.sendEmptyMessage(41);
+                callback.enableAddAdressButton();
             }
         }
     }
@@ -201,14 +198,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
         for (Order order : currOrders) {
             totalCost = totalCost + (order.getPrice() * order.getCount());
         }
-
-        Message message = Message.obtain();
-        message.setTarget(handler);
-        message.what = 43;
-        Bundle bundle = new Bundle();
-        bundle.putDouble("totalCost", totalCost);
-        message.setData(bundle);
-        message.sendToTarget();
+        callback.refreshTotalCost(totalCost);
     }
 
     private static class GoToFullFood implements View.OnClickListener {
@@ -323,5 +313,11 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public interface Callback {
+        void enableAddAdressButton();
+
+        void refreshTotalCost(double totalCost);
     }
 }

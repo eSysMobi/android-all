@@ -13,6 +13,7 @@
         android:layout_marginLeft="20dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="6dp"
+        android:textSize="18sp"
         android:gravity="center_vertical"
         android:text="City or district"
         android:textStyle="bold" />

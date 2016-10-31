@@ -9,11 +9,11 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -52,7 +52,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class AddAddressActivity extends AppCompatActivity implements CityOrDistrictChooser {
+public class AddAddressActivity extends AppCompatActivity implements CityOrDistrictChooser, LocationAddress.Callback {
 
     private final static String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
@@ -76,7 +76,9 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private EditText metAddressPhone;
 
     private TextView mtvAddressCity;
+    private RecyclerView.LayoutManager mLayoutManagerCity;
     private TextView mtvAddressDistrict;
+    private RecyclerView.LayoutManager mLayoutManagerDistrict;
     private EditText metAddressStreet;
     private EditText metAddressHouse;
     private EditText metAddressBuilding;
@@ -95,7 +97,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private City chosenCity;
     private District chosenDistrict;
 
-    AppLocationService appLocationService;
+    private boolean isLocatePlaceNow = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +113,9 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
         setUILoading(true);
 
+        metAddressName = (EditText) findViewById(R.id.etAddressName);
+        metAddressPhone = (EditText) findViewById(R.id.etAddressPhone);
+
         mtvAddressCity = (TextView) findViewById(R.id.tvAddressCity);
         mtvAddressDistrict = (TextView) findViewById(R.id.tvAddressDistrict);
         metAddressStreet = (EditText) findViewById(R.id.etAddressStreet);
@@ -125,10 +130,38 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         bAddressToOrder = (Button) findViewById(R.id.bAddressToOrder);
         pbAddressToOrder = (ProgressBar) findViewById(R.id.pbAddressToOrder);
         mrvAddressChooseCity = (RecyclerView) findViewById(R.id.rvAddressChooseCity);
+        mLayoutManagerCity = new LinearLayoutManager(this);
+        mrvAddressChooseCity.setLayoutManager(mLayoutManagerCity);
         mrvAddressChooseDistrict = (RecyclerView) findViewById(R.id.rvAddressChooseDistrict);
+        mLayoutManagerDistrict = new LinearLayoutManager(this);
+        mrvAddressChooseDistrict.setLayoutManager(mLayoutManagerDistrict);
         mibAddressAutoLocation = (ImageButton) findViewById(R.id.ibAddressAutoLocation);
 
         apiAddress = retrofit.create(APIAddress.class);
+
+        metAddressName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    metAddressPhone.requestFocus();
+                    checkRequiredFields();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        metAddressPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                    mtvAddressCity.requestFocus();
+                    checkRequiredFields();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         mtvAddressCity.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,6 +226,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
                     metAddressBuilding.requestFocus();
+                    checkRequiredFields();
                     return true;
                 }
                 return false;
@@ -335,8 +369,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         mrvAddressChooseCity.setOnFocusChangeListener(chooserHidingListener);
         mrvAddressChooseDistrict.setOnFocusChangeListener(chooserHidingListener);
 
-        //download and save cities
-        //TODO check this (endless cycle here)
+        //download and save cities and districts
         apiAddress.getCities().enqueue(new Callback<JsonArray>() {
             @Override
             public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
@@ -400,7 +433,6 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 finish();
             }
         });
-
     }
 
     @Override
@@ -409,12 +441,14 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         mtvAddressCity.setText(localizedName);
         mtvAddressDistrict.setClickable(true);
         mrvAddressChooseCity.setVisibility(View.GONE);
+        checkRequiredFields();
     }
 
     @Override
     public void chooseDistrict(District district, String localizedName) {
         chosenDistrict = district;
         mrvAddressChooseDistrict.setVisibility(View.GONE);
+        mtvAddressDistrict.setText(localizedName);
         metAddressStreet.setEnabled(true);
         metAddressHouse.setEnabled(true);
         metAddressBuilding.setEnabled(true);
@@ -422,6 +456,19 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         metAddressPorch.setEnabled(true);
         metAddressFloor.setEnabled(true);
         metAddressIntercom.setEnabled(true);
+        checkRequiredFields();
+    }
+
+    private void checkRequiredFields() {
+        if (metAddressName.length() > 0
+                && metAddressPhone.length() > 0
+                && mtvAddressDistrict.getText().length() > 0
+                && mtvAddressDistrict.length() > 0
+                && metAddressHouse.length() > 0) {
+            bAddressToOrder.setVisibility(View.VISIBLE);
+        } else {
+            bAddressToOrder.setVisibility(View.GONE);
+        }
     }
 
     private void setUILoading(boolean isLoading) {
@@ -435,7 +482,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -461,17 +508,19 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     private void unSaveGetGeoLocation() {
-        appLocationService = new AppLocationService(AddAddressActivity.this);
-        Location location = appLocationService.getLocation(LocationManager.NETWORK_PROVIDER);
+        if (!isLocatePlaceNow) {
+            isLocatePlaceNow = true;
+            AppLocationService appLocationService = new AppLocationService(AddAddressActivity.this);
+            Location location = appLocationService.getLocation(LocationManager.NETWORK_PROVIDER);
 
-        if (location != null) {
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            LocationAddress locationAddress = new LocationAddress();
-            locationAddress.getAddressFromLocation(latitude, longitude,
-                    getApplicationContext(), new GeocoderHandler());
-        } else {
-            showSettingsAlert();
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                LocationAddress.getAddressFromLocation(latitude, longitude,
+                        getApplicationContext(), this);
+            } else {
+                showSettingsAlert();
+            }
         }
     }
 
@@ -497,37 +546,24 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         alertDialog.show();
     }
 
-    private class GeocoderHandler extends Handler {
-        @Override
-        public void handleMessage(Message message) {
-            String locationAddress = "";
-            String city = "";
-            String street = "";
-            switch (message.what) {
-                case 1:
-                    Bundle bundle = message.getData();
-                    locationAddress = bundle.getString("address");
-                    city = bundle.getString("city", "");
-                    street = bundle.getString("street", "");
+    @Override
+    public void receiveAddress(String address, String city, String street) {
+        isLocatePlaceNow = false;
+        Log.d(TAG, "Get address bundle. City - " + city + ", street - " + street);
 
-                    Log.d(TAG, "Get address bundle. City - " + city + ", street - " + street);
-
-                    if (locationAddress == null || locationAddress.isEmpty()) {
-                        Toast.makeText(AddAddressActivity.this, R.string.Geolocation_is_unavailable, Toast.LENGTH_SHORT).show();
-                    } else {
-                        //TODO find city and district in DB
-                        mtvAddressCity.setText(city);
-                        mtvAddressDistrict.setText(street);
-                        metAddressStreet.setText("");
-                        metAddressHouse.setText("");
-                        metAddressBuilding.setText("");
-                        metAddressApartment.setText("");
-                        metAddressPorch.setText("");
-                        metAddressFloor.setText("");
-                        metAddressIntercom.setText("");
-                    }
-                    break;
-            }
+        if (address.isEmpty()) {
+            Toast.makeText(AddAddressActivity.this, R.string.Geolocation_is_unavailable, Toast.LENGTH_SHORT).show();
+        } else {
+            //TODO find city and district in DB
+            mtvAddressCity.setText(city);
+            mtvAddressDistrict.setText(street);
+            metAddressStreet.setText("");
+            metAddressHouse.setText("");
+            metAddressBuilding.setText("");
+            metAddressApartment.setText("");
+            metAddressPorch.setText("");
+            metAddressFloor.setText("");
+            metAddressIntercom.setText("");
         }
     }
 }

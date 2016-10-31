@@ -1,9 +1,8 @@
 package mobi.esys.dastarhan;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,14 +14,13 @@ import android.widget.TextView;
 
 import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 
-public class BasketFragment extends BaseFragment {
+public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Callback {
 
     private final String TAG = "dtagBasketActivity";
 
-    private Handler handler;
-
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
+    private Button mbBasketSendOrder;
     private TextView mtvBasketTotalCost;
 
     public BasketFragment() {
@@ -48,10 +46,9 @@ public class BasketFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.content_basket, container, false);
 
-        handler = new BasketHandler();
-
         mrvOrders = (RecyclerView) view.findViewById(R.id.rvOrders);
         mbBasketAddAddress = (Button) view.findViewById(R.id.bBasketAddAddress);
+        mbBasketSendOrder = (Button) view.findViewById(R.id.bBasketSendOrder);
         mtvBasketTotalCost = (TextView) view.findViewById(R.id.tvBasketTotalCost);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
@@ -61,10 +58,20 @@ public class BasketFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "User check address");
-                startActivity(new Intent(getContext(), AddAddressActivity.class));
+                startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
             }
         });
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==Constants.REQUEST_CODE_CART){
+            if(resultCode== Activity.RESULT_OK){
+                mbBasketSendOrder.setEnabled(true);
+            }
+        }
     }
 
     @Override
@@ -76,7 +83,7 @@ public class BasketFragment extends BaseFragment {
     protected void updateList() {
         Log.d(TAG, "Refresh RecyclerView");
         String locale = getContext().getResources().getConfiguration().locale.getLanguage();
-        RVFoodAdapterCart adapter = new RVFoodAdapterCart(mFragmentNavigation, (DastarhanApp) getActivity().getApplication(), locale, handler);
+        RVFoodAdapterCart adapter = new RVFoodAdapterCart(mFragmentNavigation, (DastarhanApp) getActivity().getApplication(), locale, this);
         if (mrvOrders.getAdapter() == null) {
             Log.d(TAG, "New adapter in mrvOrders");
             mrvOrders.setAdapter(adapter);
@@ -86,27 +93,17 @@ public class BasketFragment extends BaseFragment {
         }
     }
 
-    private class BasketHandler extends Handler {
-        @Override
-        public void handleMessage(Message message) {
-            switch (message.what) {
-                case 41:
-                    //we have items in basket, enable AddAddress button
-                    mbBasketAddAddress.setEnabled(true);
-                    break;
-                case 42:
-                    //refresh list
-                    updateList();
-                    break;
-                case 43:
-                    //refresh total cost
-                    Log.d(TAG, "Refresh total cost");
-                    Bundle bundle = message.getData();
-                    double totalCost = bundle.getDouble("totalCost", 0);
-                    String text = getResources().getString(R.string.total_cost) + " " + totalCost + " " + getResources().getString(R.string.currency);
-                    mtvBasketTotalCost.setText(text);
-                    break;
-            }
-        }
+    @Override
+    public void enableAddAdressButton() {
+        //we have items in basket, enable AddAddress button
+        mbBasketAddAddress.setEnabled(true);
+    }
+
+    @Override
+    public void refreshTotalCost(double totalCost) {
+        //refresh total cost
+        Log.d(TAG, "Refresh total cost");
+        String text = getResources().getString(R.string.total_cost) + " " + totalCost + " " + getResources().getString(R.string.currency);
+        mtvBasketTotalCost.setText(text);
     }
 }

@@ -63,6 +63,7 @@ public class Constants {
     public static final int FOOD_CHECKING_INTERVAL = 15 * 60 * 1000; //15 min
 
     //request codes
+    public static final int REQUEST_CODE_CART = 79;
     public static final int REQUEST_CODE_SPLASH = 89;
     public static final int REQUEST_CODE_SETTINGS = 99;
     public static final int REQUEST_CODE_VOTE_REST = 109;
