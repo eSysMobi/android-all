@@ -11,11 +11,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
+import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentFoodFragment;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
@@ -28,6 +31,7 @@ import mobi.esys.dastarhan.database.Order;
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFavorite.FoodViewHolder> {
+    private final ImageLoader imageLoader = ImageLoader.getInstance();
     private FragmentNavigation navigation;
     private AppComponent component;
     private String locale;
@@ -119,8 +123,10 @@ public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFav
         //set price
         viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.food.getPrice()) + " р.");
 
-        //TODO set image
-        //viewHolder.bFoodRVToCart.
+        String smallPictureURL = viewHolder.food.getPictureSmall();
+        if (smallPictureURL != null && !smallPictureURL.isEmpty()) {
+            imageLoader.displayImage(Constants.API_BASE_URL + smallPictureURL, viewHolder.ivFoodRV);
+        }
 
 
         //promo

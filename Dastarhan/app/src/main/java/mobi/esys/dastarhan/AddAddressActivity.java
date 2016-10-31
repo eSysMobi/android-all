@@ -54,7 +54,7 @@ import retrofit2.Retrofit;
 
 public class AddAddressActivity extends AppCompatActivity implements CityOrDistrictChooser {
 
-    private final String TAG = "dtagAddAddress";
+    private final static String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
 
     @Inject
@@ -103,7 +103,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         setContentView(R.layout.activity_add_address);
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        ((DastarhanApp)getApplication()).appComponent().inject(this);
+        ((DastarhanApp) getApplication()).appComponent().inject(this);
 
         userInfo = userInfoRepo.get();
 
@@ -154,7 +154,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         mtvAddressDistrict.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(chosenCity==null){
+                if (chosenCity == null) {
                     Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                 } else {
                     if (mrvAddressChooseDistrict.getAdapter() == null) {
@@ -337,11 +337,12 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
         //download and save cities
         //TODO check this (endless cycle here)
-        apiAddress.getCities().enqueue(new Callback<JsonObject>() {
+        apiAddress.getCities().enqueue(new Callback<JsonArray>() {
             @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
                 if (response.code() == 200) {
-                    JsonArray jsonResponse = response.body().getAsJsonArray();
+                    JsonArray jsonResponse = response.body();
+                    Log.d(TAG, "Cities request is ok. Received " + jsonResponse.size() + " cities");
                     for (int i = 0; i < jsonResponse.size(); i++) {
                         JsonObject jsonCity = jsonResponse.get(i).getAsJsonObject();
                         if (jsonCity.has("id") && jsonCity.has("ru_name") && jsonCity.has("en_name")) {
@@ -356,6 +357,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                         public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                             if (response.code() == 200 && response.body().has("0")) {
                                 JsonArray jsonResponse = response.body().get("0").getAsJsonArray();
+                                Log.d(TAG, "Districts request is ok. Received " + jsonResponse.size() + " districts");
                                 for (int i = 0; i < jsonResponse.size(); i++) {
                                     JsonObject jsonDistrict = jsonResponse.get(i).getAsJsonObject();
                                     if (jsonDistrict.has("id") && jsonDistrict.has("city_id") && jsonDistrict.has("ru_name") && jsonDistrict.has("en_name")) {
@@ -371,6 +373,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                 setUILoading(false);
                             } else {
                                 Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Error districts request: Response code is not 200");
                                 finish();
                             }
                         }
@@ -378,19 +381,22 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                         @Override
                         public void onFailure(Call<JsonObject> call, Throwable t) {
                             Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Error districts request: " + t.getMessage());
                             finish();
                         }
                     });
 
                 } else {
                     Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Error cities request: Response code is not 200");
                     finish();
                 }
             }
 
             @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
+            public void onFailure(Call<JsonArray> call, Throwable t) {
                 Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Error cities request: " + t.getMessage());
                 finish();
             }
         });

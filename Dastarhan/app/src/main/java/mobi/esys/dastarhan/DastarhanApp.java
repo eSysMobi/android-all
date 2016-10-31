@@ -3,6 +3,11 @@ package mobi.esys.dastarhan;
 import android.app.Application;
 import android.content.res.Configuration;
 
+import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +27,7 @@ public class DastarhanApp extends Application {
     private static String sessionLogin;
     private static String sessionPass;
 
-    public static void setSessionInfo(String sessionL, String sessionP){
+    public static void setSessionInfo(String sessionL, String sessionP) {
         sessionLogin = sessionL;
         sessionPass = sessionP;
     }
@@ -36,7 +41,7 @@ public class DastarhanApp extends Application {
     }
 
 
-    public void setLastCheck(){
+    public void setLastCheck() {
         lastCheck = System.currentTimeMillis();
     }
 
@@ -44,7 +49,7 @@ public class DastarhanApp extends Application {
         return lastCheck;
     }
 
-    public List<FoodCheckElement> getCheckedFood(){
+    public List<FoodCheckElement> getCheckedFood() {
         return foodCheck;
     }
 
@@ -58,12 +63,27 @@ public class DastarhanApp extends Application {
                 .netModule(new NetModule())
                 .build();
 
+        DisplayImageOptions options = new DisplayImageOptions
+                .Builder()
+                .showImageForEmptyUri(R.drawable.recommended_food_3)
+                .showImageOnFail(R.drawable.recommended_food_3)
+                //.showImageOnLoading(R.drawable.recommended_food_3)
+                .build();
+
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration
+                .Builder(this)
+                .defaultDisplayImageOptions(options)
+                .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+                .memoryCacheSize(2 * 1024 * 1024)
+                .build();
+        ImageLoader.getInstance().init(config);
+
         foodCheck = new ArrayList<>();
         //add first element "All restaurants"
-        foodCheck.add(new FoodCheckElement(-42,0));
+        foodCheck.add(new FoodCheckElement(-42, 0));
     }
 
-    public AppComponent appComponent(){
+    public AppComponent appComponent() {
         return component;
     }
 

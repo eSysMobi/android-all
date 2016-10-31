@@ -11,7 +11,8 @@ public class Food extends RealmObject {
     private int cat_id;
     private String ru_name;
     private String en_name;
-    private String picture;
+    private String origPicturePath;
+    private String smallPicturePath;
     private String ru_descr;
     private String en_descr;
     private double price;
@@ -36,7 +37,8 @@ public class Food extends RealmObject {
                 int cat_id,
                 String ru_name,
                 String en_name,
-                String picture,
+                String origPicturePath,
+                String smallPicturePath,
                 String ru_descr,
                 String en_descr,
                 double price,
@@ -51,7 +53,8 @@ public class Food extends RealmObject {
         this.cat_id = cat_id;
         this.ru_name = ru_name;
         this.en_name = en_name;
-        this.picture = picture;
+        this.origPicturePath = origPicturePath;
+        this.smallPicturePath = smallPicturePath;
         this.ru_descr = ru_descr;
         this.en_descr = en_descr;
         this.price = price;
@@ -95,8 +98,12 @@ public class Food extends RealmObject {
         return en_name;
     }
 
-    public String getPicture() {
-        return picture;
+    public String getPictureOrig() {
+        return origPicturePath;
+    }
+
+    public String getPictureSmall() {
+        return smallPicturePath;
     }
 
     public String getRu_descr() {
@@ -161,7 +168,10 @@ public class Food extends RealmObject {
         if (removed != food.removed) return false;
         if (ru_name != null ? !ru_name.equals(food.ru_name) : food.ru_name != null) return false;
         if (en_name != null ? !en_name.equals(food.en_name) : food.en_name != null) return false;
-        if (picture != null ? !picture.equals(food.picture) : food.picture != null) return false;
+        if (origPicturePath != null ? !origPicturePath.equals(food.origPicturePath) : food.origPicturePath != null)
+            return false;
+        if (smallPicturePath != null ? !smallPicturePath.equals(food.smallPicturePath) : food.smallPicturePath != null)
+            return false;
         if (ru_descr != null ? !ru_descr.equals(food.ru_descr) : food.ru_descr != null)
             return false;
         if (en_descr != null ? !en_descr.equals(food.en_descr) : food.en_descr != null)
@@ -182,7 +192,8 @@ public class Food extends RealmObject {
         result = 31 * result + cat_id;
         result = 31 * result + (ru_name != null ? ru_name.hashCode() : 0);
         result = 31 * result + (en_name != null ? en_name.hashCode() : 0);
-        result = 31 * result + (picture != null ? picture.hashCode() : 0);
+        result = 31 * result + (origPicturePath != null ? origPicturePath.hashCode() : 0);
+        result = 31 * result + (smallPicturePath != null ? smallPicturePath.hashCode() : 0);
         result = 31 * result + (ru_descr != null ? ru_descr.hashCode() : 0);
         result = 31 * result + (en_descr != null ? en_descr.hashCode() : 0);
         temp = Double.doubleToLongBits(price);

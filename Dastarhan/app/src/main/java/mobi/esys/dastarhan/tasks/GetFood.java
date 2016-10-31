@@ -100,7 +100,8 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                                 int cat_id = c.getInt("cat_id");
                                 String ru_name = c.getString("ru_name");
                                 String en_name = c.getString("en_name");
-                                String picture = c.getString("picture");
+                                String origPicturePath = c.getString("origPicturePath");
+                                String smallPicturePath = c.getString("smallPicturePath");
                                 String ru_descr = c.getString("ru_descr");
                                 String en_descr = c.getString("en_descr");
                                 double price = c.getDouble("price");
@@ -117,7 +118,8 @@ public class GetFood extends AsyncTask<Void, Void, Void> {
                                         cat_id,
                                         ru_name,
                                         en_name,
-                                        picture,
+                                        origPicturePath,
+                                        smallPicturePath,
                                         ru_descr,
                                         en_descr,
                                         price,

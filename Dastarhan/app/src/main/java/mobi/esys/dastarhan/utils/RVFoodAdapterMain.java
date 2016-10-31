@@ -11,10 +11,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
+import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentFoodFragment;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
@@ -22,12 +26,12 @@ import mobi.esys.dastarhan.database.Cart;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
-import mobi.esys.dastarhan.AppComponent;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
  */
 public class RVFoodAdapterMain extends RecyclerView.Adapter<RVFoodAdapterMain.FoodViewHolder> {
+    private final ImageLoader imageLoader = ImageLoader.getInstance();
     private static String TAG = "dtagRVAdapterMain";
     private FragmentNavigation navigation;
     private AppComponent component;
@@ -123,11 +127,14 @@ public class RVFoodAdapterMain extends RecyclerView.Adapter<RVFoodAdapterMain.Fo
         }
 
         //set price
-        viewHolder.tvFoodPriceRV.setText(String.valueOf(viewHolder.food.getPrice()) + " р.");
+        String price = String.valueOf(viewHolder.food.getPrice()) + " р.";
+        viewHolder.tvFoodPriceRV.setText(price);
 
-        //TODO set image
-        //viewHolder.bFoodRVToCart.
-
+        //set picture
+        String smallPictureURL = viewHolder.food.getPictureSmall();
+        if (smallPictureURL != null && !smallPictureURL.isEmpty()) {
+            imageLoader.displayImage(Constants.API_BASE_URL + smallPictureURL, viewHolder.ivFoodRV);
+        }
 
         //promo
         //TODO check and set promo in RVFoodAdapterMain

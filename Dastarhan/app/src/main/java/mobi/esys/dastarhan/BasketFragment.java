@@ -1,20 +1,11 @@
 package mobi.esys.dastarhan;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,6 +93,7 @@ public class BasketFragment extends BaseFragment {
                 case 41:
                     //we have items in basket, enable AddAddress button
                     mbBasketAddAddress.setEnabled(true);
+                    break;
                 case 42:
                     //refresh list
                     updateList();

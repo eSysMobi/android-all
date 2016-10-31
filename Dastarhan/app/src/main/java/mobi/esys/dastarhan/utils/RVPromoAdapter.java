@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 import mobi.esys.dastarhan.Constants;
 import mobi.esys.dastarhan.CurrentRestaurantFragment;
@@ -19,7 +20,6 @@ import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.Promo;
-import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.database.Restaurant;
 
 /**
