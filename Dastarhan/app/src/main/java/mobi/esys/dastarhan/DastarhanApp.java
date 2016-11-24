@@ -68,6 +68,8 @@ public class DastarhanApp extends Application {
                 .showImageForEmptyUri(R.drawable.recommended_food_3)
                 .showImageOnFail(R.drawable.recommended_food_3)
                 //.showImageOnLoading(R.drawable.recommended_food_3)
+                .cacheOnDisk(true)
+                .cacheInMemory(true)
                 .build();
 
         ImageLoaderConfiguration config = new ImageLoaderConfiguration
@@ -75,6 +77,7 @@ public class DastarhanApp extends Application {
                 .defaultDisplayImageOptions(options)
                 .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
                 .memoryCacheSize(2 * 1024 * 1024)
+                .diskCacheFileCount(500)
                 .build();
         ImageLoader.getInstance().init(config);
 

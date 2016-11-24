@@ -7,7 +7,7 @@ import io.realm.annotations.PrimaryKey;
 public class UserInfo extends RealmObject {
 
     @PrimaryKey
-    private int inner_id = 42;
+    private int inner_id;
     private String name;
     private String phone;
     private String email;
@@ -25,6 +25,7 @@ public class UserInfo extends RealmObject {
     //advanced
     private String needChange;
     private String comment;
+    private Integer serverAddressID;
 
     /**
      * For Realm usage only
@@ -65,6 +66,12 @@ public class UserInfo extends RealmObject {
         this.domophoneNum = domophoneNum;
         this.needChange = needChange;
         this.comment = comment;
+        //clear serverAddressID
+        serverAddressID = null;
+    }
+
+    public void updateAddressID(Integer serverAddressID) {
+        this.serverAddressID = serverAddressID;
     }
 
     public String getName() {
@@ -127,18 +134,16 @@ public class UserInfo extends RealmObject {
         return comment;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public Integer getServerAddressID() {
+        return serverAddressID;
+    }
+
+    public boolean equalsByAddressInfo(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         UserInfo userInfo = (UserInfo) o;
-
-        if (inner_id != userInfo.inner_id) return false;
         if (name != null ? !name.equals(userInfo.name) : userInfo.name != null) return false;
         if (phone != null ? !phone.equals(userInfo.phone) : userInfo.phone != null) return false;
-        if (email != null ? !email.equals(userInfo.email) : userInfo.email != null) return false;
-        if (pass != null ? !pass.equals(userInfo.pass) : userInfo.pass != null) return false;
         if (city != null ? !city.equals(userInfo.city) : userInfo.city != null) return false;
         if (district != null ? !district.equals(userInfo.district) : userInfo.district != null)
             return false;
@@ -157,27 +162,5 @@ public class UserInfo extends RealmObject {
         if (needChange != null ? !needChange.equals(userInfo.needChange) : userInfo.needChange != null)
             return false;
         return !(comment != null ? !comment.equals(userInfo.comment) : userInfo.comment != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = inner_id;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (phone != null ? phone.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (pass != null ? pass.hashCode() : 0);
-        result = 31 * result + (city != null ? city.hashCode() : 0);
-        result = 31 * result + (district != null ? district.hashCode() : 0);
-        result = 31 * result + (street != null ? street.hashCode() : 0);
-        result = 31 * result + (house != null ? house.hashCode() : 0);
-        result = 31 * result + (corpBuilding != null ? corpBuilding.hashCode() : 0);
-        result = 31 * result + (apartmentOffice != null ? apartmentOffice.hashCode() : 0);
-        result = 31 * result + (enterNum != null ? enterNum.hashCode() : 0);
-        result = 31 * result + (floor != null ? floor.hashCode() : 0);
-        result = 31 * result + (domophoneNum != null ? domophoneNum.hashCode() : 0);
-        result = 31 * result + (needChange != null ? needChange.hashCode() : 0);
-        result = 31 * result + (comment != null ? comment.hashCode() : 0);
-        return result;
     }
 }

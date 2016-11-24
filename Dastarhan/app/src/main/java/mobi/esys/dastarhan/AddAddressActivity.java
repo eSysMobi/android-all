@@ -59,7 +59,6 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     @Inject
     UserInfoRepository userInfoRepo;
-    private UserInfo userInfo;
     @Inject
     CityRepository cityRepository;
     @Inject
@@ -96,6 +95,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     private City chosenCity;
     private District chosenDistrict;
+    private UserInfo userInfoFromDB;
 
     private boolean isLocatePlaceNow = false;
 
@@ -106,8 +106,6 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         ((DastarhanApp) getApplication()).appComponent().inject(this);
-
-        userInfo = userInfoRepo.get();
 
         llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
         svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
@@ -127,6 +125,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         metAddressIntercom = (EditText) findViewById(R.id.etAddressIntercom);
         metAddressNeedChange = (EditText) findViewById(R.id.etAddressNeedChange);
         metAddressNotice = (EditText) findViewById(R.id.etAddressNotice);
+
         bAddressToOrder = (Button) findViewById(R.id.bAddressToOrder);
         pbAddressToOrder = (ProgressBar) findViewById(R.id.pbAddressToOrder);
         mrvAddressChooseCity = (RecyclerView) findViewById(R.id.rvAddressChooseCity);
@@ -313,32 +312,62 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             }
         });
 
-        //TODO set initial data from userInfo
-
-        //TODO save address and send order
+        //save address and send order
         bAddressToOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!metAddressName.getText().toString().isEmpty()) {
-                    if (!metAddressPhone.getText().toString().isEmpty()) {
-                        if (!mtvAddressCity.getText().toString().isEmpty()) {
-                            if (!mtvAddressDistrict.getText().toString().isEmpty()) {
-                                if (!metAddressHouse.getText().toString().isEmpty()) {
-
-//                            SharedPreferences.Editor editor = prefs.edit();
-//                            editor.putString("city", metAddAddressCity.getText().toString());
-//                            editor.putString("street", metAddAddressDistrict.getText().toString());
-//                            editor.putString("house", metAddAddressHouse.getText().toString());
-//                            editor.putString("apartment", metAddAddressApartment.getText().toString());
-//                            editor.putString("notice_addr", metAddAddressNotice.getText().toString());
-//                            editor.apply();
-                                    //TODO save user info from view to DB
-                                    //userInfo.update();
-                                    userInfoRepo.update(userInfo);
-
-                                    Intent intent = new Intent();
-                                    setResult(RESULT_OK, intent);
-                                    finish();
+                String name = metAddressName.getText().toString().trim();
+                String phone = metAddressPhone.getText().toString().trim();
+                String city = mtvAddressCity.getText().toString().trim();
+                String district = mtvAddressDistrict.getText().toString().trim();
+                String street = metAddressStreet.getText().toString().trim();
+                String house = metAddressHouse.getText().toString().trim();
+                String building = metAddressBuilding.getText().toString().trim();
+                String apartment = metAddressApartment.getText().toString().trim();
+                String porch = metAddressPorch.getText().toString().trim();
+                String floor = metAddressFloor.getText().toString().trim();
+                String intercom = metAddressIntercom.getText().toString().trim();
+                String needChange = metAddressNeedChange.getText().toString().trim();
+                String notice = metAddressNotice.getText().toString().trim();
+                //check is we have all requirments fields
+                if (!name.isEmpty()) {
+                    if (!phone.isEmpty()) {
+                        if (!city.isEmpty()) {
+                            if (!district.isEmpty()
+                                    || !street.isEmpty()) {
+                                if (!metAddressHouse.getText().toString().trim().isEmpty()) {
+                                    //prepare data from form
+                                    UserInfo userInfoFromForm = new UserInfo();
+                                    userInfoFromForm.update(
+                                            name, phone, city, district, street,
+                                            house, building, apartment, porch,
+                                            floor, intercom, needChange, notice
+                                    );
+                                    //check is data from form equals date in DB and save if need
+                                    if (userInfoFromDB == null) {
+                                        userInfoFromDB = userInfoFromForm;
+                                        userInfoRepo.update(userInfoFromDB);
+                                    } else {
+                                        if (!userInfoFromForm.equalsByAddressInfo(userInfoFromDB)) {
+                                            //not equals
+                                            //save user info from view to DB
+                                            userInfoFromDB.update(
+                                                    name, phone, city, district, street,
+                                                    house, building, apartment, porch,
+                                                    floor, intercom, needChange, notice
+                                            );
+                                            userInfoRepo.update(userInfoFromDB);
+                                        }
+                                    }
+                                    //check server address id
+                                    Integer savedServerAddressID = userInfoFromDB.getServerAddressID();
+                                    if (savedServerAddressID != null) {
+                                        //send request for delivery cost
+                                        requestDeliveryCost();
+                                    } else {
+                                        //send request for delivery cost
+                                        requestUserAddresses();
+                                    }
                                 } else {
                                     Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
                                 }
@@ -404,6 +433,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                     }
                                 }
                                 setUILoading(false);
+                                addressBookIsPrepared();
                             } else {
                                 Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Error districts request: Response code is not 200");
@@ -433,6 +463,67 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 finish();
             }
         });
+    }
+
+    private void requestUserAddresses() {
+        //TODO
+    }
+
+    private void requestCreateNewUserAddress() {
+        //TODO
+    }
+
+    private void requestDeliveryCost() {
+        //TODO
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    private void addressBookIsPrepared() {
+        //set initial data from userInfo
+        userInfoFromDB = userInfoRepo.get();
+        if (userInfoFromDB != null) {
+            if (userInfoFromDB.getName() != null) {
+                metAddressName.setText(userInfoFromDB.getName());
+            }
+            if (userInfoFromDB.getPhone() != null) {
+                metAddressPhone.setText(userInfoFromDB.getPhone());
+            }
+            if (userInfoFromDB.getCity() != null) {
+                mtvAddressCity.setText(userInfoFromDB.getCity());
+            }
+            if (userInfoFromDB.getDistrict() != null) {
+                mtvAddressDistrict.setText(userInfoFromDB.getDistrict());
+            }
+            if (userInfoFromDB.getStreet() != null) {
+                metAddressStreet.setText(userInfoFromDB.getStreet());
+            }
+            if (userInfoFromDB.getHouse() != null) {
+                metAddressHouse.setText(userInfoFromDB.getHouse());
+            }
+            if (userInfoFromDB.getCorpBuilding() != null) {
+                metAddressBuilding.setText(userInfoFromDB.getCorpBuilding());
+            }
+            if (userInfoFromDB.getApartmentOffice() != null) {
+                metAddressApartment.setText(userInfoFromDB.getApartmentOffice());
+            }
+            if (userInfoFromDB.getEnterNum() != null) {
+                metAddressPorch.setText(userInfoFromDB.getEnterNum());
+            }
+            if (userInfoFromDB.getFloor() != null) {
+                metAddressFloor.setText(userInfoFromDB.getFloor());
+            }
+            if (userInfoFromDB.getDomophoneNum() != null) {
+                metAddressIntercom.setText(userInfoFromDB.getDomophoneNum());
+            }
+            if (userInfoFromDB.getNeedChange() != null) {
+                metAddressNeedChange.setText(userInfoFromDB.getNeedChange());
+            }
+            if (userInfoFromDB.getComment() != null) {
+                metAddressNotice.setText(userInfoFromDB.getComment());
+            }
+        }
     }
 
     @Override
@@ -486,7 +577,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    unSaveGetGeoLocation();
+                    unSafeGetGeoLocation();
                 }
                 break;
             }
@@ -500,14 +591,14 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         PERMISSION_REQUEST_CODE);
             } else {
-                unSaveGetGeoLocation();
+                unSafeGetGeoLocation();
             }
         } else {
-            unSaveGetGeoLocation();
+            unSafeGetGeoLocation();
         }
     }
 
-    private void unSaveGetGeoLocation() {
+    private void unSafeGetGeoLocation() {
         if (!isLocatePlaceNow) {
             isLocatePlaceNow = true;
             AppLocationService appLocationService = new AppLocationService(AddAddressActivity.this);
