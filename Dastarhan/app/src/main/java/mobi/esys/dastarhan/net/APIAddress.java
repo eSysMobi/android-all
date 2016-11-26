@@ -23,4 +23,8 @@ public interface APIAddress {
     //example http://dastarhan.net/index.php/user_api/districts/format/json
     @GET("/index.php/user_api/districts/format/json")
     Call<JsonObject> getAllDistricts();
+
+    //example http://dastarhan.net/index.php/user_api/addresses/format/json?id=59&apikey=ySdzeYpL3819VM2w7V34
+    @GET("/index.php/user_api/addresses/format/json")
+    Call<JsonObject> getAllUserAddresses(@Query("id") long userID, @Query("apikey") String apiToken);
 }

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -99,6 +100,10 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     private boolean isLocatePlaceNow = false;
 
+    private SharedPreferences prefs;
+
+    boolean isRuLocale;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +111,15 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         ((DastarhanApp) getApplication()).appComponent().inject(this);
+
+        prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
+
+        String locale = getResources().getConfiguration().locale.getLanguage();
+        if (locale.equals("ru")) {
+            isRuLocale = true;
+        } else {
+            isRuLocale = false;
+        }
 
         llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
         svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
@@ -339,9 +353,12 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                     //prepare data from form
                                     UserInfo userInfoFromForm = new UserInfo();
                                     userInfoFromForm.update(
-                                            name, phone, city, district, street,
-                                            house, building, apartment, porch,
-                                            floor, intercom, needChange, notice
+                                            name, phone,
+                                            cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                            street, house,
+                                            building, apartment,
+                                            porch, floor,
+                                            intercom, needChange, notice
                                     );
                                     //check is data from form equals date in DB and save if need
                                     if (userInfoFromDB == null) {
@@ -352,9 +369,12 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                             //not equals
                                             //save user info from view to DB
                                             userInfoFromDB.update(
-                                                    name, phone, city, district, street,
-                                                    house, building, apartment, porch,
-                                                    floor, intercom, needChange, notice
+                                                    name, phone,
+                                                    cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                                    street, house,
+                                                    building, apartment,
+                                                    porch, floor,
+                                                    intercom, needChange, notice
                                             );
                                             userInfoRepo.update(userInfoFromDB);
                                         }
@@ -466,7 +486,88 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     private void requestUserAddresses() {
-        //TODO
+        String authToken = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+        int userID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
+        if (!authToken.isEmpty() || userID > -1) {
+            //send request
+            apiAddress.getAllUserAddresses(userID, authToken).enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    if (response.code() == 200 && response.body().has("0")) {
+                        JsonArray jsonResponse = response.body().get("0").getAsJsonArray();
+                        Log.d(TAG, "User addesses request is ok. Received " + jsonResponse.size() + " addresses");
+                        for (int i = 0; i < jsonResponse.size(); i++) {
+                            JsonObject jsonAddress = jsonResponse.get(i).getAsJsonObject();
+//                                    "id":108,
+//                                    "user_id":80,
+//                                    "city_id":1,
+//                                    "district_id":3,
+//                                    "address":"Адрес",
+//                                    "chosen":0,
+//                                    "removed":null
+                            if (jsonAddress.has("id") && jsonAddress.has("city_id") && jsonAddress.has("district_id") && jsonAddress.has("address")) {
+                                //prepare data from response
+                                String name = null; //TODO
+                                String phone = null; //TODO
+                                Integer city = 0; //TODO
+                                Integer district = 0; //TODO
+                                String street = null; //TODO
+                                String house = null; //TODO
+                                String building = null; //TODO
+                                String apartment = null; //TODO
+                                String porch = null; //TODO
+                                String floor = null; //TODO
+                                String intercom = null; //TODO
+                                String needChange = null; //TODO
+                                String notice = null; //TODO
+
+                                UserInfo userInfoFromResponse = new UserInfo();
+                                userInfoFromResponse.update(
+                                        name, phone,
+                                        city, district,
+                                        street, house,
+                                        building, apartment,
+                                        porch, floor,
+                                        intercom, needChange, notice
+                                );
+                                userInfoFromResponse.updateAddressID(jsonAddress.get("id").getAsInt());
+                                //check is data from form equals date in DB and save if need
+                                if (userInfoFromDB == null) {
+                                    userInfoFromDB = userInfoFromResponse;
+                                    userInfoRepo.update(userInfoFromDB);
+                                } else {
+                                    userInfoFromDB.update(
+                                            name, phone,
+                                            city, district,
+                                            street, house,
+                                            building, apartment,
+                                            porch, floor,
+                                            intercom, needChange, notice
+                                    );
+                                    userInfoRepo.update(userInfoFromDB);
+                                }
+                            }
+                        }
+                        //TODO
+                    } else {
+                        Toast.makeText(AddAddressActivity.this, "Server error, can't request address list.", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "Error get addresses request: Response code is not 200");
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    Toast.makeText(AddAddressActivity.this, "Error, can't request address list.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Error get addresses request: Response code is not 200");
+                    finish();
+                }
+            });
+        } else {
+            Toast.makeText(this, "Can't request address list, please authorize first", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Can't request address list for this user. No auth info");
+            finish();
+        }
     }
 
     private void requestCreateNewUserAddress() {
@@ -490,11 +591,35 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             if (userInfoFromDB.getPhone() != null) {
                 metAddressPhone.setText(userInfoFromDB.getPhone());
             }
-            if (userInfoFromDB.getCity() != null) {
-                mtvAddressCity.setText(userInfoFromDB.getCity());
+            Integer cityID = userInfoFromDB.getCity();
+            if (cityID != null) {
+                City cityFormDB = cityRepository.getCityByID(cityID);
+                if (cityFormDB != null) {
+                    String name;
+                    if (isRuLocale) {
+                        name = cityFormDB.getCityRuName();
+                    } else {
+                        name = cityFormDB.getCityEnName();
+                    }
+                    if (name != null) {
+                        mtvAddressCity.setText(name);
+                    }
+                }
             }
-            if (userInfoFromDB.getDistrict() != null) {
-                mtvAddressDistrict.setText(userInfoFromDB.getDistrict());
+            Integer districtID = userInfoFromDB.getDistrict();
+            if (districtID != null) {
+                District districtFromDB = districtRepository.getDistrictsByID(districtID);
+                if (districtFromDB != null) {
+                    String name;
+                    if (isRuLocale) {
+                        name = districtFromDB.getDistrictRuName();
+                    } else {
+                        name = districtFromDB.getDistrictEnName();
+                    }
+                    if (name != null) {
+                        mtvAddressDistrict.setText(name);
+                    }
+                }
             }
             if (userInfoFromDB.getStreet() != null) {
                 metAddressStreet.setText(userInfoFromDB.getStreet());

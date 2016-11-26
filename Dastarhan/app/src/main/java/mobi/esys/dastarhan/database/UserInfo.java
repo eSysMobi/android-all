@@ -12,9 +12,9 @@ public class UserInfo extends RealmObject {
     private String phone;
     private String email;
     private String pass;
-    //adress
-    private String city;
-    private String district;
+    //address
+    private Integer city;
+    private Integer district;
     private String street;
     private String house;
     private String corpBuilding;
@@ -42,8 +42,8 @@ public class UserInfo extends RealmObject {
 
     public void update(String name,
                        String phone,
-                       String city,
-                       String district,
+                       Integer city,
+                       Integer district,
                        String street,
                        String house,
                        String corpBuilding,
@@ -90,11 +90,11 @@ public class UserInfo extends RealmObject {
         return pass;
     }
 
-    public String getCity() {
+    public Integer getCity() {
         return city;
     }
 
-    public String getDistrict() {
+    public Integer getDistrict() {
         return district;
     }
 

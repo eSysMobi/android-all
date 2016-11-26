@@ -53,4 +53,40 @@ class DistrictRealmRepository implements DistrictRepository {
             }
         });
     }
+
+    @Override
+    public District getDistrictByName(final String name) {
+        return realmTemplate.findInRealm(new RealmTransactionCallback<District>() {
+            @Override
+            public District execute(Realm realm) {
+                District searched = realm.where(District.class)
+                        .equalTo("districtRuName", name)
+                        .or()
+                        .equalTo("districtEnName", name)
+                        .findFirst();
+                if (searched == null) {
+                    return null;
+                } else {
+                    return realm.copyFromRealm(searched);
+                }
+            }
+        });
+    }
+
+    @Override
+    public District getDistrictsByID(final int districtID) {
+        return realmTemplate.findInRealm(new RealmTransactionCallback<District>() {
+            @Override
+            public District execute(Realm realm) {
+                District searched = realm.where(District.class)
+                        .equalTo("districtID", districtID)
+                        .findFirst();
+                if (searched == null) {
+                    return null;
+                } else {
+                    return realm.copyFromRealm(searched);
+                }
+            }
+        });
+    }
 }

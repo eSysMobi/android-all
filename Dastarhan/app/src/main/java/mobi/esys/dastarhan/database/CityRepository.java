@@ -9,4 +9,6 @@ public interface CityRepository {
     List<City> getCities();
 
     City getCityByName(String name);
+
+    City getCityByID(int id);
 }
