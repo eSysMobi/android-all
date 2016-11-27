@@ -31,6 +31,9 @@ import android.widget.Toast;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -48,6 +51,7 @@ import mobi.esys.dastarhan.utils.CityOrDistrictChooser;
 import mobi.esys.dastarhan.utils.LocationAddress;
 import mobi.esys.dastarhan.utils.RVChoseCityAdapter;
 import mobi.esys.dastarhan.utils.RVChoseDistrictAdapter;
+import mobi.esys.dastarhan.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -326,7 +330,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             }
         });
 
-        //save address and send order
+        //save address
         bAddressToOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -343,53 +347,56 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 String intercom = metAddressIntercom.getText().toString().trim();
                 String needChange = metAddressNeedChange.getText().toString().trim();
                 String notice = metAddressNotice.getText().toString().trim();
-                //check is we have all requirments fields
+                //check is we have all requirements fields
                 if (!name.isEmpty()) {
                     if (!phone.isEmpty()) {
                         if (!city.isEmpty()) {
-                            if (!district.isEmpty()
-                                    || !street.isEmpty()) {
-                                if (!metAddressHouse.getText().toString().trim().isEmpty()) {
-                                    //prepare data from form
-                                    UserInfo userInfoFromForm = new UserInfo();
-                                    userInfoFromForm.update(
-                                            name, phone,
-                                            cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
-                                            street, house,
-                                            building, apartment,
-                                            porch, floor,
-                                            intercom, needChange, notice
-                                    );
-                                    //check is data from form equals date in DB and save if need
-                                    if (userInfoFromDB == null) {
-                                        userInfoFromDB = userInfoFromForm;
-                                        userInfoRepo.update(userInfoFromDB);
-                                    } else {
-                                        if (!userInfoFromForm.equalsByAddressInfo(userInfoFromDB)) {
-                                            //not equals
-                                            //save user info from view to DB
-                                            userInfoFromDB.update(
-                                                    name, phone,
-                                                    cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
-                                                    street, house,
-                                                    building, apartment,
-                                                    porch, floor,
-                                                    intercom, needChange, notice
-                                            );
+                            if (!district.isEmpty()) {
+                                if (!street.isEmpty()) {
+                                    if (!house.isEmpty()) {
+                                        //prepare data from form
+                                        UserInfo userInfoFromForm = new UserInfo();
+                                        userInfoFromForm.update(
+                                                name, phone,
+                                                cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                                street, house,
+                                                building, apartment,
+                                                porch, floor,
+                                                intercom, needChange, notice
+                                        );
+                                        //check is data from FORM equals data in DB and save if need
+                                        if (userInfoFromDB == null) {
+                                            userInfoFromDB = userInfoFromForm;
                                             userInfoRepo.update(userInfoFromDB);
+                                        } else {
+                                            if (!userInfoFromForm.equalsByAddressInfo(userInfoFromDB)) {
+                                                //not equals
+                                                //save user info from view to DB
+                                                userInfoFromDB.update(
+                                                        name, phone,
+                                                        cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                                        street, house,
+                                                        building, apartment,
+                                                        porch, floor,
+                                                        intercom, needChange, notice
+                                                );
+                                                userInfoRepo.update(userInfoFromDB);
+                                            }
                                         }
-                                    }
-                                    //check server address id
-                                    Integer savedServerAddressID = userInfoFromDB.getServerAddressID();
-                                    if (savedServerAddressID != null) {
-                                        //send request for delivery cost
-                                        requestDeliveryCost();
+                                        //check server address id
+                                        Integer savedServerAddressID = userInfoFromDB.getServerAddressID();
+                                        if (savedServerAddressID != null) {
+                                            //send request for delivery cost
+                                            requestDeliveryCost();
+                                        } else {
+                                            //send request for delivery cost
+                                            requestUserAddresses();
+                                        }
                                     } else {
-                                        //send request for delivery cost
-                                        requestUserAddresses();
+                                        Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-                                    Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AddAddressActivity.this, R.string.need_choose_street, Toast.LENGTH_SHORT).show();
                                 }
                             } else {
                                 Toast.makeText(AddAddressActivity.this, R.string.need_choose_district, Toast.LENGTH_SHORT).show();
@@ -505,46 +512,63 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 //                                    "address":"Адрес",
 //                                    "chosen":0,
 //                                    "removed":null
-                            if (jsonAddress.has("id") && jsonAddress.has("city_id") && jsonAddress.has("district_id") && jsonAddress.has("address")) {
-                                //prepare data from response
-                                String name = null; //TODO
-                                String phone = null; //TODO
-                                Integer city = 0; //TODO
-                                Integer district = 0; //TODO
-                                String street = null; //TODO
-                                String house = null; //TODO
-                                String building = null; //TODO
-                                String apartment = null; //TODO
-                                String porch = null; //TODO
-                                String floor = null; //TODO
-                                String intercom = null; //TODO
-                                String needChange = null; //TODO
-                                String notice = null; //TODO
+                            if (jsonAddress.has("id")
+                                    && jsonAddress.get("id")!=null
+                                    && jsonAddress.has("city_id")
+                                    && jsonAddress.get("city_id")!=null
+                                    && jsonAddress.has("district_id")
+                                    && jsonAddress.get("district_id")!=null
+                                    && jsonAddress.has("address")
+                                    && jsonAddress.get("address")!=null) {
+                                String addressLine = jsonAddress.get("address").getAsString();
+                                if (addressLine != null && !addressLine.isEmpty()) {
+                                    if (Utils.isJSONValid(addressLine)) {
+                                        JsonParser parser = new JsonParser();
+                                        JsonObject subAddress = parser.parse(addressLine).getAsJsonObject();
 
-                                UserInfo userInfoFromResponse = new UserInfo();
-                                userInfoFromResponse.update(
-                                        name, phone,
-                                        city, district,
-                                        street, house,
-                                        building, apartment,
-                                        porch, floor,
-                                        intercom, needChange, notice
-                                );
-                                userInfoFromResponse.updateAddressID(jsonAddress.get("id").getAsInt());
-                                //check is data from form equals date in DB and save if need
-                                if (userInfoFromDB == null) {
-                                    userInfoFromDB = userInfoFromResponse;
-                                    userInfoRepo.update(userInfoFromDB);
-                                } else {
-                                    userInfoFromDB.update(
-                                            name, phone,
-                                            city, district,
-                                            street, house,
-                                            building, apartment,
-                                            porch, floor,
-                                            intercom, needChange, notice
-                                    );
-                                    userInfoRepo.update(userInfoFromDB);
+                                        //prepare data from response
+                                        Integer addressIdInServer = jsonAddress.get("id").getAsInt();
+                                        String name = subAddress.get("UserName").getAsString();
+                                        String phone = subAddress.get("UserPhone").getAsString();
+                                        Integer city = jsonAddress.get("city_id").getAsInt();
+                                        Integer district = jsonAddress.get("district_id").getAsInt();
+                                        String street = subAddress.get("street").getAsString();
+                                        String house = subAddress.get("house").getAsString();
+                                        String building = subAddress.get("building").getAsString();
+                                        String apartment = subAddress.get("apartment").getAsString();
+                                        String porch = subAddress.get("porch").getAsString();
+                                        String floor = subAddress.get("floor").getAsString();
+                                        String intercom = subAddress.get("intercom").getAsString();
+                                        String needChange = subAddress.get("needChange").getAsString();
+                                        String notice = subAddress.get("notice").getAsString();
+
+                                        UserInfo userInfoFromResponse = new UserInfo();
+                                        userInfoFromResponse.update(
+                                                name, phone,
+                                                city, district,
+                                                street, house,
+                                                building, apartment,
+                                                porch, floor,
+                                                intercom, needChange, notice
+                                        );
+                                        userInfoFromResponse.updateAddressID(jsonAddress.get("id").getAsInt());
+                                        //check is data from form equals date in DB and save if need
+                                        if (userInfoFromDB == null) {
+                                            userInfoFromDB = userInfoFromResponse;
+                                            userInfoFromDB.updateAddressID(addressIdInServer);
+                                            userInfoRepo.update(userInfoFromDB);
+                                        } else {
+                                            userInfoFromDB.update(
+                                                    name, phone,
+                                                    city, district,
+                                                    street, house,
+                                                    building, apartment,
+                                                    porch, floor,
+                                                    intercom, needChange, notice
+                                            );
+                                            userInfoRepo.update(userInfoFromDB);
+                                        }
+                                    }
                                 }
                             }
                         }

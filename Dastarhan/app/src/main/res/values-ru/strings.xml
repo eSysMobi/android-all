@@ -92,6 +92,7 @@
     <string name="enter_your_name">Введите имя</string>
     <string name="need_enter_phone_number">Введите номер телефона</string>
     <string name="need_choose_district">Выберете район</string>
+    <string name="need_choose_street">Выберете улицу</string>
     <string name="need_enter_house_num">Введите номер дома</string>
     <string name="need_choose_city">Выберете город</string>
     <string name="address_book_is_loading">Загружается адресная книга…</string>
