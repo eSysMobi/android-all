@@ -33,8 +33,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.json.JSONObject;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -61,6 +60,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     private final static String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
+    private final static String DELIVERY_COST = "delivery_cost";
 
     @Inject
     UserInfoRepository userInfoRepo;
@@ -464,7 +464,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                             } else {
                                 Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Error districts request: Response code is not 200");
-                                finish();
+                                failResult();
                             }
                         }
 
@@ -472,14 +472,14 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                         public void onFailure(Call<JsonObject> call, Throwable t) {
                             Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error districts request: " + t.getMessage());
-                            finish();
+                            failResult();
                         }
                     });
 
                 } else {
                     Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "Error cities request: Response code is not 200");
-                    finish();
+                    failResult();
                 }
             }
 
@@ -487,7 +487,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             public void onFailure(Call<JsonArray> call, Throwable t) {
                 Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Error cities request: " + t.getMessage());
-                finish();
+                failResult();
             }
         });
     }
@@ -503,80 +503,96 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                     if (response.code() == 200 && response.body().has("0")) {
                         JsonArray jsonResponse = response.body().get("0").getAsJsonArray();
                         Log.d(TAG, "User addesses request is ok. Received " + jsonResponse.size() + " addresses");
+                        List<UserInfo> serverAddresses = new ArrayList<>();
                         for (int i = 0; i < jsonResponse.size(); i++) {
-                            JsonObject jsonAddress = jsonResponse.get(i).getAsJsonObject();
-//                                    "id":108,
-//                                    "user_id":80,
-//                                    "city_id":1,
-//                                    "district_id":3,
-//                                    "address":"Адрес",
-//                                    "chosen":0,
-//                                    "removed":null
-                            if (jsonAddress.has("id")
-                                    && jsonAddress.get("id")!=null
-                                    && jsonAddress.has("city_id")
-                                    && jsonAddress.get("city_id")!=null
-                                    && jsonAddress.has("district_id")
-                                    && jsonAddress.get("district_id")!=null
-                                    && jsonAddress.has("address")
-                                    && jsonAddress.get("address")!=null) {
-                                String addressLine = jsonAddress.get("address").getAsString();
-                                if (addressLine != null && !addressLine.isEmpty()) {
-                                    if (Utils.isJSONValid(addressLine)) {
-                                        JsonParser parser = new JsonParser();
-                                        JsonObject subAddress = parser.parse(addressLine).getAsJsonObject();
+                            try {
+                                JsonObject jsonAddress = jsonResponse.get(i).getAsJsonObject();
+                                if (jsonAddress.has("id")
+                                        && jsonAddress.get("id") != null
+                                        && jsonAddress.has("city_id")
+                                        && jsonAddress.get("city_id") != null
+                                        && jsonAddress.has("district_id")
+                                        && jsonAddress.get("district_id") != null
+                                        && jsonAddress.has("address")
+                                        && jsonAddress.get("address") != null) {
+                                    String addressLine = jsonAddress.get("address").getAsString();
+                                    if (addressLine != null && !addressLine.isEmpty()) {
+                                        if (Utils.isJSONValid(addressLine)) {
+                                            JsonParser parser = new JsonParser();
+                                            JsonObject subAddress = parser.parse(addressLine).getAsJsonObject();
 
-                                        //prepare data from response
-                                        Integer addressIdInServer = jsonAddress.get("id").getAsInt();
-                                        String name = subAddress.get("UserName").getAsString();
-                                        String phone = subAddress.get("UserPhone").getAsString();
-                                        Integer city = jsonAddress.get("city_id").getAsInt();
-                                        Integer district = jsonAddress.get("district_id").getAsInt();
-                                        String street = subAddress.get("street").getAsString();
-                                        String house = subAddress.get("house").getAsString();
-                                        String building = subAddress.get("building").getAsString();
-                                        String apartment = subAddress.get("apartment").getAsString();
-                                        String porch = subAddress.get("porch").getAsString();
-                                        String floor = subAddress.get("floor").getAsString();
-                                        String intercom = subAddress.get("intercom").getAsString();
-                                        String needChange = subAddress.get("needChange").getAsString();
-                                        String notice = subAddress.get("notice").getAsString();
+                                            //prepare data from response
+                                            Integer addressIdInServer = jsonAddress.get("id").getAsInt();
+                                            String name = subAddress.get("UserName").getAsString();
+                                            String phone = subAddress.get("UserPhone").getAsString();
+                                            Integer city = jsonAddress.get("city_id").getAsInt();
+                                            Integer district = jsonAddress.get("district_id").getAsInt();
+                                            String street = subAddress.get("street").getAsString();
+                                            String house = subAddress.get("house").getAsString();
+                                            String building = subAddress.get("building").getAsString();
+                                            String apartment = subAddress.get("apartment").getAsString();
+                                            String porch = subAddress.get("porch").getAsString();
+                                            String floor = subAddress.get("floor").getAsString();
+                                            String intercom = subAddress.get("intercom").getAsString();
+                                            String needChange = subAddress.get("needChange").getAsString();
+                                            String notice = subAddress.get("notice").getAsString();
 
-                                        UserInfo userInfoFromResponse = new UserInfo();
-                                        userInfoFromResponse.update(
-                                                name, phone,
-                                                city, district,
-                                                street, house,
-                                                building, apartment,
-                                                porch, floor,
-                                                intercom, needChange, notice
-                                        );
-                                        userInfoFromResponse.updateAddressID(jsonAddress.get("id").getAsInt());
-                                        //check is data from form equals date in DB and save if need
-                                        if (userInfoFromDB == null) {
-                                            userInfoFromDB = userInfoFromResponse;
-                                            userInfoFromDB.updateAddressID(addressIdInServer);
-                                            userInfoRepo.update(userInfoFromDB);
-                                        } else {
-                                            userInfoFromDB.update(
-                                                    name, phone,
-                                                    city, district,
-                                                    street, house,
-                                                    building, apartment,
-                                                    porch, floor,
-                                                    intercom, needChange, notice
-                                            );
-                                            userInfoRepo.update(userInfoFromDB);
+                                            if (name != null && !name.isEmpty()
+                                                    && phone != null && !phone.isEmpty()
+                                                    && street != null && !street.isEmpty()
+                                                    && house != null && !house.isEmpty()
+                                                    && apartment != null && !apartment.isEmpty()) {
+
+                                                UserInfo userInfoFromResponse = new UserInfo();
+                                                userInfoFromResponse.update(
+                                                        name, phone,
+                                                        city, district,
+                                                        street, house,
+                                                        building, apartment,
+                                                        porch, floor,
+                                                        intercom, needChange, notice
+                                                );
+                                                userInfoFromResponse.updateAddressID(addressIdInServer);
+
+                                                serverAddresses.add(userInfoFromResponse);
+                                            }
                                         }
                                     }
                                 }
+                            } catch (Exception e) {
+                                Log.d(TAG, "Parsing error");
                             }
                         }
-                        //TODO
+
+                        boolean isNeedSendNewAddressToServer = true;
+                        for (UserInfo address : serverAddresses) {
+                            if (address.equalsByAddressInfo(userInfoFromDB)) {
+                                userInfoFromDB.updateAddressID(address.getServerAddressID());
+                                userInfoRepo.update(userInfoFromDB);
+                                isNeedSendNewAddressToServer = false;
+                                break;
+                            }
+                        }
+
+                        if (isNeedSendNewAddressToServer) {
+                            requestCreateNewUserAddress();
+                        } else {
+                            requestDeliveryCost();
+                        }
+                    } else if (response.code() == 400 && response.body().has("error")) {
+                        String error = response.body().get("error").getAsString();
+                        if("Invalid key".equals(error)){
+                            //TODO update token
+                            //requestUserAddresses();
+                        }else {
+                            Toast.makeText(AddAddressActivity.this, "Unknown server error: code 400.", Toast.LENGTH_LONG).show();
+                            Log.d(TAG, "Unknown server error when getting addresses request: code 400.");
+                            failResult();
+                        }
                     } else {
                         Toast.makeText(AddAddressActivity.this, "Server error, can't request address list.", Toast.LENGTH_LONG).show();
                         Log.d(TAG, "Error get addresses request: Response code is not 200");
-                        finish();
+                        failResult();
                     }
                 }
 
@@ -584,13 +600,13 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 public void onFailure(Call<JsonObject> call, Throwable t) {
                     Toast.makeText(AddAddressActivity.this, "Error, can't request address list.", Toast.LENGTH_LONG).show();
                     Log.d(TAG, "Error get addresses request: Response code is not 200");
-                    finish();
+                    failResult();
                 }
             });
         } else {
             Toast.makeText(this, "Can't request address list, please authorize first", Toast.LENGTH_LONG).show();
             Log.d(TAG, "Can't request address list for this user. No auth info");
-            finish();
+            failResult();
         }
     }
 
@@ -601,7 +617,15 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private void requestDeliveryCost() {
         //TODO
         Intent intent = new Intent();
+        long deliveryCost = 0;
+        intent.putExtra(DELIVERY_COST, deliveryCost);
         setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    private void failResult(){
+        Intent intent = new Intent();
+        setResult(RESULT_CANCELED, intent);
         finish();
     }
 
