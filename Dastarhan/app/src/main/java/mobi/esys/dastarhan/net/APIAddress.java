@@ -36,7 +36,7 @@ public interface APIAddress {
     //send new address to server
     //example http://dastarhan.net/index.php/user_api/addaddr/format/json?id=80&apikey=84OU10676gp7qq0a2I51&addr={son_address}&city_id=1&district_id=3
     @GET("/index.php/user_api/addaddr/format/json")
-    Call<JsonObject> getAddNewUserAddress(@Query("id") long userID,
+    Call<JsonObject> getAddNewUserAddress(@Query("id") int userID,
                                           @Query("apikey") String apiToken,
                                           @Query("addr") String address,
                                           @Query("city_id") int cityID,

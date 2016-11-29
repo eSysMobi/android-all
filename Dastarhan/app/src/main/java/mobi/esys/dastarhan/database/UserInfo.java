@@ -1,5 +1,7 @@
 package mobi.esys.dastarhan.database;
 
+import com.google.gson.JsonObject;
+
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -162,5 +164,57 @@ public class UserInfo extends RealmObject {
         if (needChange != null ? !needChange.equals(userInfo.needChange) : userInfo.needChange != null)
             return false;
         return !(comment != null ? !comment.equals(userInfo.comment) : userInfo.comment != null);
+    }
+
+    private JsonObject createJsonAddress() {
+        JsonObject result = null;
+        if (name != null
+                && phone != null
+                && city != null
+                && (district != null || street != null)
+                && house != null
+                && apartmentOffice != null
+                ) {
+            result = new JsonObject();
+            result.addProperty("name", name);
+            result.addProperty("phone", phone);
+            result.addProperty("city", city);
+            result.addProperty("house", house);
+            result.addProperty("apartmentOrOffice", apartmentOffice);
+            if(district!=null){
+                result.addProperty("district", district);
+            }
+            if(street!=null){
+                result.addProperty("street", street);
+            }
+            if(corpBuilding!=null){
+                result.addProperty("housingOrBuilding", corpBuilding);
+            }
+            if(enterNum!=null){
+                result.addProperty("porch", enterNum);
+            }
+            if(floor!=null){
+                result.addProperty("floor", floor);
+            }
+            if(domophoneNum!=null){
+                result.addProperty("domophoneNum", domophoneNum);
+            }
+            if(needChange!=null){
+                result.addProperty("needChange", needChange);
+            }
+            if(comment!=null){
+                result.addProperty("comment", comment);
+            }
+        }
+        return result;
+    }
+
+    public String getFullAddress() {
+        String result = "";
+        JsonObject jsonAddress = createJsonAddress();
+        if (jsonAddress != null) {
+            result = jsonAddress.toString();
+        }
+        return result;
     }
 }

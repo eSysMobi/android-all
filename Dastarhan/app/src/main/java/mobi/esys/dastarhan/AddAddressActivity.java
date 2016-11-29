@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -45,6 +46,7 @@ import mobi.esys.dastarhan.database.DistrictRepository;
 import mobi.esys.dastarhan.database.UserInfo;
 import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.net.APIAddress;
+import mobi.esys.dastarhan.net.APIAuthorize;
 import mobi.esys.dastarhan.utils.AppLocationService;
 import mobi.esys.dastarhan.utils.CityOrDistrictChooser;
 import mobi.esys.dastarhan.utils.LocationAddress;
@@ -71,6 +73,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     @Inject
     Retrofit retrofit;
     private APIAddress apiAddress;
+    private APIAuthorize apiAuth;
 
     //layers
     private LinearLayout llAddressLoading;
@@ -106,7 +109,8 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     private SharedPreferences prefs;
 
-    boolean isRuLocale;
+    private boolean isRuLocale;
+    private boolean isAlreadyTryAuth = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +159,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         mibAddressAutoLocation = (ImageButton) findViewById(R.id.ibAddressAutoLocation);
 
         apiAddress = retrofit.create(APIAddress.class);
+        apiAuth = retrofit.create(APIAuthorize.class);
 
         metAddressName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -172,9 +177,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    mtvAddressCity.requestFocus();
                     checkRequiredFields();
-                    return true;
                 }
                 return false;
             }
@@ -580,11 +583,60 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                             requestDeliveryCost();
                         }
                     } else if (response.code() == 400 && response.body().has("error")) {
-                        String error = response.body().get("error").getAsString();
-                        if("Invalid key".equals(error)){
-                            //TODO update token
-                            //requestUserAddresses();
-                        }else {
+                        final String error = response.body().get("error").getAsString();
+                        if ("Invalid key".equals(error)) {
+                            if (isAlreadyTryAuth) {
+                                Toast.makeText(AddAddressActivity.this, "Can't authorize on server.", Toast.LENGTH_LONG).show();
+                                Log.d(TAG, "Can't authorize on server.");
+                                failResult();
+                            } else {
+                                final String userEmail = prefs.getString(Constants.PREF_SAVED_LOGIN, "");
+                                final String userPass = prefs.getString(Constants.PREF_SAVED_PASS, "");
+                                if (!userEmail.isEmpty() && !userPass.isEmpty()) {
+                                    apiAuth.auth(userEmail, userPass).enqueue(new Callback<JsonObject>() {
+                                        @Override
+                                        public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                                            isAlreadyTryAuth = true;
+                                            if (response != null && response.code() == 200) {
+                                                // update token
+                                                JsonObject authResponse = response.body();
+                                                if (authResponse != null
+                                                        && authResponse.has("apikey")
+                                                        && authResponse.get("apikey").getAsString() != null
+                                                        && !authResponse.get("apikey").getAsString().isEmpty()) {
+                                                    final String token = authResponse.get("apikey").getAsString();
+                                                    SharedPreferences.Editor editor = prefs.edit();
+                                                    editor.putString(Constants.PREF_SAVED_AUTH_TOKEN, token);
+                                                    editor.apply();
+                                                    requestUserAddresses();
+                                                } else {
+                                                    Toast.makeText(AddAddressActivity.this, "Bad server auth response.", Toast.LENGTH_LONG).show();
+                                                    Log.d(TAG, "Bad server auth response.");
+                                                    failResult();
+                                                }
+                                            } else {
+                                                Toast.makeText(AddAddressActivity.this, "Unknown server auth error.", Toast.LENGTH_LONG).show();
+                                                Log.d(TAG, "Unknown server error when getting auth.");
+                                                failResult();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<JsonObject> call, Throwable t) {
+                                            isAlreadyTryAuth = true;
+                                            Toast.makeText(AddAddressActivity.this, "Unknown server auth error.", Toast.LENGTH_LONG).show();
+                                            Log.d(TAG, "Unknown server error when getting auth: " + t.getMessage());
+                                            failResult();
+                                        }
+                                    });
+                                } else {
+                                    Toast.makeText(AddAddressActivity.this, "Can't request auth info, please authorize first", Toast.LENGTH_LONG).show();
+                                    Log.d(TAG, "Can't request new auth token. No auth email and password");
+                                    failResult();
+                                }
+                            }
+
+                        } else {
                             Toast.makeText(AddAddressActivity.this, "Unknown server error: code 400.", Toast.LENGTH_LONG).show();
                             Log.d(TAG, "Unknown server error when getting addresses request: code 400.");
                             failResult();
@@ -611,19 +663,88 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     private void requestCreateNewUserAddress() {
-        //TODO
+        final int sendingUserID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
+        final String sendingApiToken = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+        final String sendingAddress = userInfoFromDB.getFullAddress();
+        final Integer sendingCityID = userInfoFromDB.getCity();
+        final Integer sendingDistrictID = userInfoFromDB.getDistrict();
+        if (sendingUserID == -1
+                || sendingApiToken.isEmpty()
+                || sendingAddress.isEmpty()
+                || sendingCityID == null
+                || sendingDistrictID == null) {
+            Toast.makeText(this, "Can't send new address to server, please reauthorize", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Can't send new address to server. Not enough data");
+            failResult();
+        } else {
+            apiAddress
+                    .getAddNewUserAddress(sendingUserID, sendingApiToken, sendingAddress, sendingCityID, sendingDistrictID)
+                    .enqueue(new Callback<JsonObject>() {
+                        @Override
+                        public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                            if (response != null && response.code() == 200) {
+                                //parse response and save address id in server
+                                //example {"success":"Ok","data":{"address_id":110}}
+                                int addressIDonServer = -1;
+                                //parse
+                                final JsonObject jsonResponse = response.body();
+                                try {
+                                    if (jsonResponse != null && jsonResponse.has("data")) {
+                                        final JsonElement jsonDataElement = jsonResponse.get("data");
+                                        if (jsonDataElement != null && jsonDataElement.isJsonObject()) {
+                                            final JsonObject jsonData = jsonDataElement.getAsJsonObject();
+                                            if (jsonData != null && jsonData.has("address_id")) {
+                                                final JsonElement address_id = jsonData.get("address_id");
+                                                if (address_id != null) {
+                                                    addressIDonServer = address_id.getAsInt();
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(AddAddressActivity.this, "Bad server response when sending new address", Toast.LENGTH_LONG).show();
+                                    Log.d(TAG, "Bad server response when sending new address");
+                                    failResult();
+                                }
+
+                                if (addressIDonServer > -1) {
+                                    //save id
+                                    userInfoFromDB.updateAddressID(addressIDonServer);
+                                    userInfoRepo.update(userInfoFromDB);
+                                    requestDeliveryCost();
+                                } else {
+                                    Toast.makeText(AddAddressActivity.this, "Unknown server response when sending new address", Toast.LENGTH_LONG).show();
+                                    Log.d(TAG, "Unknown server response when sending new address");
+                                    failResult();
+                                }
+                            } else {
+                                Toast.makeText(AddAddressActivity.this, "Unknown server error when sending new address", Toast.LENGTH_LONG).show();
+                                Log.d(TAG, "Unknown server error when sending new address");
+                                failResult();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<JsonObject> call, Throwable t) {
+                            Toast.makeText(AddAddressActivity.this, "Can't send new address to server.", Toast.LENGTH_LONG).show();
+                            Log.d(TAG, "Can't send new address to server: " + t.getMessage());
+                            failResult();
+                        }
+                    });
+        }
     }
 
     private void requestDeliveryCost() {
         //TODO
         Intent intent = new Intent();
         long deliveryCost = 0;
+        deliveryCost = 100;
         intent.putExtra(DELIVERY_COST, deliveryCost);
         setResult(RESULT_OK, intent);
         finish();
     }
 
-    private void failResult(){
+    private void failResult() {
         Intent intent = new Intent();
         setResult(RESULT_CANCELED, intent);
         finish();
@@ -697,6 +818,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 metAddressNotice.setText(userInfoFromDB.getComment());
             }
         }
+        checkRequiredFields();
     }
 
     @Override
@@ -713,22 +835,16 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         chosenDistrict = district;
         mrvAddressChooseDistrict.setVisibility(View.GONE);
         mtvAddressDistrict.setText(localizedName);
-        metAddressStreet.setEnabled(true);
-        metAddressHouse.setEnabled(true);
-        metAddressBuilding.setEnabled(true);
-        metAddressApartment.setEnabled(true);
-        metAddressPorch.setEnabled(true);
-        metAddressFloor.setEnabled(true);
-        metAddressIntercom.setEnabled(true);
         checkRequiredFields();
     }
 
     private void checkRequiredFields() {
         if (metAddressName.length() > 0
-                && metAddressPhone.length() > 0
+                && metAddressPhone.getText().length() > 0
+                && mtvAddressCity.getText().length() > 0
                 && mtvAddressDistrict.getText().length() > 0
-                && mtvAddressDistrict.length() > 0
-                && metAddressHouse.length() > 0) {
+                && metAddressHouse.getText().length() > 0
+                && metAddressApartment.getText().length() > 0) {
             bAddressToOrder.setVisibility(View.VISIBLE);
         } else {
             bAddressToOrder.setVisibility(View.GONE);

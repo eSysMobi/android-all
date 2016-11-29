@@ -1,7 +1,9 @@
 package mobi.esys.dastarhan;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +24,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     private Button mbBasketAddAddress;
     private Button mbBasketSendOrder;
     private TextView mtvBasketTotalCost;
+    private SharedPreferences prefs;
 
     public BasketFragment() {
         // Required empty public constructor
@@ -54,11 +57,22 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mrvOrders.setLayoutManager(llm);
 
+        prefs = getActivity().getSharedPreferences(Constants.APP_PREF, Application.MODE_PRIVATE);
+
         mbBasketAddAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "User check address");
-                startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
+                if (prefs.getInt(Constants.PREF_SAVED_USER_ID, -1) == -1
+                        || prefs.getString(Constants.PREF_SAVED_LOGIN, "").isEmpty()
+                        || prefs.getString(Constants.PREF_SAVED_PASS, "").isEmpty()
+                        || prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "").isEmpty()) {
+                    //authorize
+                    Intent intent = new Intent(getContext(), LoginActivity.class);
+                    startActivityForResult(intent, Constants.REQUEST_CODE_CART_AUTH);
+                } else {
+                    Log.d(TAG, "User check address");
+                    startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
+                }
             }
         });
         return view;
@@ -67,10 +81,12 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==Constants.REQUEST_CODE_CART){
-            if(resultCode== Activity.RESULT_OK){
-                mbBasketSendOrder.setEnabled(true);
-            }
+        if (requestCode == Constants.REQUEST_CODE_CART && resultCode == Activity.RESULT_OK) {
+            mbBasketSendOrder.setEnabled(true);
+        }
+        if (requestCode == Constants.REQUEST_CODE_CART_AUTH && resultCode == Activity.RESULT_OK) {
+            Log.d(TAG, "User check address after manual authorizatoin");
+            startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
         }
     }
 
