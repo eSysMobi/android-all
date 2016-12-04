@@ -222,11 +222,11 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
         }
 
         if (needRefreshTotalCostEveryTime) {
-            updateTotalCost();
+            updateTotalCost(false);
         }
     }
 
-    private void updateTotalCost() {
+    private void updateTotalCost(boolean updateDeliveryInfo) {
         double totalCost = 0;
         for (Order order : currOrders) {
             totalCost = totalCost + (order.getPrice() * order.getCount());
@@ -248,7 +248,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             }
         }
 
-        callback.refreshTotalCost(totalCost, ordersInfo);
+        callback.refreshTotalCost(totalCost, ordersInfo, updateDeliveryInfo);
     }
 
     private static class GoToFullFood implements View.OnClickListener {
@@ -286,7 +286,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.VISIBLE);
             viewHolder.tvFoodRVCount.setText("1");
             currOrders.add(order);
-            updateTotalCost();
+            updateTotalCost(true);
         }
     }
 
@@ -323,7 +323,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
                     viewHolder.bFoodRVAddRemoveFromCart.setVisibility(View.GONE);
                     currOrders.remove(currOrders.get(targetPosition));
                 }
-                updateTotalCost();
+                updateTotalCost(true);
             }
         }
     }
@@ -351,7 +351,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             if (targetPosition != -42) {
                 viewHolder.tvFoodRVCount.setText(String.valueOf(currOrders.get(targetPosition).getCount()));
             }
-            updateTotalCost();
+            updateTotalCost(true);
         }
     }
 
@@ -368,6 +368,6 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     public interface Callback {
         void enableAddAddressButton();
 
-        void refreshTotalCost(double totalCost, Map<Integer, Double> ordersInfo);
+        void refreshTotalCost(double totalCost, Map<Integer, Double> ordersInfo, boolean updateDeliveryInfo);
     }
 }

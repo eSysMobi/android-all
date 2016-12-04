@@ -15,24 +15,106 @@
         android:id="@+id/rvOrders"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_above="@+id/tvBasketTotalCost"
+        android:layout_above="@+id/tvBasketCost"
         android:layout_alignParentTop="true"
         android:orientation="horizontal"
         android:visibility="visible" />
 
     <TextView
-        android:id="@+id/tvBasketTotalCost"
+        android:id="@+id/tvBasketCost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/lBasketDelivery"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:text="@string/cost_full"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/lBasketDelivery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/bBasketSendOrder"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:text="@string/total_cost_full"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:visibility="visible" />
+        android:orientation="vertical"
+        android:visibility="gone">
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delivery_time"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvBasketDeliveryTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="test time"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delivery_cost"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvBasketDeliveryCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="test cost"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delivery_total_cost"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+
+            <TextView
+                android:id="@+id/tvBasketDeliveryTotalCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="test total cost"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:visibility="visible" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/bBasketAddAddress"
@@ -56,6 +138,7 @@
         android:layout_above="@+id/flBasketNav"
         android:layout_alignEnd="@+id/rvOrders"
         android:layout_alignRight="@+id/rvOrders"
+        android:layout_marginTop="10dp"
         android:layout_toEndOf="@+id/flBasketNav"
         android:layout_toRightOf="@+id/flBasketNav"
         android:background="@drawable/button_selector"

@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -52,11 +53,13 @@ import mobi.esys.dastarhan.database.UserInfo;
 import mobi.esys.dastarhan.database.UserInfoRepository;
 import mobi.esys.dastarhan.net.APIAddress;
 import mobi.esys.dastarhan.net.APIAuthorize;
+import mobi.esys.dastarhan.net.APIDelivery;
 import mobi.esys.dastarhan.utils.AppLocationService;
 import mobi.esys.dastarhan.utils.CityOrDistrictChooser;
 import mobi.esys.dastarhan.utils.LocationAddress;
 import mobi.esys.dastarhan.utils.RVChoseCityAdapter;
 import mobi.esys.dastarhan.utils.RVChoseDistrictAdapter;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -67,9 +70,9 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private final static String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
     public final static String DELIVERY_REST_IDS = "delivery_rest_ids";
-    private final static String DELIVERY_MIN_ORDER = "delivery_min_order";
-    private final static String DELIVERY_TIME = "delivery_time";
-    private final static String DELIVERY_COST = "delivery_cost";
+    final static String DELIVERY_MIN_ORDER = "delivery_min_order";
+    final static String DELIVERY_TIME = "delivery_time";
+    final static String DELIVERY_COST = "delivery_cost";
 
     @Inject
     UserInfoRepository userInfoRepo;
@@ -81,6 +84,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     Retrofit retrofit;
     private APIAddress apiAddress;
     private APIAuthorize apiAuth;
+    private APIDelivery apiDelivery;
 
     //layers
     private LinearLayout llAddressLoading;
@@ -120,11 +124,12 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private boolean isAlreadyTryAuth = false;
 
     //delivery
-    private int[] restIDs;
+    private HashMap<Integer, Double> restIDsAndCurrOrerSum;
     private HashMap<Integer, Double> deliveryMinOrderSums = new HashMap<>();
     private String deliveriesMaxTime = "";
     private double deliveryAllCost = 0;
-    private int completedDeliveryRequests = 0;
+    private volatile int completedDeliveryRequests = 0;
+    private boolean failDeliveryResponseOccurs = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,389 +141,394 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
         prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
 
-        restIDs = getIntent().getIntArrayExtra(DELIVERY_REST_IDS);
+        restIDsAndCurrOrerSum = (HashMap<Integer, Double>) getIntent().getSerializableExtra(DELIVERY_REST_IDS);
+        if (restIDsAndCurrOrerSum == null || restIDsAndCurrOrerSum.isEmpty()) {
+            failResult();
+        } else {
 
-        final String locale = getResources().getConfiguration().locale.getLanguage();
-        isRuLocale = locale.equals("ru");
+            final String locale = getResources().getConfiguration().locale.getLanguage();
+            isRuLocale = locale.equals("ru");
 
-        llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
-        svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
-        setUILoading(true);
+            llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
+            svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
+            setUILoading(true);
 
-        metAddressName = (EditText) findViewById(R.id.etAddressName);
-        metAddressPhone = (EditText) findViewById(R.id.etAddressPhone);
+            metAddressName = (EditText) findViewById(R.id.etAddressName);
+            metAddressPhone = (EditText) findViewById(R.id.etAddressPhone);
 
-        mtvAddressCity = (TextView) findViewById(R.id.tvAddressCity);
-        mtvAddressDistrict = (TextView) findViewById(R.id.tvAddressDistrict);
-        metAddressStreet = (EditText) findViewById(R.id.etAddressStreet);
-        metAddressHouse = (EditText) findViewById(R.id.etAddressHouse);
-        metAddressBuilding = (EditText) findViewById(R.id.etAddressBuilding);
-        metAddressApartment = (EditText) findViewById(R.id.etAddressApartment);
-        metAddressPorch = (EditText) findViewById(R.id.etAddressPorch);
-        metAddressFloor = (EditText) findViewById(R.id.etAddressFloor);
-        metAddressIntercom = (EditText) findViewById(R.id.etAddressIntercom);
-        metAddressNeedChange = (EditText) findViewById(R.id.etAddressNeedChange);
-        metAddressNotice = (EditText) findViewById(R.id.etAddressNotice);
+            mtvAddressCity = (TextView) findViewById(R.id.tvAddressCity);
+            mtvAddressDistrict = (TextView) findViewById(R.id.tvAddressDistrict);
+            metAddressStreet = (EditText) findViewById(R.id.etAddressStreet);
+            metAddressHouse = (EditText) findViewById(R.id.etAddressHouse);
+            metAddressBuilding = (EditText) findViewById(R.id.etAddressBuilding);
+            metAddressApartment = (EditText) findViewById(R.id.etAddressApartment);
+            metAddressPorch = (EditText) findViewById(R.id.etAddressPorch);
+            metAddressFloor = (EditText) findViewById(R.id.etAddressFloor);
+            metAddressIntercom = (EditText) findViewById(R.id.etAddressIntercom);
+            metAddressNeedChange = (EditText) findViewById(R.id.etAddressNeedChange);
+            metAddressNotice = (EditText) findViewById(R.id.etAddressNotice);
 
-        bAddressToOrder = (Button) findViewById(R.id.bAddressToOrder);
-        pbAddressToOrder = (ProgressBar) findViewById(R.id.pbAddressToOrder);
-        mrvAddressChooseCity = (RecyclerView) findViewById(R.id.rvAddressChooseCity);
-        mLayoutManagerCity = new LinearLayoutManager(this);
-        mrvAddressChooseCity.setLayoutManager(mLayoutManagerCity);
-        mrvAddressChooseDistrict = (RecyclerView) findViewById(R.id.rvAddressChooseDistrict);
-        mLayoutManagerDistrict = new LinearLayoutManager(this);
-        mrvAddressChooseDistrict.setLayoutManager(mLayoutManagerDistrict);
-        mibAddressAutoLocation = (ImageButton) findViewById(R.id.ibAddressAutoLocation);
+            bAddressToOrder = (Button) findViewById(R.id.bAddressToOrder);
+            pbAddressToOrder = (ProgressBar) findViewById(R.id.pbAddressToOrder);
+            mrvAddressChooseCity = (RecyclerView) findViewById(R.id.rvAddressChooseCity);
+            mLayoutManagerCity = new LinearLayoutManager(this);
+            mrvAddressChooseCity.setLayoutManager(mLayoutManagerCity);
+            mrvAddressChooseDistrict = (RecyclerView) findViewById(R.id.rvAddressChooseDistrict);
+            mLayoutManagerDistrict = new LinearLayoutManager(this);
+            mrvAddressChooseDistrict.setLayoutManager(mLayoutManagerDistrict);
+            mibAddressAutoLocation = (ImageButton) findViewById(R.id.ibAddressAutoLocation);
 
-        apiAddress = retrofit.create(APIAddress.class);
-        apiAuth = retrofit.create(APIAuthorize.class);
+            apiAddress = retrofit.create(APIAddress.class);
+            apiAuth = retrofit.create(APIAuthorize.class);
+            apiDelivery = retrofit.create(APIDelivery.class);
 
-        final TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            final TextWatcher textWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.toString().isEmpty()) {
-                    bAddressToOrder.setVisibility(View.GONE);
-                } else {
-                    checkRequiredFields();
                 }
-            }
-        };
 
-        metAddressName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressPhone.requestFocus();
-                    checkRequiredFields();
-                    return true;
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
                 }
-                return false;
-            }
-        });
-        metAddressName.addTextChangedListener(textWatcher);
 
-        metAddressPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                return false;
-            }
-        });
-        metAddressPhone.addTextChangedListener(textWatcher);
-
-        mtvAddressCity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mrvAddressChooseCity.getVisibility() == View.VISIBLE) {
-                    mrvAddressChooseCity.setVisibility(View.GONE);
-                } else {
-                    if (mrvAddressChooseCity.getAdapter() == null) {
-                        String locale = getResources().getConfiguration().locale.getLanguage();
-                        RVChoseCityAdapter adapter = new RVChoseCityAdapter(AddAddressActivity.this, cityRepository.getCities(), locale);
-                        mrvAddressChooseCity.setAdapter(adapter);
-                    }
-                    mrvAddressChooseCity.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        mtvAddressDistrict.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mrvAddressChooseDistrict.getVisibility() == View.VISIBLE) {
-                    mrvAddressChooseDistrict.setVisibility(View.GONE);
-                } else {
-                    if (chosenCity == null) {
-                        Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (s.toString().isEmpty()) {
+                        bAddressToOrder.setVisibility(View.GONE);
                     } else {
-                        if (mrvAddressChooseDistrict.getAdapter() == null) {
-                            String locale = getResources().getConfiguration().locale.getLanguage();
-                            List<District> districts = districtRepository.getDistrictsOfCity(chosenCity.getCityID());
-                            RVChoseDistrictAdapter adapter = new RVChoseDistrictAdapter(AddAddressActivity.this, districts, locale);
-                            mrvAddressChooseDistrict.setAdapter(adapter);
-                        }
-                        mrvAddressChooseDistrict.setVisibility(View.VISIBLE);
+                        checkRequiredFields();
                     }
                 }
-            }
-        });
+            };
 
-        metAddressStreet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressHouse.requestFocus();
-                    return true;
+            metAddressName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressPhone.requestFocus();
+                        checkRequiredFields();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+            metAddressName.addTextChangedListener(textWatcher);
 
-        metAddressHouse.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressBuilding.requestFocus();
-                    return true;
+            metAddressPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    return false;
                 }
-                return false;
-            }
-        });
-        metAddressHouse.addTextChangedListener(textWatcher);
+            });
+            metAddressPhone.addTextChangedListener(textWatcher);
 
-        metAddressBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressApartment.requestFocus();
-                    return true;
+            mtvAddressCity.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mrvAddressChooseCity.getVisibility() == View.VISIBLE) {
+                        mrvAddressChooseCity.setVisibility(View.GONE);
+                    } else {
+                        if (mrvAddressChooseCity.getAdapter() == null) {
+                            String locale = getResources().getConfiguration().locale.getLanguage();
+                            RVChoseCityAdapter adapter = new RVChoseCityAdapter(AddAddressActivity.this, cityRepository.getCities(), locale);
+                            mrvAddressChooseCity.setAdapter(adapter);
+                        }
+                        mrvAddressChooseCity.setVisibility(View.VISIBLE);
+                    }
                 }
-                return false;
-            }
-        });
+            });
 
-        metAddressApartment.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressPorch.requestFocus();
-                    return true;
+            mtvAddressDistrict.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mrvAddressChooseDistrict.getVisibility() == View.VISIBLE) {
+                        mrvAddressChooseDistrict.setVisibility(View.GONE);
+                    } else {
+                        if (chosenCity == null) {
+                            Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (mrvAddressChooseDistrict.getAdapter() == null) {
+                                String locale = getResources().getConfiguration().locale.getLanguage();
+                                List<District> districts = districtRepository.getDistrictsOfCity(chosenCity.getCityID());
+                                RVChoseDistrictAdapter adapter = new RVChoseDistrictAdapter(AddAddressActivity.this, districts, locale);
+                                mrvAddressChooseDistrict.setAdapter(adapter);
+                            }
+                            mrvAddressChooseDistrict.setVisibility(View.VISIBLE);
+                        }
+                    }
                 }
-                return false;
-            }
-        });
-        metAddressApartment.addTextChangedListener(textWatcher);
+            });
 
-        metAddressPorch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressFloor.requestFocus();
-                    return true;
+            metAddressStreet.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressHouse.requestFocus();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
 
-        metAddressFloor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressIntercom.requestFocus();
-                    return true;
+            metAddressHouse.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressBuilding.requestFocus();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+            metAddressHouse.addTextChangedListener(textWatcher);
 
-        metAddressIntercom.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressNeedChange.requestFocus();
-                    return true;
+            metAddressBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressApartment.requestFocus();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
 
-        metAddressNeedChange.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    metAddressNotice.requestFocus();
-                    return true;
+            metAddressApartment.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressPorch.requestFocus();
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+            metAddressApartment.addTextChangedListener(textWatcher);
 
-        mibAddressAutoLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getGeoLocation();
-            }
-        });
+            metAddressPorch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressFloor.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
 
-        //save address
-        bAddressToOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = metAddressName.getText().toString().trim();
-                String phone = metAddressPhone.getText().toString().trim();
-                String city = mtvAddressCity.getText().toString().trim();
-                String district = mtvAddressDistrict.getText().toString().trim();
-                String street = metAddressStreet.getText().toString().trim();
-                String house = metAddressHouse.getText().toString().trim();
-                String building = metAddressBuilding.getText().toString().trim();
-                String apartment = metAddressApartment.getText().toString().trim();
-                String porch = metAddressPorch.getText().toString().trim();
-                String floor = metAddressFloor.getText().toString().trim();
-                String intercom = metAddressIntercom.getText().toString().trim();
-                String needChange = metAddressNeedChange.getText().toString().trim();
-                String notice = metAddressNotice.getText().toString().trim();
-                //check is we have all requirements fields
-                if (!name.isEmpty()) {
-                    if (!phone.isEmpty()) {
-                        if (!city.isEmpty()) {
-                            if (!district.isEmpty()) {
-                                if (!street.isEmpty()) {
-                                    if (!house.isEmpty()) {
-                                        //prepare data from form
-                                        UserInfo userInfoFromForm = new UserInfo();
-                                        userInfoFromForm.update(
-                                                name, phone,
-                                                cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
-                                                street, house,
-                                                building, apartment,
-                                                porch, floor,
-                                                intercom, needChange, notice
-                                        );
-                                        //check is data from FORM equals data in DB and save if need
-                                        if (userInfoFromDB == null) {
-                                            userInfoFromDB = userInfoFromForm;
-                                            userInfoRepo.update(userInfoFromDB);
-                                        } else {
-                                            boolean needUpdateInRepo = false;
-                                            if (!userInfoFromForm.equalsByAddress(userInfoFromDB)) {
-                                                userInfoFromDB.updateAddress(
-                                                        cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
-                                                        street, house,
-                                                        building, apartment,
-                                                        porch, floor,
-                                                        intercom
-                                                );
-                                                needUpdateInRepo = true;
-                                            }
-                                            if (!userInfoFromForm.equalsByUserInfo(userInfoFromDB)) {
-                                                userInfoFromDB.updateUserInfo(
-                                                        name, phone,
-                                                        needChange, notice
-                                                );
-                                                needUpdateInRepo = true;
-                                            }
-                                            if (needUpdateInRepo) {
+            metAddressFloor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressIntercom.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            metAddressIntercom.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressNeedChange.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            metAddressNeedChange.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (EditorInfo.IME_ACTION_NEXT == actionId) {
+                        metAddressNotice.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            mibAddressAutoLocation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getGeoLocation();
+                }
+            });
+
+            //save address
+            bAddressToOrder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String name = metAddressName.getText().toString().trim();
+                    String phone = metAddressPhone.getText().toString().trim();
+                    String city = mtvAddressCity.getText().toString().trim();
+                    String district = mtvAddressDistrict.getText().toString().trim();
+                    String street = metAddressStreet.getText().toString().trim();
+                    String house = metAddressHouse.getText().toString().trim();
+                    String building = metAddressBuilding.getText().toString().trim();
+                    String apartment = metAddressApartment.getText().toString().trim();
+                    String porch = metAddressPorch.getText().toString().trim();
+                    String floor = metAddressFloor.getText().toString().trim();
+                    String intercom = metAddressIntercom.getText().toString().trim();
+                    String needChange = metAddressNeedChange.getText().toString().trim();
+                    String notice = metAddressNotice.getText().toString().trim();
+                    //check is we have all requirements fields
+                    if (!name.isEmpty()) {
+                        if (!phone.isEmpty()) {
+                            if (!city.isEmpty()) {
+                                if (!district.isEmpty()) {
+                                    if (!street.isEmpty()) {
+                                        if (!house.isEmpty()) {
+                                            //prepare data from form
+                                            UserInfo userInfoFromForm = new UserInfo();
+                                            userInfoFromForm.update(
+                                                    name, phone,
+                                                    cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                                    street, house,
+                                                    building, apartment,
+                                                    porch, floor,
+                                                    intercom, needChange, notice
+                                            );
+                                            //check is data from FORM equals data in DB and save if need
+                                            if (userInfoFromDB == null) {
+                                                userInfoFromDB = userInfoFromForm;
                                                 userInfoRepo.update(userInfoFromDB);
+                                            } else {
+                                                boolean needUpdateInRepo = false;
+                                                if (!userInfoFromForm.equalsByAddress(userInfoFromDB)) {
+                                                    userInfoFromDB.updateAddress(
+                                                            cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
+                                                            street, house,
+                                                            building, apartment,
+                                                            porch, floor,
+                                                            intercom
+                                                    );
+                                                    needUpdateInRepo = true;
+                                                }
+                                                if (!userInfoFromForm.equalsByUserInfo(userInfoFromDB)) {
+                                                    userInfoFromDB.updateUserInfo(
+                                                            name, phone,
+                                                            needChange, notice
+                                                    );
+                                                    needUpdateInRepo = true;
+                                                }
+                                                if (needUpdateInRepo) {
+                                                    userInfoRepo.update(userInfoFromDB);
+                                                }
                                             }
-                                        }
-                                        //check server address id
-                                        Integer savedServerAddressID = userInfoFromDB.getServerAddressID();
-                                        if (savedServerAddressID != null) {
-                                            //send request for delivery cost
-                                            requestDeliveryCost();
+                                            //check server address id
+                                            Integer savedServerAddressID = userInfoFromDB.getServerAddressID();
+                                            if (savedServerAddressID != null) {
+                                                //send request for delivery cost
+                                                requestDeliveryCost();
+                                            } else {
+                                                //send request for delivery cost
+                                                requestUserAddresses();
+                                            }
                                         } else {
-                                            //send request for delivery cost
-                                            requestUserAddresses();
+                                            Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
                                         }
                                     } else {
-                                        Toast.makeText(AddAddressActivity.this, R.string.need_enter_house_num, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(AddAddressActivity.this, R.string.need_choose_street, Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-                                    Toast.makeText(AddAddressActivity.this, R.string.need_choose_street, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AddAddressActivity.this, R.string.need_choose_district, Toast.LENGTH_SHORT).show();
                                 }
                             } else {
-                                Toast.makeText(AddAddressActivity.this, R.string.need_choose_district, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(AddAddressActivity.this, R.string.need_choose_city, Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(AddAddressActivity.this, R.string.need_choose_city, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddAddressActivity.this, R.string.need_enter_phone_number, Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(AddAddressActivity.this, R.string.need_enter_phone_number, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AddAddressActivity.this, R.string.enter_your_name, Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(AddAddressActivity.this, R.string.enter_your_name, Toast.LENGTH_SHORT).show();
                 }
-            }
-        });
+            });
 
-        //set hiding choosers
-        View.OnFocusChangeListener chooserHidingListener = new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    v.setVisibility(View.GONE);
-                }
-            }
-        };
-        mrvAddressChooseCity.setOnFocusChangeListener(chooserHidingListener);
-        mrvAddressChooseDistrict.setOnFocusChangeListener(chooserHidingListener);
-
-        //download and save cities and districts
-        apiAddress.getCities().enqueue(new Callback<JsonArray>() {
-            @Override
-            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
-                if (response.code() == 200) {
-                    JsonArray jsonResponse = response.body();
-                    Log.d(TAG, "Cities request is ok. Received " + jsonResponse.size() + " cities");
-                    for (int i = 0; i < jsonResponse.size(); i++) {
-                        JsonObject jsonCity = jsonResponse.get(i).getAsJsonObject();
-                        if (jsonCity.has("id") && jsonCity.has("ru_name") && jsonCity.has("en_name")) {
-                            City newCity = new City(jsonCity.get("id").getAsInt(), jsonCity.get("ru_name").getAsString(), jsonCity.get("en_name").getAsString());
-                            cityRepository.createOrUpdate(newCity);
-                        }
+            //set hiding choosers
+            View.OnFocusChangeListener chooserHidingListener = new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        v.setVisibility(View.GONE);
                     }
+                }
+            };
+            mrvAddressChooseCity.setOnFocusChangeListener(chooserHidingListener);
+            mrvAddressChooseDistrict.setOnFocusChangeListener(chooserHidingListener);
 
-                    //download and save districts
-                    apiAddress.getAllDistricts().enqueue(new Callback<JsonObject>() {
-                        @Override
-                        public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                            if (response.code() == 200 && response.body().has("0")) {
-                                JsonArray jsonResponse = response.body().get("0").getAsJsonArray();
-                                Log.d(TAG, "Districts request is ok. Received " + jsonResponse.size() + " districts");
-                                for (int i = 0; i < jsonResponse.size(); i++) {
-                                    JsonObject jsonDistrict = jsonResponse.get(i).getAsJsonObject();
-                                    if (jsonDistrict.has("id") && jsonDistrict.has("city_id") && jsonDistrict.has("ru_name") && jsonDistrict.has("en_name")) {
-                                        District newDistrict =
-                                                new District(
-                                                        jsonDistrict.get("id").getAsInt(),
-                                                        jsonDistrict.get("city_id").getAsInt(),
-                                                        jsonDistrict.get("ru_name").getAsString(),
-                                                        jsonDistrict.get("en_name").getAsString());
-                                        districtRepository.createOrUpdate(newDistrict);
-                                    }
-                                }
-                                setUILoading(false);
-                                addressBookIsPrepared();
-                            } else {
-                                Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
-                                Log.d(TAG, "Error districts request: Response code is not 200");
-                                failResult();
+            //download and save cities and districts
+            apiAddress.getCities().enqueue(new Callback<JsonArray>() {
+                @Override
+                public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                    if (response.code() == 200) {
+                        JsonArray jsonResponse = response.body();
+                        Log.d(TAG, "Cities request is ok. Received " + jsonResponse.size() + " cities");
+                        for (int i = 0; i < jsonResponse.size(); i++) {
+                            JsonObject jsonCity = jsonResponse.get(i).getAsJsonObject();
+                            if (jsonCity.has("id") && jsonCity.has("ru_name") && jsonCity.has("en_name")) {
+                                City newCity = new City(jsonCity.get("id").getAsInt(), jsonCity.get("ru_name").getAsString(), jsonCity.get("en_name").getAsString());
+                                cityRepository.createOrUpdate(newCity);
                             }
                         }
 
-                        @Override
-                        public void onFailure(Call<JsonObject> call, Throwable t) {
-                            Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Error districts request: " + t.getMessage());
-                            failResult();
-                        }
-                    });
+                        //download and save districts
+                        apiAddress.getAllDistricts().enqueue(new Callback<JsonObject>() {
+                            @Override
+                            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                                if (response.code() == 200 && response.body().has("0")) {
+                                    JsonArray jsonResponse = response.body().get("0").getAsJsonArray();
+                                    Log.d(TAG, "Districts request is ok. Received " + jsonResponse.size() + " districts");
+                                    for (int i = 0; i < jsonResponse.size(); i++) {
+                                        JsonObject jsonDistrict = jsonResponse.get(i).getAsJsonObject();
+                                        if (jsonDistrict.has("id") && jsonDistrict.has("city_id") && jsonDistrict.has("ru_name") && jsonDistrict.has("en_name")) {
+                                            District newDistrict =
+                                                    new District(
+                                                            jsonDistrict.get("id").getAsInt(),
+                                                            jsonDistrict.get("city_id").getAsInt(),
+                                                            jsonDistrict.get("ru_name").getAsString(),
+                                                            jsonDistrict.get("en_name").getAsString());
+                                            districtRepository.createOrUpdate(newDistrict);
+                                        }
+                                    }
+                                    setUILoading(false);
+                                    addressBookIsPrepared();
+                                } else {
+                                    Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                                    Log.d(TAG, "Error districts request: Response code is not 200");
+                                    failResult();
+                                }
+                            }
 
-                } else {
+                            @Override
+                            public void onFailure(Call<JsonObject> call, Throwable t) {
+                                Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Error districts request: " + t.getMessage());
+                                failResult();
+                            }
+                        });
+
+                    } else {
+                        Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error cities request: Response code is not 200");
+                        failResult();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<JsonArray> call, Throwable t) {
                     Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "Error cities request: Response code is not 200");
+                    Log.d(TAG, "Error cities request: " + t.getMessage());
                     failResult();
                 }
-            }
-
-            @Override
-            public void onFailure(Call<JsonArray> call, Throwable t) {
-                Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Error cities request: " + t.getMessage());
-                failResult();
-            }
-        });
+            });
+        }
     }
 
     private void requestUserAddresses() {
@@ -766,24 +776,79 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     private void requestDeliveryCost() {
-        for (int restID : restIDs) {
-            //TODO
+        final Integer addressID = userInfoRepo.get().getServerAddressID();
+        final Set<Integer> restIDs = restIDsAndCurrOrerSum.keySet();
+        if (addressID != null) {
+            for (int restID : restIDs) {
+                apiDelivery.getDeliveryInfoFromRestaurant(addressID, restID)
+                        .enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                try {
+                                    String stringResponse = response.body().string();
+                                    if (stringResponse == null || stringResponse.isEmpty()) {
+                                        throw new IOException();
+                                    } else {
+                                        stringResponse = stringResponse.substring(stringResponse.indexOf("[") + 1, stringResponse.indexOf("]"));
+                                        stringResponse = stringResponse.replace("\"", "");
+                                        String[] splittedResponse = stringResponse.split(",");
+                                        if (splittedResponse.length == 3) {
+                                            completedDeliveryRequests++;
+                                            okResult(
+                                                    restIDsAndCurrOrerSum.keySet().iterator().next(), //TODO change it. Need change API and get id from response. Because multithreading we don't know response order
+                                                    Double.valueOf(splittedResponse[0]),
+                                                    Double.valueOf(splittedResponse[1]),
+                                                    splittedResponse[2]);
+                                        } else {
+                                            throw new IOException();
+                                        }
+                                    }
+                                } catch (NumberFormatException | IOException e) {
+                                    failDeliveryResponseOccurs = true;
+                                    completedDeliveryRequests++;
+                                    result();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                failDeliveryResponseOccurs = true;
+                                completedDeliveryRequests++;
+                                result();
+                            }
+                        });
+            }
+        } else {
+            Toast.makeText(AddAddressActivity.this, "Can't receive deletery info, no address ID info. Please choose adress again.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Can't receive deletery info, no address ID info.");
+            failResult();
         }
     }
 
-    private void okResult(int restID, double restsMinOrder, String deliveryTime, double deliveryCost) {
+    private void okResult(int restID, double restsMinOrder, double deliveryCost, String deliveryTime) {
         deliveryMinOrderSums.put(restID, restsMinOrder);
         deliveryAllCost = deliveryAllCost + deliveryCost;
-        deliveriesMaxTime = deliveryTime;//TODO
-        completedDeliveryRequests++;
-        if (completedDeliveryRequests == restIDs.length) {
-            Intent intent = new Intent();
-            //HashMap as serializable
-            intent.putExtra(DELIVERY_MIN_ORDER, deliveryMinOrderSums);
-            intent.putExtra(DELIVERY_TIME, deliveriesMaxTime);
-            intent.putExtra(DELIVERY_COST, deliveryAllCost);
-            setResult(RESULT_OK, intent);
-            finish();
+        if (deliveryTime.compareTo(deliveriesMaxTime) > 0) {
+            deliveriesMaxTime = deliveryTime;
+        }
+        result();
+    }
+
+    private void result() {
+        if (completedDeliveryRequests == restIDsAndCurrOrerSum.size()) {
+            if (failDeliveryResponseOccurs) {
+                Toast.makeText(AddAddressActivity.this, "Can't receive deletery info, bad server response", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Can't receive deletery info, bad server response");
+                failResult();
+            } else {
+                Intent intent = new Intent();
+                //HashMap as serializable
+                intent.putExtra(DELIVERY_MIN_ORDER, deliveryMinOrderSums);
+                intent.putExtra(DELIVERY_TIME, deliveriesMaxTime);
+                intent.putExtra(DELIVERY_COST, deliveryAllCost);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         }
     }
 

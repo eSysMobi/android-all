@@ -34,8 +34,8 @@
     <string name="cant_order">Уже в корзине!</string>
     <string name="add_to_cart">Добавление в корзину…</string>
     <string name="adding_address">Проверка адреса</string>
-    <string name="total_cost_full">Общая сумма: 0.00 руб</string>
-    <string name="total_cost">Общая сумма:</string>
+    <string name="cost_full">Сумма: 0.00 руб</string>
+    <string name="cost">Сумма:</string>
     <string name="currency">руб</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
@@ -114,5 +114,8 @@
     <string name="delivery_address">Адрес доставки:</string>
     <string name="Geolocation_is_unavailable">Geolocation is unavailable</string>
     <string name="can_not_load_adress_book">Can\'t load address book</string>
+    <string name="delivery_time">Время доставки:</string>
+    <string name="delivery_cost">Стоимость доставки:</string>
+    <string name="delivery_total_cost">Общая стоимость:</string>
 
 </resources>

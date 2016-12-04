@@ -44,8 +44,8 @@
     <string name="add_to_cart">Adding to the shopping cart…</string>
     <string name="title_activity_basket">BasketActivity</string>
     <string name="adding_address">Checking address</string>
-    <string name="total_cost_full">Total cost: 0.00 rub</string>
-    <string name="total_cost">Total cost:</string>
+    <string name="cost_full">Сost: 0.00 rub</string>
+    <string name="cost">Cost:</string>
     <string name="currency">rub</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -124,5 +124,8 @@
     <string name="delivery_address">Delivery address:</string>
     <string name="Geolocation_is_unavailable">Geolocation is unavailable</string>
     <string name="can_not_load_adress_book">Can\'t load address book</string>
+    <string name="delivery_time">Delivery time:</string>
+    <string name="delivery_cost">Delivery cost:</string>
+    <string name="delivery_total_cost">Total cost:</string>
 
 </resources>

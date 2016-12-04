@@ -12,11 +12,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 
@@ -27,9 +28,17 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
     private Button mbBasketSendOrder;
-    private TextView mtvBasketTotalCost;
+    private TextView mtvBasketCost;
+    private LinearLayout mlBasketDelivery;
+    private TextView mtvBasketDeliveryTime;
+    private TextView mtvBasketDeliveryCost;
+    private TextView mtvBasketDeliveryTotalCost;
+
     private SharedPreferences prefs;
-    private Map<Integer, Double> ordersInfo = new HashMap<>();
+    private HashMap<Integer, Double> ordersInfo = new HashMap<>();
+
+    private double costOrder = 0;
+    private double costDelivery = 0;
 
     public BasketFragment() {
         // Required empty public constructor
@@ -57,7 +66,11 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
         mrvOrders = (RecyclerView) view.findViewById(R.id.rvOrders);
         mbBasketAddAddress = (Button) view.findViewById(R.id.bBasketAddAddress);
         mbBasketSendOrder = (Button) view.findViewById(R.id.bBasketSendOrder);
-        mtvBasketTotalCost = (TextView) view.findViewById(R.id.tvBasketTotalCost);
+        mtvBasketCost = (TextView) view.findViewById(R.id.tvBasketCost);
+        mlBasketDelivery = (LinearLayout) view.findViewById(R.id.lBasketDelivery);
+        mtvBasketDeliveryTime = (TextView) view.findViewById(R.id.tvBasketDeliveryTime);
+        mtvBasketDeliveryCost = (TextView) view.findViewById(R.id.tvBasketDeliveryCost);
+        mtvBasketDeliveryTotalCost = (TextView) view.findViewById(R.id.tvBasketDeliveryTotalCost);
 
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
         mrvOrders.setLayoutManager(llm);
@@ -77,13 +90,19 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
                 } else {
                     Log.d(TAG, "User check address");
                     final Intent intent = new Intent(getContext(), AddAddressActivity.class);
-                    final Set<Integer> tmpSet = ordersInfo.keySet();
-                    final Integer[] restIDs = tmpSet.toArray(new Integer[tmpSet.size()]);
-                    intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, restIDs);
+                    intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, ordersInfo);
                     startActivityForResult(intent, Constants.REQUEST_CODE_CART);
                 }
             }
         });
+
+        mbBasketSendOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "Coming soon", Toast.LENGTH_LONG).show();
+            }
+        });
+
         return view;
     }
 
@@ -91,7 +110,20 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.REQUEST_CODE_CART && resultCode == Activity.RESULT_OK) {
-            mbBasketSendOrder.setEnabled(true);
+            if (data.hasExtra(AddAddressActivity.DELIVERY_MIN_ORDER)
+                    && data.hasExtra(AddAddressActivity.DELIVERY_TIME)
+                    && data.hasExtra(AddAddressActivity.DELIVERY_COST)) {
+                //TODO check min cost here
+
+                mlBasketDelivery.setVisibility(View.VISIBLE);
+                mbBasketSendOrder.setEnabled(true);
+                costDelivery = data.getDoubleExtra(AddAddressActivity.DELIVERY_COST, 0);
+                mtvBasketDeliveryTime.setText(data.getStringExtra(AddAddressActivity.DELIVERY_TIME));
+                final String showedDeliveryCost = String.valueOf(costDelivery) + " " + getResources().getString(R.string.currency);
+                mtvBasketDeliveryCost.setText(showedDeliveryCost);
+                final String showedTotalCost = String.valueOf(costDelivery+costOrder) + " " + getResources().getString(R.string.currency);
+                mtvBasketDeliveryTotalCost.setText(showedTotalCost);
+            }
         }
         if (requestCode == Constants.REQUEST_CODE_CART_AUTH && resultCode == Activity.RESULT_OK) {
             if (prefs.getInt(Constants.PREF_SAVED_USER_ID, -1) != -1
@@ -100,9 +132,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
                     && !prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "").isEmpty()) {
                 Log.d(TAG, "User check address after manual authorizatoin");
                 final Intent intent = new Intent(getContext(), AddAddressActivity.class);
-                final Set<Integer> tmpSet = ordersInfo.keySet();
-                final Integer[] restIDs = tmpSet.toArray(new Integer[tmpSet.size()]);
-                intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, restIDs);
+                intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, ordersInfo);
                 startActivityForResult(intent, Constants.REQUEST_CODE_CART);
             }
         }
@@ -134,11 +164,18 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     }
 
     @Override
-    public void refreshTotalCost(double totalCost, Map<Integer, Double> ordersInfo) {
+    public void refreshTotalCost(double сost, Map<Integer, Double> ordersInfo, boolean updateDeliveryInfo) {
         //refresh total cost
         Log.d(TAG, "Refresh total cost");
-        String text = getResources().getString(R.string.total_cost) + " " + totalCost + " " + getResources().getString(R.string.currency);
-        mtvBasketTotalCost.setText(text);
-        this.ordersInfo = ordersInfo;
+        costOrder = сost;
+        String text = getResources().getString(R.string.cost) + " " + сost + " " + getResources().getString(R.string.currency);
+        mtvBasketCost.setText(text);
+        this.ordersInfo.clear();
+        this.ordersInfo.putAll(ordersInfo);
+        if(updateDeliveryInfo){
+            //hide delivery info
+            mbBasketSendOrder.setEnabled(false);
+            mlBasketDelivery.setVisibility(View.GONE);
+        }
     }
 }
