@@ -78,10 +78,24 @@ public class RVCuisinesAdapter extends RecyclerView.Adapter<RVCuisinesAdapter.Cu
             Cuisine cuisine = cuisines.get(i - 1);
             viewHolder.cuisine_id = cuisine.getServer_id();
             String cuisineName = "";
+            final String ru_name = cuisine.getRu_name();
+            final String en_name = cuisine.getEn_name();
             if (locale.equals("ru")) {
-                cuisineName = cuisine.getRu_name();
+                if (ru_name == null || ru_name.isEmpty()) {
+                    if (en_name == null || en_name.isEmpty()) {
+                        cuisineName = en_name;
+                    }
+                } else {
+                    cuisineName = ru_name;
+                }
             } else {
-                cuisineName = cuisine.getEn_name();
+                if (en_name == null || en_name.isEmpty()) {
+                    if (ru_name == null || ru_name.isEmpty()) {
+                        cuisineName = ru_name;
+                    }
+                } else {
+                    cuisineName = en_name;
+                }
             }
             viewHolder.tvCuisine.setText(cuisineName);
 

@@ -187,8 +187,7 @@
                 android:layout_below="@+id/rlAddressPhone"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="16dp"
-                android:clickable="false"
-                android:longClickable="false"
+                android:visibility="gone"
                 android:src="@android:drawable/ic_menu_mylocation" />
 
             <ImageView

@@ -14,6 +14,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 
 public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Callback {
@@ -25,6 +29,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     private Button mbBasketSendOrder;
     private TextView mtvBasketTotalCost;
     private SharedPreferences prefs;
+    private Map<Integer, Double> ordersInfo = new HashMap<>();
 
     public BasketFragment() {
         // Required empty public constructor
@@ -71,7 +76,11 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
                     startActivityForResult(intent, Constants.REQUEST_CODE_CART_AUTH);
                 } else {
                     Log.d(TAG, "User check address");
-                    startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
+                    final Intent intent = new Intent(getContext(), AddAddressActivity.class);
+                    final Set<Integer> tmpSet = ordersInfo.keySet();
+                    final Integer[] restIDs = tmpSet.toArray(new Integer[tmpSet.size()]);
+                    intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, restIDs);
+                    startActivityForResult(intent, Constants.REQUEST_CODE_CART);
                 }
             }
         });
@@ -85,8 +94,17 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
             mbBasketSendOrder.setEnabled(true);
         }
         if (requestCode == Constants.REQUEST_CODE_CART_AUTH && resultCode == Activity.RESULT_OK) {
-            Log.d(TAG, "User check address after manual authorizatoin");
-            startActivityForResult(new Intent(getContext(), AddAddressActivity.class), Constants.REQUEST_CODE_CART);
+            if (prefs.getInt(Constants.PREF_SAVED_USER_ID, -1) != -1
+                    && !prefs.getString(Constants.PREF_SAVED_LOGIN, "").isEmpty()
+                    && !prefs.getString(Constants.PREF_SAVED_PASS, "").isEmpty()
+                    && !prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "").isEmpty()) {
+                Log.d(TAG, "User check address after manual authorizatoin");
+                final Intent intent = new Intent(getContext(), AddAddressActivity.class);
+                final Set<Integer> tmpSet = ordersInfo.keySet();
+                final Integer[] restIDs = tmpSet.toArray(new Integer[tmpSet.size()]);
+                intent.putExtra(AddAddressActivity.DELIVERY_REST_IDS, restIDs);
+                startActivityForResult(intent, Constants.REQUEST_CODE_CART);
+            }
         }
     }
 
@@ -110,16 +128,17 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     }
 
     @Override
-    public void enableAddAdressButton() {
+    public void enableAddAddressButton() {
         //we have items in basket, enable AddAddress button
         mbBasketAddAddress.setEnabled(true);
     }
 
     @Override
-    public void refreshTotalCost(double totalCost) {
+    public void refreshTotalCost(double totalCost, Map<Integer, Double> ordersInfo) {
         //refresh total cost
         Log.d(TAG, "Refresh total cost");
         String text = getResources().getString(R.string.total_cost) + " " + totalCost + " " + getResources().getString(R.string.currency);
         mtvBasketTotalCost.setText(text);
+        this.ordersInfo = ordersInfo;
     }
 }

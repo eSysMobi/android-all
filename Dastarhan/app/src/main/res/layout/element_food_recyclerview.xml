@@ -15,8 +15,9 @@
             android:id="@+id/ivFoodRV"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:layout_marginTop="16dp"
             android:scaleType="centerCrop" />
 
@@ -43,17 +44,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/ivFoodRV"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="22dp"
             android:layout_toLeftOf="@+id/ivFoodRVFav"
-            android:layout_toRightOf="@+id/ivFoodRV"
-            android:layout_toStartOf="@+id/ivFoodRVFav"
             android:ellipsize="end"
             android:maxLines="2"
             android:text="Food name"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@color/colorAccent"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_toRightOf="@+id/ivFoodRV"
+            android:layout_toEndOf="@+id/ivFoodRV" />
 
         <LinearLayout
             android:id="@+id/llFoodRVPriceBlock"

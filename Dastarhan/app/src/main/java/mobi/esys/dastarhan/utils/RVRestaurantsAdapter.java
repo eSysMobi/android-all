@@ -10,15 +10,14 @@ import android.widget.TextView;
 
 import java.util.List;
 
-
+import mobi.esys.dastarhan.AppComponent;
+import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 import mobi.esys.dastarhan.CurrentRestaurantFragment;
 import mobi.esys.dastarhan.DastarhanApp;
 import mobi.esys.dastarhan.FoodFragment;
 import mobi.esys.dastarhan.R;
 import mobi.esys.dastarhan.database.Cuisine;
-import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.database.Restaurant;
-import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
 
 /**
  * Created by ZeyUzh on 19.05.2016.
@@ -81,10 +80,24 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
 
         viewHolder.restaraunt_id = restaurant.getServer_id();
         String restName = "";
+        final String ru_name = restaurant.getRu_name();
+        final String en_name = restaurant.getEn_name();
         if (locale.equals("ru")) {
-            restName = restaurant.getRu_name();
+            if (ru_name == null || ru_name.isEmpty()) {
+                if (en_name == null || en_name.isEmpty()) {
+                    restName = en_name;
+                }
+            } else {
+                restName = ru_name;
+            }
         } else {
-            restName = restaurant.getEn_name();
+            if (en_name == null || en_name.isEmpty()) {
+                if (ru_name == null || ru_name.isEmpty()) {
+                    restName = ru_name;
+                }
+            } else {
+                restName = en_name;
+            }
         }
         viewHolder.tvRestaurant.setText(restName);
 
@@ -95,7 +108,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
             try {
                 int id = Integer.parseInt(cuisineID.trim());
                 Cuisine cuisine = component.cuisineRepository().getById(id);
-                if(cuisine!= null) {
+                if (cuisine != null) {
                     String name = "";
                     if (locale.equals("ru")) {
                         name = cuisine.getRu_name();
@@ -103,7 +116,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
                         name = cuisine.getEn_name();
                     }
                     //add cuisine name to cuisines list
-                    if(!cuisinesNames.isEmpty()){
+                    if (!cuisinesNames.isEmpty()) {
                         cuisinesNames = cuisinesNames.concat(" / ");
                     }
                     cuisinesNames = cuisinesNames.concat(name);
@@ -145,7 +158,7 @@ public class RVRestaurantsAdapter extends RecyclerView.Adapter<RVRestaurantsAdap
         @Override
         public void onClick(View v) {
             Log.d("dtagRecyclerView", "Click RESTARAUNT in RecyclerView with id = " + id);
-            FoodFragment fragment = FoodFragment.newInstance(-50,id);
+            FoodFragment fragment = FoodFragment.newInstance(-50, id);
             navigation.replaceFragment(fragment, "Блюда " + restName);
         }
     }

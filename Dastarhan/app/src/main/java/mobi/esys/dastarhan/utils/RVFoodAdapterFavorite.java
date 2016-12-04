@@ -112,12 +112,40 @@ public class RVFoodAdapterFavorite extends RecyclerView.Adapter<RVFoodAdapterFav
 
         //set name
         //set description
+        final String ru_name = viewHolder.food.getRu_name();
+        final String en_name = viewHolder.food.getEn_name();
+        final String ru_descr = viewHolder.food.getRu_descr();
+        final String en_descr = viewHolder.food.getEn_descr();
         if (locale.equals("ru")) {
-            viewHolder.tvFoodNameRV.setText(viewHolder.food.getRu_name());
-            viewHolder.tvFoodRVDescription.setText(viewHolder.food.getRu_descr());
+            if (ru_name == null || ru_name.isEmpty()) {
+                if (en_name == null || en_name.isEmpty()) {
+                    viewHolder.tvFoodNameRV.setText(en_name);
+                }
+            } else {
+                viewHolder.tvFoodNameRV.setText(ru_name);
+            }
+            if (ru_descr == null || ru_descr.isEmpty()) {
+                if (en_descr != null && !en_descr.isEmpty()) {
+                    viewHolder.tvFoodRVDescription.setText(en_descr);
+                }
+            } else {
+                viewHolder.tvFoodRVDescription.setText(ru_descr);
+            }
         } else {
-            viewHolder.tvFoodNameRV.setText(viewHolder.food.getEn_name());
-            viewHolder.tvFoodRVDescription.setText(viewHolder.food.getEn_descr());
+            if (en_name == null || en_name.isEmpty()) {
+                if (ru_name == null || ru_name.isEmpty()) {
+                    viewHolder.tvFoodNameRV.setText(ru_name);
+                }
+            } else {
+                viewHolder.tvFoodNameRV.setText(en_name);
+            }
+            if (en_descr == null || en_descr.isEmpty()) {
+                if (ru_descr != null && !ru_descr.isEmpty()) {
+                    viewHolder.tvFoodRVDescription.setText(ru_descr);
+                }
+            } else {
+                viewHolder.tvFoodRVDescription.setText(en_descr);
+            }
         }
 
         //set price

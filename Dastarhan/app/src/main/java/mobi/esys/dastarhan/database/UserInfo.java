@@ -1,7 +1,5 @@
 package mobi.esys.dastarhan.database;
 
-import com.google.gson.JsonObject;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -68,6 +66,39 @@ public class UserInfo extends RealmObject {
         this.domophoneNum = domophoneNum;
         this.needChange = needChange;
         this.comment = comment;
+        //clear serverAddressID
+        serverAddressID = null;
+    }
+
+    public void updateUserInfo(String name,
+                       String phone,
+                       String needChange,
+                       String comment) {
+        this.name = name;
+        this.phone = phone;
+        this.needChange = needChange;
+        this.comment = comment;
+    }
+
+    public void updateAddress(
+                       Integer city,
+                       Integer district,
+                       String street,
+                       String house,
+                       String corpBuilding,
+                       String apartmentOffice,
+                       String enterNum,
+                       String floor,
+                       String domophoneNum) {
+        this.city = city;
+        this.district = district;
+        this.street = street;
+        this.house = house;
+        this.corpBuilding = corpBuilding;
+        this.apartmentOffice = apartmentOffice;
+        this.enterNum = enterNum;
+        this.floor = floor;
+        this.domophoneNum = domophoneNum;
         //clear serverAddressID
         serverAddressID = null;
     }
@@ -140,12 +171,10 @@ public class UserInfo extends RealmObject {
         return serverAddressID;
     }
 
-    public boolean equalsByAddressInfo(Object o) {
+    public boolean equalsByAddress(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserInfo userInfo = (UserInfo) o;
-        if (name != null ? !name.equals(userInfo.name) : userInfo.name != null) return false;
-        if (phone != null ? !phone.equals(userInfo.phone) : userInfo.phone != null) return false;
         if (city != null ? !city.equals(userInfo.city) : userInfo.city != null) return false;
         if (district != null ? !district.equals(userInfo.district) : userInfo.district != null)
             return false;
@@ -161,59 +190,73 @@ public class UserInfo extends RealmObject {
         if (floor != null ? !floor.equals(userInfo.floor) : userInfo.floor != null) return false;
         if (domophoneNum != null ? !domophoneNum.equals(userInfo.domophoneNum) : userInfo.domophoneNum != null)
             return false;
+        return true;
+    }
+
+    public boolean equalsByUserInfo(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserInfo userInfo = (UserInfo) o;
+        if (name != null ? !name.equals(userInfo.name) : userInfo.name != null) return false;
+        if (phone != null ? !phone.equals(userInfo.phone) : userInfo.phone != null) return false;
         if (needChange != null ? !needChange.equals(userInfo.needChange) : userInfo.needChange != null)
             return false;
         return !(comment != null ? !comment.equals(userInfo.comment) : userInfo.comment != null);
     }
 
-    private JsonObject createJsonAddress() {
-        JsonObject result = null;
+    public String getFullAddress() {
+        String result = "";
+        StringBuilder sb = new StringBuilder();
         if (name != null
                 && phone != null
                 && city != null
-                && (district != null || street != null)
+                && district != null
                 && house != null
                 && apartmentOffice != null
                 ) {
-            result = new JsonObject();
-            result.addProperty("name", name);
-            result.addProperty("phone", phone);
-            result.addProperty("city", city);
-            result.addProperty("house", house);
-            result.addProperty("apartmentOrOffice", apartmentOffice);
-            if(district!=null){
-                result.addProperty("district", district);
+            sb.append("street: ");
+            if (street != null) {
+                sb.append(street);
+            } else {
+                sb.append("-");
             }
-            if(street!=null){
-                result.addProperty("street", street);
+            sb.append(", ").append("house: ");
+            if (house != null) {
+                sb.append(house);
+            } else {
+                sb.append("-");
             }
-            if(corpBuilding!=null){
-                result.addProperty("housingOrBuilding", corpBuilding);
+            sb.append(", ").append("corpus_or_building: ");
+            if (corpBuilding != null) {
+                sb.append(corpBuilding);
+            } else {
+                sb.append("-");
             }
-            if(enterNum!=null){
-                result.addProperty("porch", enterNum);
+            sb.append(", ").append("apartment_or_office: ");
+            if (apartmentOffice != null) {
+                sb.append(apartmentOffice);
+            } else {
+                sb.append("-");
             }
-            if(floor!=null){
-                result.addProperty("floor", floor);
+            sb.append(", ").append("porch: ");
+            if (enterNum != null) {
+                sb.append(enterNum);
+            } else {
+                sb.append("-");
             }
-            if(domophoneNum!=null){
-                result.addProperty("domophoneNum", domophoneNum);
+            sb.append(", ").append("floor: ");
+            if (floor != null) {
+                sb.append(floor);
+            } else {
+                sb.append("-");
             }
-            if(needChange!=null){
-                result.addProperty("needChange", needChange);
+            sb.append(", ").append("intercom_code: ");
+            if (domophoneNum != null) {
+                sb.append(domophoneNum);
+            } else {
+                sb.append("-");
             }
-            if(comment!=null){
-                result.addProperty("comment", comment);
-            }
-        }
-        return result;
-    }
-
-    public String getFullAddress() {
-        String result = "";
-        JsonObject jsonAddress = createJsonAddress();
-        if (jsonAddress != null) {
-            result = jsonAddress.toString();
+            result = sb.toString();
         }
         return result;
     }

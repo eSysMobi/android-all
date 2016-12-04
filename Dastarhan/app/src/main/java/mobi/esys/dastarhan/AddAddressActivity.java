@@ -2,6 +2,7 @@ package mobi.esys.dastarhan;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,10 +17,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -32,9 +36,10 @@ import android.widget.Toast;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -52,7 +57,6 @@ import mobi.esys.dastarhan.utils.CityOrDistrictChooser;
 import mobi.esys.dastarhan.utils.LocationAddress;
 import mobi.esys.dastarhan.utils.RVChoseCityAdapter;
 import mobi.esys.dastarhan.utils.RVChoseDistrictAdapter;
-import mobi.esys.dastarhan.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -62,6 +66,9 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
     private final static String TAG = "dtagAddAddress";
     private final static int PERMISSION_REQUEST_CODE = 334;
+    public final static String DELIVERY_REST_IDS = "delivery_rest_ids";
+    private final static String DELIVERY_MIN_ORDER = "delivery_min_order";
+    private final static String DELIVERY_TIME = "delivery_time";
     private final static String DELIVERY_COST = "delivery_cost";
 
     @Inject
@@ -112,6 +119,13 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     private boolean isRuLocale;
     private boolean isAlreadyTryAuth = false;
 
+    //delivery
+    private int[] restIDs;
+    private HashMap<Integer, Double> deliveryMinOrderSums = new HashMap<>();
+    private String deliveriesMaxTime = "";
+    private double deliveryAllCost = 0;
+    private int completedDeliveryRequests = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,12 +136,10 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
         prefs = getApplicationContext().getSharedPreferences(Constants.APP_PREF, MODE_PRIVATE);
 
-        String locale = getResources().getConfiguration().locale.getLanguage();
-        if (locale.equals("ru")) {
-            isRuLocale = true;
-        } else {
-            isRuLocale = false;
-        }
+        restIDs = getIntent().getIntArrayExtra(DELIVERY_REST_IDS);
+
+        final String locale = getResources().getConfiguration().locale.getLanguage();
+        isRuLocale = locale.equals("ru");
 
         llAddressLoading = (LinearLayout) findViewById(R.id.llAddressLoading);
         svAddressContent = (ScrollView) findViewById(R.id.svAddressContent);
@@ -161,6 +173,27 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         apiAddress = retrofit.create(APIAddress.class);
         apiAuth = retrofit.create(APIAuthorize.class);
 
+        final TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().isEmpty()) {
+                    bAddressToOrder.setVisibility(View.GONE);
+                } else {
+                    checkRequiredFields();
+                }
+            }
+        };
+
         metAddressName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -172,34 +205,30 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 return false;
             }
         });
+        metAddressName.addTextChangedListener(textWatcher);
 
         metAddressPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (EditorInfo.IME_ACTION_NEXT == actionId) {
-                    checkRequiredFields();
-                }
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 return false;
             }
         });
+        metAddressPhone.addTextChangedListener(textWatcher);
 
         mtvAddressCity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mrvAddressChooseCity.getAdapter() == null) {
-                    String locale = getResources().getConfiguration().locale.getLanguage();
-                    RVChoseCityAdapter adapter = new RVChoseCityAdapter(AddAddressActivity.this, cityRepository.getCities(), locale);
-                    mrvAddressChooseCity.setAdapter(adapter);
-                }
-                mrvAddressChooseCity.setVisibility(View.VISIBLE);
-            }
-        });
-
-        mrvAddressChooseCity.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
+                if (mrvAddressChooseCity.getVisibility() == View.VISIBLE) {
                     mrvAddressChooseCity.setVisibility(View.GONE);
+                } else {
+                    if (mrvAddressChooseCity.getAdapter() == null) {
+                        String locale = getResources().getConfiguration().locale.getLanguage();
+                        RVChoseCityAdapter adapter = new RVChoseCityAdapter(AddAddressActivity.this, cityRepository.getCities(), locale);
+                        mrvAddressChooseCity.setAdapter(adapter);
+                    }
+                    mrvAddressChooseCity.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -207,25 +236,20 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         mtvAddressDistrict.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (chosenCity == null) {
-                    Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
-                } else {
-                    if (mrvAddressChooseDistrict.getAdapter() == null) {
-                        String locale = getResources().getConfiguration().locale.getLanguage();
-                        List<District> districts = districtRepository.getDistrictsOfCity(chosenCity.getCityID());
-                        RVChoseDistrictAdapter adapter = new RVChoseDistrictAdapter(AddAddressActivity.this, districts, locale);
-                        mrvAddressChooseDistrict.setAdapter(adapter);
-                    }
-                    mrvAddressChooseDistrict.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-        mrvAddressChooseDistrict.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
+                if (mrvAddressChooseDistrict.getVisibility() == View.VISIBLE) {
                     mrvAddressChooseDistrict.setVisibility(View.GONE);
+                } else {
+                    if (chosenCity == null) {
+                        Toast.makeText(AddAddressActivity.this, R.string.can_not_load_adress_book, Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (mrvAddressChooseDistrict.getAdapter() == null) {
+                            String locale = getResources().getConfiguration().locale.getLanguage();
+                            List<District> districts = districtRepository.getDistrictsOfCity(chosenCity.getCityID());
+                            RVChoseDistrictAdapter adapter = new RVChoseDistrictAdapter(AddAddressActivity.this, districts, locale);
+                            mrvAddressChooseDistrict.setAdapter(adapter);
+                        }
+                        mrvAddressChooseDistrict.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         });
@@ -246,12 +270,12 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (EditorInfo.IME_ACTION_NEXT == actionId) {
                     metAddressBuilding.requestFocus();
-                    checkRequiredFields();
                     return true;
                 }
                 return false;
             }
         });
+        metAddressHouse.addTextChangedListener(textWatcher);
 
         metAddressBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -274,6 +298,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                 return false;
             }
         });
+        metAddressApartment.addTextChangedListener(textWatcher);
 
         metAddressPorch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -315,13 +340,6 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                     metAddressNotice.requestFocus();
                     return true;
                 }
-                return false;
-            }
-        });
-
-        metAddressNotice.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 return false;
             }
         });
@@ -372,17 +390,25 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                             userInfoFromDB = userInfoFromForm;
                                             userInfoRepo.update(userInfoFromDB);
                                         } else {
-                                            if (!userInfoFromForm.equalsByAddressInfo(userInfoFromDB)) {
-                                                //not equals
-                                                //save user info from view to DB
-                                                userInfoFromDB.update(
-                                                        name, phone,
+                                            boolean needUpdateInRepo = false;
+                                            if (!userInfoFromForm.equalsByAddress(userInfoFromDB)) {
+                                                userInfoFromDB.updateAddress(
                                                         cityRepository.getCityByName(city).getCityID(), districtRepository.getDistrictByName(district).getDistrictID(),
                                                         street, house,
                                                         building, apartment,
                                                         porch, floor,
-                                                        intercom, needChange, notice
+                                                        intercom
                                                 );
+                                                needUpdateInRepo = true;
+                                            }
+                                            if (!userInfoFromForm.equalsByUserInfo(userInfoFromDB)) {
+                                                userInfoFromDB.updateUserInfo(
+                                                        name, phone,
+                                                        needChange, notice
+                                                );
+                                                needUpdateInRepo = true;
+                                            }
+                                            if (needUpdateInRepo) {
                                                 userInfoRepo.update(userInfoFromDB);
                                             }
                                         }
@@ -520,40 +546,40 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                         && jsonAddress.get("address") != null) {
                                     String addressLine = jsonAddress.get("address").getAsString();
                                     if (addressLine != null && !addressLine.isEmpty()) {
-                                        if (Utils.isJSONValid(addressLine)) {
-                                            JsonParser parser = new JsonParser();
-                                            JsonObject subAddress = parser.parse(addressLine).getAsJsonObject();
+                                        final String[] splittedAddress = addressLine.split(", ");
+                                        if (splittedAddress.length == 7) {
+                                            for (int j = 0; j < splittedAddress.length; j++) {
+                                                final String substring = splittedAddress[j].substring(splittedAddress[j].indexOf(": ") + 2);
+                                                if (substring.isEmpty() || "-".equals(substring)) {
+                                                    splittedAddress[j] = null;
+                                                } else {
+                                                    splittedAddress[j] = substring;
+                                                }
+                                            }
 
                                             //prepare data from response
                                             Integer addressIdInServer = jsonAddress.get("id").getAsInt();
-                                            String name = subAddress.get("UserName").getAsString();
-                                            String phone = subAddress.get("UserPhone").getAsString();
                                             Integer city = jsonAddress.get("city_id").getAsInt();
                                             Integer district = jsonAddress.get("district_id").getAsInt();
-                                            String street = subAddress.get("street").getAsString();
-                                            String house = subAddress.get("house").getAsString();
-                                            String building = subAddress.get("building").getAsString();
-                                            String apartment = subAddress.get("apartment").getAsString();
-                                            String porch = subAddress.get("porch").getAsString();
-                                            String floor = subAddress.get("floor").getAsString();
-                                            String intercom = subAddress.get("intercom").getAsString();
-                                            String needChange = subAddress.get("needChange").getAsString();
-                                            String notice = subAddress.get("notice").getAsString();
+                                            String street = splittedAddress[0];
+                                            String house = splittedAddress[1];
+                                            String building = splittedAddress[2];
+                                            String apartment = splittedAddress[3];
+                                            String porch = splittedAddress[4];
+                                            String floor = splittedAddress[5];
+                                            String intercom = splittedAddress[6];
 
-                                            if (name != null && !name.isEmpty()
-                                                    && phone != null && !phone.isEmpty()
-                                                    && street != null && !street.isEmpty()
+                                            if (street != null && !street.isEmpty()
                                                     && house != null && !house.isEmpty()
                                                     && apartment != null && !apartment.isEmpty()) {
 
                                                 UserInfo userInfoFromResponse = new UserInfo();
-                                                userInfoFromResponse.update(
-                                                        name, phone,
+                                                userInfoFromResponse.updateAddress(
                                                         city, district,
                                                         street, house,
                                                         building, apartment,
                                                         porch, floor,
-                                                        intercom, needChange, notice
+                                                        intercom
                                                 );
                                                 userInfoFromResponse.updateAddressID(addressIdInServer);
 
@@ -569,7 +595,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
 
                         boolean isNeedSendNewAddressToServer = true;
                         for (UserInfo address : serverAddresses) {
-                            if (address.equalsByAddressInfo(userInfoFromDB)) {
+                            if (address.equalsByAddress(userInfoFromDB)) {
                                 userInfoFromDB.updateAddressID(address.getServerAddressID());
                                 userInfoRepo.update(userInfoFromDB);
                                 isNeedSendNewAddressToServer = false;
@@ -582,9 +608,14 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                         } else {
                             requestDeliveryCost();
                         }
-                    } else if (response.code() == 400 && response.body().has("error")) {
-                        final String error = response.body().get("error").getAsString();
-                        if ("Invalid key".equals(error)) {
+                    } else if (response.code() == 400 && response.errorBody() != null) {
+                        String error = "";
+                        try {
+                            error = response.errorBody().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if (error.contains("Invalid key")) {
                             if (isAlreadyTryAuth) {
                                 Toast.makeText(AddAddressActivity.this, "Can't authorize on server.", Toast.LENGTH_LONG).show();
                                 Log.d(TAG, "Can't authorize on server.");
@@ -735,13 +766,25 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
     }
 
     private void requestDeliveryCost() {
-        //TODO
-        Intent intent = new Intent();
-        long deliveryCost = 0;
-        deliveryCost = 100;
-        intent.putExtra(DELIVERY_COST, deliveryCost);
-        setResult(RESULT_OK, intent);
-        finish();
+        for (int restID : restIDs) {
+            //TODO
+        }
+    }
+
+    private void okResult(int restID, double restsMinOrder, String deliveryTime, double deliveryCost) {
+        deliveryMinOrderSums.put(restID, restsMinOrder);
+        deliveryAllCost = deliveryAllCost + deliveryCost;
+        deliveriesMaxTime = deliveryTime;//TODO
+        completedDeliveryRequests++;
+        if (completedDeliveryRequests == restIDs.length) {
+            Intent intent = new Intent();
+            //HashMap as serializable
+            intent.putExtra(DELIVERY_MIN_ORDER, deliveryMinOrderSums);
+            intent.putExtra(DELIVERY_TIME, deliveriesMaxTime);
+            intent.putExtra(DELIVERY_COST, deliveryAllCost);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
     }
 
     private void failResult() {

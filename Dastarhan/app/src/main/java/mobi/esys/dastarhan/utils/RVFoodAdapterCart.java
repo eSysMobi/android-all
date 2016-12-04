@@ -14,7 +14,10 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import mobi.esys.dastarhan.AppComponent;
 import mobi.esys.dastarhan.BaseFragment.FragmentNavigation;
@@ -38,6 +41,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     private RVFoodAdapterCart.Callback callback;
     boolean needRefreshTotalCostEveryTime = false;
 
+    private Map<Integer, Double> ordersInfo;
     private List<Food> foods;
     private List<Order> currOrders;
     private Cart cart;
@@ -49,6 +53,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
         component = dastarhanApp.appComponent();
         this.locale = locale;
         this.callback = callback;
+        ordersInfo = new HashMap<>();
         foods = new ArrayList<>();
 
         cart = component.cartRepository().get();
@@ -65,7 +70,7 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
             foods = foodRepo.getByIds(orderIDs);
             if (!foods.isEmpty()) {
                 //we have items in basket, enable AddAddress button
-                callback.enableAddAdressButton();
+                callback.enableAddAddressButton();
             }
         }
     }
@@ -124,12 +129,40 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
 
         //set name
         //set description
+        final String ru_name = viewHolder.food.getRu_name();
+        final String en_name = viewHolder.food.getEn_name();
+        final String ru_descr = viewHolder.food.getRu_descr();
+        final String en_descr = viewHolder.food.getEn_descr();
         if (locale.equals("ru")) {
-            viewHolder.tvFoodNameRV.setText(viewHolder.food.getRu_name());
-            viewHolder.tvFoodRVDescription.setText(viewHolder.food.getRu_descr());
+            if (ru_name == null || ru_name.isEmpty()) {
+                if (en_name == null || en_name.isEmpty()) {
+                    viewHolder.tvFoodNameRV.setText(en_name);
+                }
+            } else {
+                viewHolder.tvFoodNameRV.setText(ru_name);
+            }
+            if (ru_descr == null || ru_descr.isEmpty()) {
+                if (en_descr != null && !en_descr.isEmpty()) {
+                    viewHolder.tvFoodRVDescription.setText(en_descr);
+                }
+            } else {
+                viewHolder.tvFoodRVDescription.setText(ru_descr);
+            }
         } else {
-            viewHolder.tvFoodNameRV.setText(viewHolder.food.getEn_name());
-            viewHolder.tvFoodRVDescription.setText(viewHolder.food.getEn_descr());
+            if (en_name == null || en_name.isEmpty()) {
+                if (ru_name == null || ru_name.isEmpty()) {
+                    viewHolder.tvFoodNameRV.setText(ru_name);
+                }
+            } else {
+                viewHolder.tvFoodNameRV.setText(en_name);
+            }
+            if (en_descr == null || en_descr.isEmpty()) {
+                if (ru_descr != null && !ru_descr.isEmpty()) {
+                    viewHolder.tvFoodRVDescription.setText(ru_descr);
+                }
+            } else {
+                viewHolder.tvFoodRVDescription.setText(en_descr);
+            }
         }
 
         //set price
@@ -197,8 +230,25 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
         double totalCost = 0;
         for (Order order : currOrders) {
             totalCost = totalCost + (order.getPrice() * order.getCount());
+            Integer restID = null;
+            for(Food food:foods){
+                if(food.getServer_id()==order.getId_food()){
+                    restID = food.getRes_id();
+                    break;
+                }
+            }
+            if(restID!=null){
+                if (ordersInfo.containsKey(restID)) {
+                    final Double oldSum = ordersInfo.get(restID);
+                    ordersInfo.put(restID, oldSum + (order.getPrice() * order.getCount()));
+                } else {
+                    //create
+                    ordersInfo.put(restID, order.getPrice() * order.getCount());
+                }
+            }
         }
-        callback.refreshTotalCost(totalCost);
+
+        callback.refreshTotalCost(totalCost, ordersInfo);
     }
 
     private static class GoToFullFood implements View.OnClickListener {
@@ -316,8 +366,8 @@ public class RVFoodAdapterCart extends RecyclerView.Adapter<RVFoodAdapterCart.Fo
     }
 
     public interface Callback {
-        void enableAddAdressButton();
+        void enableAddAddressButton();
 
-        void refreshTotalCost(double totalCost);
+        void refreshTotalCost(double totalCost, Map<Integer, Double> ordersInfo);
     }
 }

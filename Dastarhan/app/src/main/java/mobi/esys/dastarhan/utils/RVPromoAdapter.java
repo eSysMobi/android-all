@@ -94,10 +94,24 @@ public class RVPromoAdapter extends RecyclerView.Adapter<RVPromoAdapter.PromoVie
         }
 
         if (restaurant != null) {
+            final String ru_name = restaurant.getRu_name();
+            final String en_name = restaurant.getEn_name();
             if (locale.equals("ru")) {
-                viewHolder.tvPromoRestaurant.setText(restaurant.getRu_name());
+                if (ru_name == null || ru_name.isEmpty()) {
+                    if (en_name == null || en_name.isEmpty()) {
+                        viewHolder.tvPromoRestaurant.setText(en_name);
+                    }
+                } else {
+                    viewHolder.tvPromoRestaurant.setText(ru_name);
+                }
             } else {
-                viewHolder.tvPromoRestaurant.setText(restaurant.getEn_name());
+                if (en_name == null || en_name.isEmpty()) {
+                    if (ru_name == null || ru_name.isEmpty()) {
+                        viewHolder.tvPromoRestaurant.setText(ru_name);
+                    }
+                } else {
+                    viewHolder.tvPromoRestaurant.setText(en_name);
+                }
             }
 
             int restaurant_rating = restaurant.getTotal_rating();
