@@ -49,4 +49,6 @@ public interface AppComponent {
     void inject(AddAddressActivity fragment);
 
     void inject(SplashActivity activity);
+
+    void inject(BasketFragment fragment);
 }

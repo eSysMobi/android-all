@@ -792,13 +792,18 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
                                         stringResponse = stringResponse.substring(stringResponse.indexOf("[") + 1, stringResponse.indexOf("]"));
                                         stringResponse = stringResponse.replace("\"", "");
                                         String[] splittedResponse = stringResponse.split(",");
-                                        if (splittedResponse.length == 3) {
+                                        if (splittedResponse.length == 4) {
                                             completedDeliveryRequests++;
+                                            Integer id = Integer.valueOf(splittedResponse[3]);
                                             okResult(
-                                                    restIDsAndCurrOrerSum.keySet().iterator().next(), //TODO change it. Need change API and get id from response. Because multithreading we don't know response order
-                                                    Double.valueOf(splittedResponse[0]),
-                                                    Double.valueOf(splittedResponse[1]),
-                                                    splittedResponse[2]);
+                                                    //min cost of order for delivery
+                                                    Double.valueOf(splittedResponse[0]).doubleValue(),
+                                                    //time of delivery
+                                                    Double.valueOf(splittedResponse[1]).doubleValue(),
+                                                    //cost of delivery
+                                                    splittedResponse[2],
+                                                    //id of restaurants
+                                                    id.intValue());
                                         } else {
                                             throw new IOException();
                                         }
@@ -825,7 +830,7 @@ public class AddAddressActivity extends AppCompatActivity implements CityOrDistr
         }
     }
 
-    private void okResult(int restID, double restsMinOrder, double deliveryCost, String deliveryTime) {
+    private void okResult(double restsMinOrder, double deliveryCost, String deliveryTime, int restID) {
         deliveryMinOrderSums.put(restID, restsMinOrder);
         deliveryAllCost = deliveryAllCost + deliveryCost;
         if (deliveryTime.compareTo(deliveriesMaxTime) > 0) {

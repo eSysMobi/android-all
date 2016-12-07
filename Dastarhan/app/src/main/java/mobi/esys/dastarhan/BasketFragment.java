@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,20 @@ import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import javax.inject.Inject;
+
+import mobi.esys.dastarhan.database.Restaurant;
+import mobi.esys.dastarhan.database.RestaurantRepository;
 import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
 
 public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Callback {
 
     private final String TAG = "dtagBasketActivity";
 
+    @Inject
+    RestaurantRepository restaurantRepo;
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
     private Button mbBasketSendOrder;
@@ -36,6 +44,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
 
     private SharedPreferences prefs;
     private HashMap<Integer, Double> ordersInfo = new HashMap<>();
+    private HashMap<Integer, Double> minDeliveryCosts;
 
     private double costOrder = 0;
     private double costDelivery = 0;
@@ -62,6 +71,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.content_basket, container, false);
+        ((DastarhanApp) getActivity().getApplication()).appComponent().inject(this);
 
         mrvOrders = (RecyclerView) view.findViewById(R.id.rvOrders);
         mbBasketAddAddress = (Button) view.findViewById(R.id.bBasketAddAddress);
@@ -99,11 +109,69 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
         mbBasketSendOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "Coming soon", Toast.LENGTH_LONG).show();
+                if (checkDeliveryMinCosts()) {
+                    Toast.makeText(v.getContext(), "Coming soon", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
         return view;
+    }
+
+    private boolean checkDeliveryMinCosts() {
+        boolean result = true;
+        Pair<Integer, Double> additionalToOrder = null;
+        if (minDeliveryCosts == null
+                || minDeliveryCosts.isEmpty()
+                || ordersInfo == null
+                || ordersInfo.isEmpty()
+                || ordersInfo.size() != minDeliveryCosts.size()) {
+            result = false;
+        } else {
+            final Set<Map.Entry<Integer, Double>> minDeliveryEntries = minDeliveryCosts.entrySet();
+            for (Map.Entry<Integer, Double> minDeliveryEntry : minDeliveryEntries) {
+                final Integer key = minDeliveryEntry.getKey();
+                if (key != null && ordersInfo.containsKey(key)) {
+                    if (ordersInfo.get(key) <= minDeliveryEntry.getValue()) {
+                        additionalToOrder = new Pair<>(key, minDeliveryEntry.getValue() - ordersInfo.get(key));
+                        result = false;
+                        break;
+                    }
+                } else {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        if (additionalToOrder != null && additionalToOrder.first != null) {
+            final Restaurant restaurant = restaurantRepo.getById(additionalToOrder.first);
+            if (restaurant != null) {
+                final String locale = getResources().getConfiguration().locale.getLanguage();
+                String restName = "";
+                final String ru_name = restaurant.getRu_name();
+                final String en_name = restaurant.getEn_name();
+                if (locale.equals("ru")) {
+                    if (ru_name == null || ru_name.isEmpty()) {
+                        if (en_name == null || en_name.isEmpty()) {
+                            restName = en_name;
+                        }
+                    } else {
+                        restName = ru_name;
+                    }
+                } else {
+                    if (en_name == null || en_name.isEmpty()) {
+                        if (ru_name == null || ru_name.isEmpty()) {
+                            restName = ru_name;
+                        }
+                    } else {
+                        restName = en_name;
+                    }
+                }
+                String message = getContext().getString(R.string.need_add_for_delivery1) + restName + getContext().getString(R.string.need_add_for_delivery2) + additionalToOrder.second;
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        }
+        return result;
     }
 
     @Override
@@ -113,16 +181,18 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
             if (data.hasExtra(AddAddressActivity.DELIVERY_MIN_ORDER)
                     && data.hasExtra(AddAddressActivity.DELIVERY_TIME)
                     && data.hasExtra(AddAddressActivity.DELIVERY_COST)) {
-                //TODO check min cost here
-
-                mlBasketDelivery.setVisibility(View.VISIBLE);
-                mbBasketSendOrder.setEnabled(true);
                 costDelivery = data.getDoubleExtra(AddAddressActivity.DELIVERY_COST, 0);
                 mtvBasketDeliveryTime.setText(data.getStringExtra(AddAddressActivity.DELIVERY_TIME));
                 final String showedDeliveryCost = String.valueOf(costDelivery) + " " + getResources().getString(R.string.currency);
                 mtvBasketDeliveryCost.setText(showedDeliveryCost);
-                final String showedTotalCost = String.valueOf(costDelivery+costOrder) + " " + getResources().getString(R.string.currency);
+                final String showedTotalCost = String.valueOf(costDelivery + costOrder) + " " + getResources().getString(R.string.currency);
                 mtvBasketDeliveryTotalCost.setText(showedTotalCost);
+
+                mlBasketDelivery.setVisibility(View.VISIBLE);
+                minDeliveryCosts = (HashMap<Integer, Double>) data.getSerializableExtra(AddAddressActivity.DELIVERY_MIN_ORDER);
+                if (checkDeliveryMinCosts()) {
+                    mbBasketSendOrder.setEnabled(true);
+                }
             }
         }
         if (requestCode == Constants.REQUEST_CODE_CART_AUTH && resultCode == Activity.RESULT_OK) {
@@ -172,7 +242,7 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
         mtvBasketCost.setText(text);
         this.ordersInfo.clear();
         this.ordersInfo.putAll(ordersInfo);
-        if(updateDeliveryInfo){
+        if (updateDeliveryInfo) {
             //hide delivery info
             mbBasketSendOrder.setEnabled(false);
             mlBasketDelivery.setVisibility(View.GONE);

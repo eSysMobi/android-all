@@ -117,5 +117,7 @@
     <string name="delivery_time">Время доставки:</string>
     <string name="delivery_cost">Стоимость доставки:</string>
     <string name="delivery_total_cost">Общая стоимость:</string>
+    <string name="need_add_for_delivery1">"Для доставки необходимо дополнить заказ в "</string>
+    <string name="need_add_for_delivery2">" на сумму "</string>
 
 </resources>

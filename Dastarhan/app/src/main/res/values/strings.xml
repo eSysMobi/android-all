@@ -127,5 +127,7 @@
     <string name="delivery_time">Delivery time:</string>
     <string name="delivery_cost">Delivery cost:</string>
     <string name="delivery_total_cost">Total cost:</string>
+    <string name="need_add_for_delivery1">"For delivery must be supplemented by an order in the "</string>
+    <string name="need_add_for_delivery2">" in the amount of "</string>
 
 </resources>
