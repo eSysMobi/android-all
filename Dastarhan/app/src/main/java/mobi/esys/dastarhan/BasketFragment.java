@@ -2,9 +2,11 @@ package mobi.esys.dastarhan;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,21 +20,39 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 
+import mobi.esys.dastarhan.database.CartRepository;
+import mobi.esys.dastarhan.database.Order;
 import mobi.esys.dastarhan.database.Restaurant;
 import mobi.esys.dastarhan.database.RestaurantRepository;
+import mobi.esys.dastarhan.database.UserInfoRepository;
+import mobi.esys.dastarhan.net.APISendOrder;
 import mobi.esys.dastarhan.utils.RVFoodAdapterCart;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
-public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Callback {
+public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Callback, NetworkResult {
 
     private final String TAG = "dtagBasketActivity";
 
     @Inject
     RestaurantRepository restaurantRepo;
+    @Inject
+    CartRepository cartRepository;
+    @Inject
+    UserInfoRepository userInfoRepository;
+    @Inject
+    Retrofit retrofit;
+    private APISendOrder apiSendOrder;
     private RecyclerView mrvOrders;
     private Button mbBasketAddAddress;
     private Button mbBasketSendOrder;
@@ -48,6 +68,8 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
 
     private double costOrder = 0;
     private double costDelivery = 0;
+
+    private boolean isCanSendOrder = true;
 
     public BasketFragment() {
         // Required empty public constructor
@@ -87,6 +109,8 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
 
         prefs = getActivity().getSharedPreferences(Constants.APP_PREF, Application.MODE_PRIVATE);
 
+        apiSendOrder = retrofit.create(APISendOrder.class);
+
         mbBasketAddAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,13 +133,90 @@ public class BasketFragment extends BaseFragment implements RVFoodAdapterCart.Ca
         mbBasketSendOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (checkDeliveryMinCosts()) {
-                    Toast.makeText(v.getContext(), "Coming soon", Toast.LENGTH_LONG).show();
+                final Integer addressID = userInfoRepository.get().getServerAddressID();
+                final int userID = prefs.getInt(Constants.PREF_SAVED_USER_ID, -1);
+                final String authToken = prefs.getString(Constants.PREF_SAVED_AUTH_TOKEN, "");
+                if (checkDeliveryMinCosts() && isCanSendOrder && addressID != null && userID!=-1 && !authToken.isEmpty()) {
+                    Log.d(TAG, "All ok we can choose payment method adn send order");
+                    AlertDialog.Builder ab = new AlertDialog.Builder(v.getContext());
+                    ab.setTitle("Payment method");
+                    ab.setMessage("Choose payment method");
+                    ab.setPositiveButton("Card", new SendOrderListener(cartRepository, apiSendOrder, userID, authToken, addressID, false, BasketFragment.this));
+                    ab.setNeutralButton("Money", new SendOrderListener(cartRepository, apiSendOrder, userID, authToken, addressID, true, BasketFragment.this));
+                    ab.setNegativeButton("Cancel", null);
+                    ab.setCancelable(true);
+                    ab.show();
                 }
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onSuccessNetResponse() {
+        isCanSendOrder = true;
+        cartRepository.closeCart();
+        updateList();
+    }
+
+    @Override
+    public void onFailNetResponse() {
+        isCanSendOrder = true;
+        Toast.makeText(getContext(),"Can't send order, network error",Toast.LENGTH_SHORT).show();
+    }
+
+    private static class SendOrderListener implements DialogInterface.OnClickListener {
+        private CartRepository cartRepository;
+        private APISendOrder apiSendOrder;
+        private int userID;
+        private String apiKey;
+        private int addressID;
+        private boolean moneyPayment;
+        private NetworkResult callback;
+
+        public SendOrderListener(CartRepository cartRepository, APISendOrder apiSendOrder, int userID, String apiKey, int addressID, boolean moneyPayment, NetworkResult callback) {
+            this.cartRepository = cartRepository;
+            this.apiSendOrder = apiSendOrder;
+            this.userID = userID;
+            this.apiKey = apiKey;
+            this.addressID = addressID;
+            this.moneyPayment = moneyPayment;
+            this.callback = callback;
+        }
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            final List<Order> currentCartOrders = cartRepository.getCurrentCartOrders();
+            Map<String, String> foodOrders = new TreeMap<>();
+            for (int i = 0; i < currentCartOrders.size(); i++) {
+                //    itemX - food id, где X - 1,2,3,4...N
+                //    qtX - количество этой еды
+                final Order order = currentCartOrders.get(i);
+                foodOrders.put("item" + i, String.valueOf(order.getId_food()));
+                foodOrders.put("qt" + i, String.valueOf(order.getCount()));
+            }
+            String paymentMethod;
+            if(moneyPayment){
+                paymentMethod = "m";
+            } else {
+                paymentMethod = "c";
+            }
+            final Call<ResponseBody> call = apiSendOrder.sendOrder(userID, apiKey, addressID, paymentMethod, foodOrders);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    //TODO
+                    callback.onSuccessNetResponse();
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    //TODO handle auth error
+                    callback.onFailNetResponse();
+                }
+            });
+        }
     }
 
     private boolean checkDeliveryMinCosts() {

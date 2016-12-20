@@ -37,12 +37,13 @@ public class Cart extends RealmObject {
         return notice;
     }
 
-    public void setOpened(boolean opened) {
-        this.opened = opened;
+    public void closeCart() {
+        this.opened = false;
     }
 
-    public void setCurrentOrderID(int currentOrderID) {
-        this.current_order_id = currentOrderID;
+    public void nextOrderID() {
+        current_order_id = current_order_id++;
+        opened = true;
     }
 
     public void setNotice(String notice) {

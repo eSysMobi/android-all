@@ -23,32 +23,35 @@ class CartRealmRepository implements CartRepository {
     }
 
     @Override
-    public void createOrUpdate(final Cart cart) {
+    public void closeCart() {
         realmTemplate.executeInRealm(new RealmTransactionCallback<Object>() {
             @Override
             public Object execute(Realm realm) {
-                realm.copyToRealmOrUpdate(cart);
+                Cart searched = realm.where(Cart.class).findFirst();
+                if (searched != null) {
+                    searched.closeCart();
+                }
                 return null;
             }
         });
-        if (uow.isStarted()) {
-            uow.addEventToBroadcast(CartUpdateEvent.class.getName());
-        } else {
-            bus.post(new CartUpdateEvent());
-        }
     }
 
     @Override
     public Cart get() {
-        return realmTemplate.findInRealm(new RealmTransactionCallback<Cart>() {
+        return realmTemplate.executeInRealm(new RealmTransactionCallback<Cart>() {
             @Override
             public Cart execute(Realm realm) {
                 Cart searched = realm.where(Cart.class).findFirst();
                 if (searched == null) {
                     Cart newCart = new Cart(true, 0, "");
-                    createOrUpdate(newCart);
+                    realm.copyToRealmOrUpdate(newCart);
+                    changeAlert();
                     return newCart;
                 } else {
+                    if(!searched.isOpened()){
+                        searched.nextOrderID();
+                        changeAlert();
+                    }
                     return realm.copyFromRealm(searched);
                 }
             }
@@ -61,7 +64,7 @@ class CartRealmRepository implements CartRepository {
             @Override
             public List<Order> execute(Realm realm) {
                 List<Order> orders = new ArrayList<>();
-                Cart cart = realm.where(Cart.class).findFirst();
+                Cart cart = get();
                 if (cart == null) {
                     return null;
                 } else {
@@ -73,5 +76,13 @@ class CartRealmRepository implements CartRepository {
                 return orders;
             }
         });
+    }
+
+    private void changeAlert(){
+        if (uow.isStarted()) {
+            uow.addEventToBroadcast(CartUpdateEvent.class.getName());
+        } else {
+            bus.post(new CartUpdateEvent());
+        }
     }
 }

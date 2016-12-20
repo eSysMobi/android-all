@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface CartRepository {
 
-    void createOrUpdate(Cart cart);
+    void closeCart();
 
     Cart get();
 

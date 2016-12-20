@@ -15,16 +15,19 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import mobi.esys.dastarhan.database.CommonOperation;
+import mobi.esys.dastarhan.database.CartRepository;
 import mobi.esys.dastarhan.database.Food;
 import mobi.esys.dastarhan.database.FoodRepository;
 import mobi.esys.dastarhan.database.Order;
+import mobi.esys.dastarhan.database.OrderRepository;
 
 public class CurrentFoodFragment extends BaseFragment {
 
     private final String TAG = "dtagCurrentFood";
     private AppComponent component;
     private FoodRepository foodRepository;
+    private CartRepository cartRepository;
+    private OrderRepository orderRepository;
     private Food food;
 
     private transient SharedPreferences prefs;
@@ -69,6 +72,8 @@ public class CurrentFoodFragment extends BaseFragment {
 
         component = ((DastarhanApp) getActivity().getApplication()).appComponent();
         foodRepository = component.foodRepository();
+        cartRepository = component.cartRepository();
+        orderRepository = component.orderRepository();
 
         Log.d(TAG, "Choose FOOD ID from intent = " + currentFoodID);
         food = foodRepository.getById(currentFoodID);
@@ -104,7 +109,7 @@ public class CurrentFoodFragment extends BaseFragment {
                 if (canOrdered) {
                     canOrdered = false;
 
-                    CommonOperation.createOrder(component, food);
+                    orderRepository.add(new Order(cartRepository.get().getCurrentOrderID(),food.getServer_id(), 1 , food.getPrice()));
 
                     mbCurrFoodAddShopping.setText(R.string.cant_order);
                     mbCurrFoodAddShopping.setBackground(getResources().getDrawable(R.drawable.button_to_basket_selector));
@@ -124,10 +129,11 @@ public class CurrentFoodFragment extends BaseFragment {
 
             String locale = getContext().getResources().getConfiguration().locale.getLanguage();
 
-            List<Order> orders = component.cartRepository().getCurrentCartOrders();
+            List<Order> orders = cartRepository.getCurrentCartOrders();
             for (Order order : orders) {
                 if (order.getId_food() == food.getServer_id()) {
                     canOrdered = false;
+                    break;
                 }
             }
 
